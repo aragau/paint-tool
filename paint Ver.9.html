@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>配合計算 Ver.9</title>
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+ font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+ margin:0;
+ padding:12px;
+ font-size:18px;
+}
+
+h1{
+ text-align:center;
+ font-size:26px;
+}
+
+.header{
+ background:#2d6cdf;
+ color:white;
+ font-size:22px;
+ font-weight:bold;
+ text-align:center;
+ padding:14px;
+ border-radius:10px;
+}
+
+.box{
+ background:#eaf3ff;
+ margin-top:12px;
+ padding:12px;
+ border-radius:10px;
+}
+
+.alert{
+ background:#fff3e0;
+ border:2px solid #ff9800;
+}
+
+.info{
+ background:#e8f5e9;
+ border:2px solid #4caf50;
+ font-size:16px;
+}
+
+label{
+ display:block;
+ font-weight:bold;
+ font-size:20px;
+}
+
+.note{
+ color:#cc6600;
+ font-size:15px;
+}
+
+select,button{
+ width:100%;
+ margin-top:8px;
+ padding:14px;
+ font-size:22px;
+ border-radius:8px;
+}
+
+button{
+ background:#2d6cdf;
+ color:white;
+ border:none;
+ font-weight:bold;
+}
+
+.result{
+ background:#f5f5f5;
+ margin-top:18px;
+ padding:15px;
+ border-radius:10px;
+ min-height:30px;
+}
+
+.step{
+ text-align:center;
+ margin-bottom:18px;
+}
+
+.value{
+ color:#d00000;
+ font-size:36px;
+ font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>配合計算</h1>
+
+<div class="header">
+硬化剤重量（kg）配合計算
+</div>
+
+<div class="box info" id="history">
+前回データなし
+</div>
+
+<div class="box">
+<label>配合比</label>
+<select id="ratio"></select>
+</div>
+
+<div class="box">
+<label>予定主剤重量（kg）</label>
+<select id="base"></select>
+</div>
+
+<div class="box alert">
+<label>実測主剤重量（kg）</label>
+<div class="note">
+予定より多く入った場合のみ選択
+</div>
+<select id="actual"></select>
+</div>
+
+<div class="box">
+<label>希釈率（％）</label>
+<select id="thinner"></select>
+</div>
+
+<button onclick="calc()">
+配合計算
+</button>
+
+<div id="result" class="result"></div>
+
+<script>
+
+const ratio=document.getElementById("ratio");
+const base=document.getElementById("base");
+const actual=document.getElementById("actual");
+const thinner=document.getElementById("thinner");
+const result=document.getElementById("result");
+const history=document.getElementById("history");
+
+
+function add(select,text,value=text){
+ let op=document.createElement("option");
+ op.text=text;
+ op.value=value;
+ select.add(op);
+}
+
+
+add(ratio,"","");
+for(let i=9;i>=1;i--){
+ add(ratio,i+":"+(10-i));
+}
+
+add(base,"","");
+for(let i=0.5;i<=20;i+=0.5){
+ add(base,i.toFixed(1));
+}
+
+add(thinner,"","");
+for(let i=0;i<=20;i++){
+ add(thinner,i);
+}
+
+
+function updateActual(){
+
+ actual.innerHTML="";
+
+ add(actual,"","");
+
+ if(base.value==="") return;
+
+ let start=Number(base.value)+0.1;
+
+ for(let i=start;i<=20;i+=0.1){
+  add(
+   actual,
+   i.toFixed(1)+"kg",
+   i.toFixed(1)
+  );
+ }
+
+}
+
+
+function clearResult(){
+ result.innerHTML="";
+}
+
+
+ratio.addEventListener("change",clearResult);
+
+base.addEventListener("change",()=>{
+ updateActual();
+ clearResult();
+});
+
+actual.addEventListener("change",clearResult);
+
+thinner.addEventListener("change",clearResult);
+
+
+function saveData(){
+
+ let data={
+  date:new Date().toLocaleString("ja-JP"),
+  ratio:ratio.value,
+  base:base.value,
+  actual:actual.value,
+  thinner:thinner.value
+ };
+
+ localStorage.setItem(
+  "paintData",
+  JSON.stringify(data)
+ );
+
+ showHistory(data);
+
+}
+
+
+function loadData(){
+
+ let data=localStorage.getItem("paintData");
+
+ if(!data){
+  updateActual();
+  return;
+ }
+
+ data=JSON.parse(data);
+
+ ratio.value=data.ratio;
+ base.value=data.base;
+
+ updateActual();
+
+ actual.value=data.actual;
+ thinner.value=data.thinner;
+
+ showHistory(data);
+
+}
+
+
+function showHistory(data){
+
+ history.innerHTML=
+ "前回使用：<br>"+
+ data.date+"<br><br>"+
+ "配合比："+data.ratio+"<br>"+
+ "予定主剤："+data.base+"kg<br>"+
+ "実測主剤："+(data.actual||"なし")+"<br>"+
+ "希釈率："+data.thinner+"％";
+
+}
+
+
+function calc(){
+
+ if(
+ ratio.value==="" ||
+ base.value==="" ||
+ thinner.value===""){
+ 
+ alert("配合比・予定主剤重量・希釈率を選択してください");
+ return;
+
+ }
+
+ let main =
+ actual.value !== ""
+ ? Number(actual.value)
+ : Number(base.value);
+
+
+ let r=ratio.value.split(":");
+
+ let hard=
+ main*Number(r[1])/Number(r[0]);
+
+ let mix=main+hard;
+
+ let thin=
+ mix*Number(thinner.value)/100;
+
+ let total=mix+thin;
+
+
+ result.innerHTML=
+
+ '<div class="step">主剤（'+
+ ratio.value+
+ '）ここまで入れる<div class="value">'+
+ main.toFixed(2)+
+ 'kg</div></div>'+
+
+ '<div class="step">硬化剤 '+
+ hard.toFixed(2)+
+ 'kg 入れる<div class="value">'+
+ mix.toFixed(2)+
+ 'kg</div></div>'+
+
+ '<div class="step">希釈剤（'+
+ thinner.value+
+ '％） '+
+ thin.toFixed(2)+
+ 'kg 入れる<div class="value">'+
+ total.toFixed(2)+
+ 'kg</div></div>';
+
+
+ saveData();
+
+}
+
+
+loadData();
+
+</script>
+
+</body>
+</html>
