@@ -3,75 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>配合計算 Ver.7</title>
+<title>配合計算 Ver.14.1</title>
+
 <style>
-* { box-sizing: border-box; }
-body {
-  font-family: -apple-system, sans-serif;
-  margin: 0;
-  padding: 12px;
-  background: #fff;
-  font-size: 18px;
+*{box-sizing:border-box;}
+
+body{
+ font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+ margin:0;
+ padding:12px;
+ font-size:18px;
 }
-h1 {
-  text-align: center;
-  font-size: 26px;
+
+h1{
+ text-align:center;
+ font-size:26px;
 }
-.header {
-  background: #2d6cdf;
-  color: white;
-  text-align: center;
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 22px;
-  font-weight: bold;
+
+.header{
+ background:#2d6cdf;
+ color:white;
+ font-size:22px;
+ font-weight:bold;
+ text-align:center;
+ padding:14px;
+ border-radius:10px;
 }
-.box {
-  background: #eaf3ff;
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 10px;
+
+.box{
+ background:#eaf3ff;
+ margin-top:12px;
+ padding:12px;
+ border-radius:10px;
 }
-.alert {
-  background: #fff3e0;
-  border: 2px solid #ff9800;
+
+.alert{
+ background:#fff3e0;
+ border:2px solid #ff9800;
 }
-label {
-  display: block;
-  font-weight: bold;
+
+.info{
+ background:#e8f5e9;
+ border:2px solid #4caf50;
+ font-size:16px;
 }
-.note {
-  color: #cc6600;
-  font-size: 14px;
+
+label{
+ display:block;
+ font-weight:bold;
+ font-size:20px;
 }
-select, input, button {
-  width: 100%;
-  margin-top: 8px;
-  padding: 14px;
-  font-size: 22px;
-  border-radius: 8px;
+
+.note{
+ color:#cc6600;
+ font-size:15px;
 }
-button {
-  background: #2d6cdf;
-  color: white;
-  border: none;
-  font-weight: bold;
+
+select,button{
+ width:100%;
+ margin-top:8px;
+ padding:14px;
+ font-size:22px;
+ border-radius:8px;
 }
-.result {
-  background: #f5f5f5;
-  margin-top: 18px;
-  padding: 15px;
-  border-radius: 10px;
+
+button{
+ background:#2d6cdf;
+ color:white;
+ border:none;
+ font-weight:bold;
+ cursor: pointer;
 }
-.step {
-  text-align: center;
-  margin-bottom: 16px;
+
+.btn-sub{
+ background:#ff9800;
+ font-size:18px;
+ margin-top:12px;
+ padding:10px;
 }
-.value {
-  font-size: 36px;
-  color: #d00000;
-  font-weight: bold;
+
+.result{
+ background:#f5f5f5;
+ margin-top:18px;
+ padding:15px;
+ border-radius:10px;
+ min-height:30px;
 }
+
+.step{
+ text-align:center;
+ margin-bottom:18px;
+}
+
+.value{
+ color:#d00000;
+ font-size:36px;
+ font-weight:bold;
+}
+
+#actualBox {
+ display: none;
+}
+.thin-note{margin-top:8px;font-size:15px;font-weight:bold;}
 </style>
 </head>
 
@@ -80,7 +113,11 @@ button {
 <h1>配合計算</h1>
 
 <div class="header">
-硬化剤重量（kg） 配合計算
+硬化剤重量（kg）配合計算
+</div>
+
+<div class="box info" id="history">
+前回データなし
 </div>
 
 <div class="box">
@@ -89,14 +126,19 @@ button {
 </div>
 
 <div class="box">
-<label>予定主剤重量（kg）</label>
+<label style="display:flex;justify-content:space-between;align-items:center;">
+<span>主剤重量（kg）</span>
+<span id="showActualBtn" onclick="showActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">※予定より多く入ったらこちらから入力</span>
+</label>
 <select id="base"></select>
 </div>
 
-<div class="box alert">
-<label>実測主剤重量（kg）</label>
-<div class="note">予定より多く入った場合のみ入力</div>
-<input id="actual" type="number" step="0.01" placeholder="例 2.20">
+<div class="box alert" id="actualBox">
+<label style="display:flex;justify-content:space-between;align-items:center;"><span>実測主剤重量（kg）</span><span onclick="hideActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">✕閉じる</span></label>
+<div class="note">
+実際に入った数値を入力
+</div>
+<select id="actual"></select>
 </div>
 
 <div class="box">
@@ -104,80 +146,229 @@ button {
 <select id="thinner"></select>
 </div>
 
-<button onclick="calc()">配合計算</button>
+<button onclick="calc()">
+配合計算
+</button>
 
 <div id="result" class="result"></div>
 
 <script>
-const ratio = document.getElementById("ratio");
-const base = document.getElementById("base");
-const actual = document.getElementById("actual");
-const thinner = document.getElementById("thinner");
-const result = document.getElementById("result");
 
-function addOption(select, value, text) {
-  const option = document.createElement("option");
-  option.value = value;
-  option.textContent = text;
-  select.appendChild(option);
+const ratio=document.getElementById("ratio");
+const base=document.getElementById("base");
+const actual=document.getElementById("actual");
+const actualBox=document.getElementById("actualBox");
+const showActualBtn=document.getElementById("showActualBtn");
+const thinner=document.getElementById("thinner");
+const result=document.getElementById("result");
+const history=document.getElementById("history");
+
+
+function add(select,text,value=text){
+ let op=document.createElement("option");
+ op.text=text;
+ op.value=value;
+ select.add(op);
 }
 
-// 配合比
-for (let a = 9; a >= 1; a--) {
-  addOption(ratio, a + ":" + (10 - a), a + ":" + (10 - a));
+
+add(ratio,"","");
+add(ratio,"10:0（一液）","10:0");
+
+for(let i=9;i>=1;i--){
+ add(ratio,i+":"+(10-i));
 }
 
-// 主剤重量
-for (let i = 0.5; i <= 20; i += 0.5) {
-  addOption(base, i.toFixed(1), i.toFixed(1) + "kg");
+add(base,"","");
+for(let i=0.5;i<=20;i+=0.5){
+ add(base,i.toFixed(1));
 }
 
-// 希釈率
-for (let i = 0; i <= 20; i++) {
-  addOption(thinner, i, i + "%");
+add(thinner,"","");
+for(let i=0;i<=30;i++){
+ add(thinner,i);
 }
 
-// 前回値読込
-ratio.value = localStorage.getItem("ratio") || "9:1";
-base.value = localStorage.getItem("base") || "4.5";
-thinner.value = localStorage.getItem("thinner") || "10";
-actual.value = localStorage.getItem("actual") || "";
 
-function calc() {
+function updateActual(){
+ actual.innerHTML="";
+ add(actual,"","");
 
-  localStorage.setItem("ratio", ratio.value);
-  localStorage.setItem("base", base.value);
-  localStorage.setItem("thinner", thinner.value);
-  localStorage.setItem("actual", actual.value);
+ if(base.value==="") return;
 
-  const main = actual.value !== ""
-    ? Number(actual.value)
-    : Number(base.value);
+ let start=Number(base.value)+0.1;
 
-  const parts = ratio.value.split(":");
-  const hard = main * Number(parts[1]) / Number(parts[0]);
-  const mixed = main + hard;
-  const thin = mixed * Number(thinner.value) / 100;
-  const total = mixed + thin;
-
-  result.innerHTML =
-    '<div class="step">主剤（' + ratio.value + '）' +
-    '<div class="value">' + main.toFixed(2) + 'kg</div></div>' +
-
-    '<div class="step">硬化剤' +
-    '<div class="value">' + hard.toFixed(2) + 'kg</div></div>' +
-
-    '<div class="step">混合後重量' +
-    '<div class="value">' + mixed.toFixed(2) + 'kg</div></div>' +
-
-    '<div class="step">希釈剤（' + thinner.value + '％）' +
-    '<div class="value">' + thin.toFixed(2) + 'kg</div></div>' +
-
-    '<div class="step">完成重量' +
-    '<div class="value">' + total.toFixed(2) + 'kg</div></div>';
+ for(let i=start;i<=20.5;i+=0.1){
+  add(
+   actual,
+   i.toFixed(1)+"kg",
+   i.toFixed(1)
+  );
+ }
 }
 
-calc();
+
+function showActualField(){
+ actualBox.style.display = "block";
+ if(showActualBtn) showActualBtn.style.display="none";
+}
+
+
+
+function hideActualField(){
+ actual.value="";
+ actualBox.style.display="none";
+ if(showActualBtn) showActualBtn.style.display="inline";
+}
+
+function clearResult(){
+ result.innerHTML="";
+}
+
+
+ratio.addEventListener("change",clearResult);
+
+base.addEventListener("change",()=>{
+ updateActual();
+ clearResult();
+});
+
+actual.addEventListener("change",clearResult);
+
+thinner.addEventListener("change",()=>{updateThinnerUI();clearResult();});
+
+
+
+function updateThinnerUI(){
+ let note=document.getElementById("thinNote");
+ if(!note){note=document.createElement("div");note.id="thinNote";note.className="thin-note";document.getElementById("thinner").parentNode.appendChild(note);}
+ const v=Number(thinner.value);thinner.style.color="black";note.textContent="";
+ if(thinner.value==="") return;
+ if(v<=10){}
+ else if(v<=20){thinner.style.color="#cc7a00";note.style.color="#cc7a00";note.textContent="※メーカー推奨値を確認してください。";}
+ else {thinner.style.color="red";note.style.color="red";note.textContent="⚠ 希釈率が高めです。施工条件・塗料仕様をご確認ください。";}
+}
+
+function saveData(){
+ let data={
+  date:new Date().toLocaleString("ja-JP"),
+  ratio:ratio.value,
+  base:base.value,
+  thinner:thinner.value
+ };
+
+ localStorage.setItem(
+  "paintData",
+  JSON.stringify(data)
+ );
+
+ showHistory(data);
+}
+
+
+function loadData(){
+ let data=localStorage.getItem("paintData");
+
+ if(!data){
+  updateActual();
+  return;
+ }
+
+ data=JSON.parse(data);
+
+ ratio.value=data.ratio;
+ base.value=data.base;
+
+ updateActual();
+
+ thinner.value=data.thinner;
+ updateThinnerUI();
+ 
+ actual.value=""; // 起動時は常に空欄
+
+ showHistory(data);
+}
+
+
+function showHistory(data){
+ history.innerHTML=
+ "前回使用：<br>"+
+ data.date+"<br><br>"+
+ "配合比："+data.ratio+"<br>"+
+ "主剤重量："+data.base+"kg<br>"+
+ "希釈率："+data.thinner+"％";
+}
+
+
+function calc(){
+
+ if(
+ ratio.value==="" ||
+ base.value==="" ||
+ thinner.value===""){
+ 
+ alert("配合比・主剤重量・希釈率を選択してください");
+ return;
+ }
+
+ // ボタンを押して実測値が選ばれている場合のみ実測値を使用
+ let main = (actualBox.style.display === "block" && actual.value !== "")
+ ? Number(actual.value)
+ : Number(base.value);
+
+
+ let r=ratio.value.split(":");
+
+ let hard=
+ main*Number(r[1])/Number(r[0]);
+
+ let mix=main+hard;
+
+ let thin=
+ mix*Number(thinner.value)/100;
+
+ let total=mix+thin;
+
+let hardText=(hard===0)
+ ? "一液塗料（硬化剤なし）"
+ : "硬化剤 "+hard.toFixed(2)+"kg 入れる";
+
+
+ result.innerHTML=
+
+ '<div class="step">主剤（'+
+ ratio.value+
+ '）ここまで入れる<div class="value">'+
+ main.toFixed(2)+
+ 'kg</div></div>'+
+
+ '<div class="step">'+
+ hardText+
+ '<div class="value">'+
+ mix.toFixed(2)+
+ 'kg</div></div>'+
+
+ '<div class="step">希釈剤（'+
+ thinner.value+
+ '％） '+
+ thin.toFixed(2)+
+ 'kg 入れる<div class="value">'+
+ total.toFixed(2)+
+ 'kg</div></div>';
+
+
+ saveData();
+ 
+ // 実測欄をリセットして隠す
+ actual.value="";
+ actualBox.style.display = "none";
+ if(showActualBtn) showActualBtn.style.display="inline";
+}
+
+
+updateThinnerUI();
+loadData();
+
 </script>
 
 </body>
