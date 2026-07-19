@@ -244,7 +244,7 @@ function updateThinnerUI(){
  if(!note){note=document.createElement("div");note.id="thinNote";note.className="thin-note";document.getElementById("thinner").parentNode.appendChild(note);}
  const v=Number(thinner.value);thinner.style.color="black";note.textContent="";
  if(thinner.value==="") return;
- if(v<=10){}
+ if(v<=15){}
  else if(v<=20){thinner.style.color="#cc7a00";note.style.color="#cc7a00";note.textContent="※メーカー推奨値を確認してください。";}
  else {thinner.style.color="red";note.style.color="red";note.textContent="⚠ 高希釈です。仕様をご確認ください。";}
 }
