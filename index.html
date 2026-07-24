@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>配合計算 Ver.14.3</title>
+<title>塗料配合計算 by N.H.S. Ver.14.5</title>
 
 <style>
 *{box-sizing:border-box;}
@@ -110,10 +110,10 @@ button{
 
 <body>
 
-<h1>配合計算</h1>
+<h1>塗料配合計算 by N.H.S.</h1>
 
 <div class="header">
-硬化剤重量（kg）配合計算
+配合設定
 </div>
 
 <div class="box info" id="history">
@@ -147,7 +147,7 @@ button{
 </div>
 
 <button onclick="calc()">
-配合計算
+▶ 配合計算
 </button>
 
 <div id="result" class="result"></div>
@@ -244,16 +244,17 @@ function updateThinnerUI(){
  if(!note){note=document.createElement("div");note.id="thinNote";note.className="thin-note";document.getElementById("thinner").parentNode.appendChild(note);}
  const v=Number(thinner.value);thinner.style.color="black";note.textContent="";
  if(thinner.value==="") return;
- if(v<=15){}
+ if(v<=13){}
  else if(v<=20){thinner.style.color="#cc7a00";note.style.color="#cc7a00";note.textContent="※メーカー推奨値を確認してください。";}
  else {thinner.style.color="red";note.style.color="red";note.textContent="⚠ 高希釈です。仕様をご確認ください。";}
 }
 
 function saveData(){
+ let usedBase=(actualBox.style.display==="block" && actual.value!=="")?actual.value:base.value;
  let data={
   date:new Date().toLocaleString("ja-JP"),
   ratio:ratio.value,
-  base:base.value,
+  base:usedBase,
   thinner:thinner.value
  };
 
