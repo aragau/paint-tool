@@ -30,6 +30,7 @@ body{
 h1{
  text-align:center;
  font-size:26px;
+ margin: 8px 0 10px;
 }
 
 .header{
@@ -60,6 +61,37 @@ h1{
  font-size:16px;
 }
 
+.history-inline{
+ display:flex;
+ flex-direction:column;
+ gap:10px;
+ margin-top:12px;
+ padding:10px 12px;
+}
+
+.history-inline-top{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+}
+
+.history-inline-label{
+ flex:1 1 auto;
+ min-width:0;
+ font-weight:bold;
+ font-size:15px;
+ color:#1f2937;
+ white-space:nowrap;
+}
+
+.history-inline-value{
+ font-size:14px;
+ line-height:1.45;
+ color:#111827;
+ word-break:break-word;
+}
+
 label{
  display:block;
  font-weight:bold;
@@ -69,6 +101,7 @@ label{
 .note{
  color:#cc6600;
  font-size:15px;
+ line-height:1.4;
 }
 
 select,button{
@@ -84,7 +117,11 @@ button{
  color:white;
  border:none;
  font-weight:bold;
- cursor: pointer;
+ cursor:pointer;
+}
+
+button:active{
+ transform: translateY(1px);
 }
 
 .btn-sub{
@@ -92,6 +129,11 @@ button{
  font-size:18px;
  margin-top:12px;
  padding:10px;
+}
+
+.btn-gray{
+ background:#6b7280;
+ font-size:18px;
 }
 
 .result{
@@ -116,7 +158,12 @@ button{
 #actualBox {
  display: none;
 }
-.thin-note{margin-top:8px;font-size:15px;font-weight:bold;}
+.thin-note{
+ margin-top:8px;
+ font-size:15px;
+ font-weight:bold;
+}
+
 .footer{
  text-align:center;
  color:#666;
@@ -126,6 +173,177 @@ button{
  padding:10px 0 0;
  letter-spacing:0.04em;
 }
+
+.history-btn{
+ margin-top:0;
+ background:#16a34a;
+ width:auto;
+ min-width:72px;
+ padding:10px 12px;
+ font-size:14px;
+ white-space:nowrap;
+ flex:0 0 auto;
+}
+
+.history-list{
+ display:flex;
+ flex-direction:column;
+ gap:10px;
+ margin-top:12px;
+}
+
+.history-item{
+ background:#ffffff;
+ border:1px solid #dbe7f3;
+ border-radius:12px;
+ padding:12px;
+ box-shadow:0 1px 0 rgba(0,0,0,0.02);
+ display:flex;
+ align-items:stretch;
+ gap:10px;
+}
+
+.history-main{
+ flex:1;
+ min-width:0;
+ cursor:pointer;
+ -webkit-tap-highlight-color: transparent;
+}
+
+.history-date{
+ font-size:14px;
+ color:#555;
+ margin-bottom:6px;
+}
+
+.history-text{
+ font-size:16px;
+ line-height:1.55;
+ color:#222;
+ word-break:break-word;
+}
+
+.history-actions{
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+ width:76px;
+ flex:0 0 76px;
+}
+
+.history-actions button{
+ width:100%;
+ margin-top:0;
+ padding:8px 6px;
+ font-size:13px;
+ border-radius:10px;
+ min-height:38px;
+}
+
+.history-restore{
+ background:#2d6cdf;
+}
+
+.history-delete{
+ background:#dc2626;
+}
+
+@media (max-width: 420px){
+ .history-btn{
+  min-width:58px;
+  padding:9px 8px;
+  font-size:13px;
+ }
+ .history-actions{
+  width:64px;
+  flex-basis:64px;
+ }
+ .history-actions button{
+  font-size:12px;
+  padding:7px 4px;
+ }
+}
+
+.modal{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,0.45);
+ display:none;
+ align-items:flex-end;
+ justify-content:center;
+ z-index:999;
+ padding:12px;
+}
+
+.modal.open{
+ display:flex;
+}
+
+.modal-panel{
+ width:100%;
+ max-width:720px;
+ max-height:90vh;
+ background:#f8fbff;
+ border-radius:18px 18px 12px 12px;
+ overflow:hidden;
+ box-shadow:0 10px 35px rgba(0,0,0,0.22);
+ display:flex;
+ flex-direction:column;
+}
+
+.modal-header{
+ background:#2d6cdf;
+ color:#fff;
+ padding:14px 16px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+}
+
+.modal-title{
+ font-size:20px;
+ font-weight:bold;
+}
+
+.modal-close{
+ width:auto;
+ margin:0;
+ padding:10px 12px;
+ font-size:16px;
+ background:#1f4ea3;
+ border-radius:10px;
+}
+
+.modal-body{
+ padding:12px;
+ overflow:auto;
+}
+
+.modal-tools{
+ display:flex;
+ gap:10px;
+ margin-top:12px;
+}
+
+.modal-tools button{
+ margin-top:0;
+ padding:12px 10px;
+ font-size:16px;
+ border-radius:10px;
+}
+
+.modal-clearall{
+ background:#dc2626;
+}
+
+.modal-empty{
+ padding:18px 10px;
+ color:#666;
+ text-align:center;
+ font-size:16px;
+}
+
 </style>
 </head>
 
@@ -137,8 +355,12 @@ button{
 配合設定
 </div>
 
-<div class="box info" id="history">
-前回データなし
+<div class="box info history-inline">
+ <div class="history-inline-top">
+  <div class="history-inline-label">前回使用</div>
+  <button class="history-btn" onclick="openHistoryModal()">履歴</button>
+ </div>
+ <div class="history-inline-value" id="history">前回データなし</div>
 </div>
 
 <div class="box">
@@ -147,7 +369,7 @@ button{
 </div>
 
 <div class="box">
-<label style="display:flex;justify-content:space-between;align-items:center;">
+<label style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
 <span>主剤重量（kg）</span>
 <span id="showActualBtn" onclick="showActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">※多く入ったらこちらから入力</span>
 </label>
@@ -155,7 +377,10 @@ button{
 </div>
 
 <div class="box alert" id="actualBox">
-<label style="display:flex;justify-content:space-between;align-items:center;"><span>実測主剤重量（kg）</span><span onclick="hideActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">✕閉じる</span></label>
+<label style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+<span>実測主剤重量（kg）</span>
+<span onclick="hideActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">✕閉じる</span>
+</label>
 <div class="note">
 実際に入った数値を入力
 </div>
@@ -173,14 +398,26 @@ button{
 
 <div id="result" class="result"></div>
 
-
 <div class="footer">
 Produced by N.H.S.<br>
-Ver.15.0
+Ver.15.1
+</div>
+
+<div class="modal" id="historyModal" onclick="closeHistoryModal(event)">
+ <div class="modal-panel" onclick="event.stopPropagation()">
+  <div class="modal-header">
+   <div class="modal-title">履歴</div>
+   <button class="modal-close" onclick="closeHistoryModal()">閉じる</button>
+  </div>
+  <div class="modal-body">
+   <div class="note">タップすると、その内容を復元します。</div>
+   <div class="history-list" id="historyList"></div>
+   <button class="modal-clearall" onclick="clearAllHistory()">履歴をすべて削除</button>
+  </div>
+ </div>
 </div>
 
 <script>
-
 const ratio=document.getElementById("ratio");
 const base=document.getElementById("base");
 const actual=document.getElementById("actual");
@@ -188,8 +425,12 @@ const actualBox=document.getElementById("actualBox");
 const showActualBtn=document.getElementById("showActualBtn");
 const thinner=document.getElementById("thinner");
 const result=document.getElementById("result");
-const history=document.getElementById("history");
+const historyBox=document.getElementById("history");
+const historyModal=document.getElementById("historyModal");
+const historyList=document.getElementById("historyList");
 
+const STORAGE_HISTORY="paintHistory";
+const STORAGE_LAST="paintLastData";
 
 function add(select,text,value=text){
  let op=document.createElement("option");
@@ -198,13 +439,23 @@ function add(select,text,value=text){
  select.add(op);
 }
 
+function formatDateText(dateString){
+ return dateString || "";
+}
+
+function buildOptionSelect(select,start,end,step,unit=""){
+ select.innerHTML="";
+ add(select,"","");
+ for(let i=start;i<=end+1e-9;i+=step){
+  const v=(Math.round(i*10)/10).toFixed(step<1 ? 1 : 0);
+  add(select, unit ? `${v}${unit}` : v, v);
+ }
+}
 
 add(ratio,"","");
 add(ratio,"10:0（一液）","10:0");
-
-for(let i=9;i>=1;i--){
- add(ratio,i+":"+(10-i));
-}
+["9:1","8:1","7:1","6:1","5:1","4:1","3:1","2:1","1:1"].forEach(v=>add(ratio,v,v));
+add(ratio,"その他（手入力）","custom");
 
 add(base,"","");
 for(let i=0.5;i<=20;i+=0.5){
@@ -216,7 +467,6 @@ for(let i=0;i<=30;i++){
  add(thinner,i);
 }
 
-
 function updateActual(){
  actual.innerHTML="";
  add(actual,"","");
@@ -224,23 +474,15 @@ function updateActual(){
  if(base.value==="") return;
 
  let start=Number(base.value)+0.1;
-
  for(let i=start;i<=20.5;i+=0.1){
-  add(
-   actual,
-   i.toFixed(1)+"kg",
-   i.toFixed(1)
-  );
+  add(actual, i.toFixed(1)+"kg", i.toFixed(1));
  }
 }
-
 
 function showActualField(){
  actualBox.style.display = "block";
  if(showActualBtn) showActualBtn.style.display="none";
 }
-
-
 
 function hideActualField(){
  actual.value="";
@@ -252,130 +494,286 @@ function clearResult(){
  result.innerHTML="";
 }
 
-
 ratio.addEventListener("change",clearResult);
-
 base.addEventListener("change",()=>{
  updateActual();
  clearResult();
 });
-
 actual.addEventListener("change",clearResult);
-
 thinner.addEventListener("change",()=>{updateThinnerUI();clearResult();});
-
-
 
 function updateThinnerUI(){
  let note=document.getElementById("thinNote");
- if(!note){note=document.createElement("div");note.id="thinNote";note.className="thin-note";document.getElementById("thinner").parentNode.appendChild(note);}
- const v=Number(thinner.value);thinner.style.color="black";note.textContent="";
+ if(!note){
+  note=document.createElement("div");
+  note.id="thinNote";
+  note.className="thin-note";
+  document.getElementById("thinner").parentNode.appendChild(note);
+ }
+ const v=Number(thinner.value);
+ thinner.style.color="black";
+ note.textContent="";
  if(thinner.value==="") return;
- if(v<=13){}
- else if(v<=20){thinner.style.color="#cc7a00";note.style.color="#cc7a00";note.textContent="※メーカー推奨値を確認してください。";}
- else {thinner.style.color="red";note.style.color="red";note.textContent="⚠ 高希釈です。仕様をご確認ください。";}
+ if(v<=13){
+  // 標準
+ }else if(v<=20){
+  thinner.style.color="#cc7a00";
+  note.style.color="#cc7a00";
+  note.textContent="※メーカー推奨値を確認してください。";
+ }else{
+  thinner.style.color="red";
+  note.style.color="red";
+  note.textContent="⚠ 高希釈です。仕様をご確認ください。";
+ }
+}
+
+function getHistory(){
+ try{
+  const raw = localStorage.getItem(STORAGE_HISTORY);
+  const arr = raw ? JSON.parse(raw) : [];
+  return Array.isArray(arr) ? arr : [];
+ }catch(e){
+  return [];
+ }
+}
+
+function setHistory(arr){
+ localStorage.setItem(STORAGE_HISTORY, JSON.stringify(arr));
+}
+
+function getLastData(){
+ try{
+  const raw = localStorage.getItem(STORAGE_LAST);
+  return raw ? JSON.parse(raw) : null;
+ }catch(e){
+  return null;
+ }
+}
+
+function setLastData(data){
+ localStorage.setItem(STORAGE_LAST, JSON.stringify(data));
+}
+
+function renderLatestBox(data){
+ if(!data){
+  historyBox.innerHTML="前回データなし";
+  return;
+ }
+ const mainLabel = data.usedActual && data.actualValue ? `実測主剤重量：${data.actualValue}kg` : `主剤重量：${data.base}kg`;
+ historyBox.innerHTML=
+  "前回使用：<br>"+
+  data.date+"<br><br>"+
+  "配合比："+data.ratio+"<br>"+
+  mainLabel+"<br>"+
+  "希釈率："+data.thinner+"％";
 }
 
 function saveData(){
- let usedBase=(actualBox.style.display==="block" && actual.value!=="")?actual.value:base.value;
- let data={
-  date:new Date().toLocaleString("ja-JP"),
-  ratio:ratio.value,
-  base:usedBase,
-  thinner:thinner.value
+ const usedActual = (actualBox.style.display==="block" && actual.value!=="");
+ const usedMain = usedActual ? actual.value : base.value;
+ const data={
+  id: Date.now(),
+  date: new Date().toLocaleString("ja-JP"),
+  ratio: ratio.value,
+  base: base.value,
+  actualValue: usedActual ? actual.value : "",
+  usedActual: usedActual,
+  usedMain: usedMain,
+  thinner: thinner.value
  };
 
- localStorage.setItem(
-  "paintData",
-  JSON.stringify(data)
- );
+ const arr = getHistory();
+ arr.unshift(data);
+ while(arr.length > 10) arr.pop();
 
- showHistory(data);
+ setHistory(arr);
+ setLastData(data);
+ renderLatestBox(data);
+ renderHistoryList();
 }
 
-
 function loadData(){
- let data=localStorage.getItem("paintData");
-
- if(!data){
+ const last = getLastData();
+ if(!last){
   updateActual();
+  renderLatestBox(null);
+  renderHistoryList();
   return;
  }
 
- data=JSON.parse(data);
-
- ratio.value=data.ratio;
- base.value=data.base;
-
+ ratio.value=last.ratio;
+ base.value=last.base;
  updateActual();
-
- thinner.value=data.thinner;
+ thinner.value=last.thinner;
  updateThinnerUI();
- 
- actual.value=""; // 起動時は常に空欄
 
- showHistory(data);
-}
-
-
-function showHistory(data){
- history.innerHTML=
- "前回使用：<br>"+
- data.date+"<br><br>"+
- "配合比："+data.ratio+"<br>"+
- "主剤重量："+data.base+"kg<br>"+
- "希釈率："+data.thinner+"％";
-}
-
-
-function calc(){
-
- if(
- ratio.value==="" ||
- base.value==="" ||
- thinner.value===""){
- 
- alert("配合比・主剤重量・希釈率を選択してください");
- return;
+ if(last.usedActual && last.actualValue){
+  actualBox.style.display="block";
+  if(showActualBtn) showActualBtn.style.display="none";
+  actual.value=last.actualValue;
+ }else{
+  actual.value="";
+  actualBox.style.display="none";
+  if(showActualBtn) showActualBtn.style.display="inline";
  }
 
- // ボタンを押して実測値が選ばれている場合のみ実測値を使用
- let main = (actualBox.style.display === "block" && actual.value !== "")
- ? Number(actual.value)
- : Number(base.value);
-
-
- let r=ratio.value.split(":");
-
- let hard=
- main*Number(r[1])/Number(r[0]);
-
- let mix=main+hard;
-
- let thin=
- mix*Number(thinner.value)/100;
-
- let total=mix+thin;
-
-if(hard===0){
-  result.innerHTML='<div class="step">主剤（'+ratio.value+'）ここまで入れる<div class="value">'+main.toFixed(2)+'kg</div></div>'+'<div class="step">希釈剤（'+thinner.value+'％） '+thin.toFixed(2)+'kg 入れる<div class="value">'+total.toFixed(2)+'kg</div></div>';
-}else{
- let hardText="硬化剤 "+hard.toFixed(2)+"kg 入れる";
- result.innerHTML='<div class="step">主剤（'+ratio.value+'）ここまで入れる<div class="value">'+main.toFixed(2)+'kg</div></div>'+'<div class="step">'+hardText+'<div class="value">'+mix.toFixed(2)+'kg</div></div>'+'<div class="step">希釈剤（'+thinner.value+'％） '+thin.toFixed(2)+'kg 入れる<div class="value">'+total.toFixed(2)+'kg</div></div>';
+ renderLatestBox(last);
+ renderHistoryList();
 }
 
+function calc(){
+ if(ratio.value==="" || base.value==="" || thinner.value===""){
+  alert("配合比・主剤重量・希釈率を選択してください");
+  return;
+ }
+
+ let main = (actualBox.style.display === "block" && actual.value !== "")
+  ? Number(actual.value)
+  : Number(base.value);
+
+ let r=ratio.value.split(":");
+ let hard=main*Number(r[1])/Number(r[0]);
+ let mix=main+hard;
+ let thin=mix*Number(thinner.value)/100;
+ let total=mix+thin;
+ let hasThin = Number(thinner.value) > 0;
+
+ if(hard===0){
+  result.innerHTML=
+   '<div class="step">主剤（'+ratio.value+'）ここまで入れる<div class="value">'+main.toFixed(2)+'kg</div></div>' +
+   (hasThin ? '<div class="step">希釈剤（'+thinner.value+'％） '+thin.toFixed(2)+'kg 入れる<div class="value">'+total.toFixed(2)+'kg</div></div>' : '');
+ }else{
+  let hardText="硬化剤 "+hard.toFixed(2)+"kg 入れる";
+  result.innerHTML=
+   '<div class="step">主剤（'+ratio.value+'）ここまで入れる<div class="value">'+main.toFixed(2)+'kg</div></div>'+
+   '<div class="step">'+hardText+'<div class="value">'+mix.toFixed(2)+'kg</div></div>' +
+   (hasThin ? '<div class="step">希釈剤（'+thinner.value+'％） '+thin.toFixed(2)+'kg 入れる<div class="value">'+total.toFixed(2)+'kg</div></div>' : '');
+ }
+
  saveData();
- 
- // 実測欄をリセットして隠す
+
  actual.value="";
- actualBox.style.display = "none";
+ actualBox.style.display="none";
  if(showActualBtn) showActualBtn.style.display="inline";
 }
 
+function openHistoryModal(){
+ renderHistoryList();
+ historyModal.classList.add("open");
+}
+
+function closeHistoryModal(event){
+ if(event && event.target !== historyModal) return;
+ historyModal.classList.remove("open");
+}
+
+function restoreHistoryItem(itemId){
+ const arr = getHistory();
+ const item = arr.find(x => String(x.id) === String(itemId));
+ if(!item) return;
+
+ ratio.value = item.ratio;
+ base.value = item.base;
+ updateActual();
+ thinner.value = item.thinner;
+ updateThinnerUI();
+
+ if(item.usedActual && item.actualValue){
+  actualBox.style.display = "block";
+  if(showActualBtn) showActualBtn.style.display="none";
+  actual.value = item.actualValue;
+ }else{
+  actual.value = "";
+  actualBox.style.display = "none";
+  if(showActualBtn) showActualBtn.style.display="inline";
+ }
+
+ clearResult();
+ closeHistoryModal();
+ renderLatestBox(item);
+ setLastData(item);
+}
+
+function deleteHistoryItem(itemId){
+ const arr = getHistory().filter(x => String(x.id) !== String(itemId));
+ setHistory(arr);
+ const last = arr[0] || null;
+ if(last){
+  setLastData(last);
+  renderLatestBox(last);
+ }else{
+  localStorage.removeItem(STORAGE_LAST);
+  renderLatestBox(null);
+ }
+ renderHistoryList();
+}
+
+function clearAllHistory(){
+ if(!confirm("履歴をすべて削除しますか？")) return;
+ localStorage.removeItem(STORAGE_HISTORY);
+ localStorage.removeItem(STORAGE_LAST);
+ renderLatestBox(null);
+ renderHistoryList();
+ closeHistoryModal();
+}
+
+function renderHistoryList(){
+ const arr = getHistory();
+ historyList.innerHTML = "";
+
+ if(arr.length === 0){
+  historyList.innerHTML = '<div class="modal-empty">履歴はまだありません。</div>';
+  return;
+ }
+
+ arr.forEach((item, index) => {
+  const div = document.createElement("div");
+  div.className = "history-item";
+
+  const mainLabel = item.usedActual && item.actualValue
+   ? `実測主剤重量：${item.actualValue}kg`
+   : `主剤重量：${item.base}kg`;
+
+  div.innerHTML = `
+   <div class="history-main" data-id="${item.id}">
+    <div class="history-date">${item.date}</div>
+    <div class="history-text">
+     配合比：${item.ratio}<br>
+     ${mainLabel}<br>
+     希釈率：${item.thinner}％
+    </div>
+   </div>
+   <div class="history-actions">
+    <button class="history-restore" data-restore="${item.id}">復元</button>
+    <button class="history-delete" data-delete="${item.id}">削除</button>
+   </div>
+  `;
+  historyList.appendChild(div);
+ });
+
+ historyList.querySelectorAll("[data-restore]").forEach(btn => {
+  btn.addEventListener("click", e => {
+   e.stopPropagation();
+   restoreHistoryItem(btn.getAttribute("data-restore"));
+  });
+ });
+
+ historyList.querySelectorAll("[data-delete]").forEach(btn => {
+  btn.addEventListener("click", e => {
+   e.stopPropagation();
+   deleteHistoryItem(btn.getAttribute("data-delete"));
+  });
+ });
+
+ historyList.querySelectorAll("[data-id]").forEach(box => {
+  box.addEventListener("click", () => {
+   restoreHistoryItem(box.getAttribute("data-id"));
+  });
+ });
+}
 
 updateThinnerUI();
 loadData();
-
 </script>
 
 </body>
