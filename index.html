@@ -184,7 +184,7 @@ button:active{
  width:auto;
  min-width:72px;
  padding:10px 12px;
- font-size:14px;
+ font-size:16px;
  white-space:nowrap;
  flex:0 0 auto;
 }
@@ -328,7 +328,7 @@ button:active{
  .history-btn{
   min-width:58px;
   padding:9px 8px;
-  font-size:13px;
+  font-size:14px;
  }
  .history-actions{
   width:64px;
@@ -476,7 +476,7 @@ button:active{
 <div class="box">
 <label style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
 <span>主剤重量（kg）</span>
-<span id="showActualBtn" onclick="showActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">※多く入ったらこちらから入力</span>
+<span id="showActualBtn" onclick="showActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">※多く入ったらこちらから修正</span>
 </label>
 <select id="base"></select>
 </div>
@@ -534,7 +534,6 @@ const STORAGE_LAST = "paintLastData";
 
 // ===== 画面要素 =====
 const appTitle = document.getElementById("appTitle");
-const historyAppTitle = document.getElementById("historyAppTitle");
 const footerInfo = document.getElementById("footerInfo");
 const ratioBox = document.getElementById("ratioBox");
 const ratio = document.getElementById("ratio");
@@ -555,8 +554,7 @@ const historyCount = document.getElementById("historyCount");
 function initializeAppInfo(){
  document.title = APP_NAME;
  appTitle.textContent = APP_NAME;
- historyAppTitle.textContent = APP_NAME;
- footerInfo.innerHTML = `Produced by N.H.S.<br>${APP_VERSION}　${APP_DATE}`;
+ footerInfo.textContent = `Produced by N.H.S.　${APP_VERSION}　${APP_DATE}`;
 }
 
 function add(select, text, value = text){
