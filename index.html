@@ -539,8 +539,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.15.3";
-const APP_DATE = "2026/07/30";
+const APP_VERSION = "Ver.15.4";
+const APP_DATE = "2026/07/31";
+const APP_TIME = "22:27";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -571,7 +572,7 @@ const historyCount = document.getElementById("historyCount");
 function initializeAppInfo(){
  document.title = APP_NAME;
  appTitle.textContent = APP_NAME;
- footerInfo.textContent = `Produced by N.H.S.　${APP_VERSION}　${APP_DATE}`;
+ footerInfo.textContent = `Produced by N.H.S.　${APP_VERSION}　${APP_DATE} ${APP_TIME}`;
 }
 
 function showWeatherAlert(){
