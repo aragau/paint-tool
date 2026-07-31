@@ -47,6 +47,18 @@ h1{
  border-radius:10px;
 }
 
+.weather-alert{
+ background:#fff1f0;
+ border:1px solid #eea9a2;
+ color:#b42318;
+ margin-top:12px;
+ padding:11px 12px;
+ border-radius:10px;
+ font-size:16px;
+ font-weight:bold;
+ line-height:1.45;
+}
+
 .box{
  background:#eaf3ff;
  margin-top:12px;
@@ -445,6 +457,8 @@ button:active{
 配合設定
 </div>
 
+<div class="weather-alert" id="weatherAlert" hidden role="status"></div>
+
 <div class="box info history-inline">
  <div class="history-inline-top">
   <div class="history-inline-label">前回使用</div>
@@ -528,6 +542,8 @@ const APP_NAME = "塗料配合計算";
 const APP_VERSION = "Ver.15.3";
 const APP_DATE = "2026/07/30";
 const HISTORY_MAX = 10;
+const WEATHER_FORECAST_HOURS = 1;
+const WEATHER_PROBABILITY_THRESHOLD = 80;
 
 const STORAGE_HISTORY = "paintHistory";
 const STORAGE_LAST = "paintLastData";
@@ -535,6 +551,7 @@ const STORAGE_LAST = "paintLastData";
 // ===== 画面要素 =====
 const appTitle = document.getElementById("appTitle");
 const footerInfo = document.getElementById("footerInfo");
+const weatherAlert = document.getElementById("weatherAlert");
 const ratioBox = document.getElementById("ratioBox");
 const ratio = document.getElementById("ratio");
 const customRatioBox = document.getElementById("customRatioBox");
@@ -555,6 +572,50 @@ function initializeAppInfo(){
  document.title = APP_NAME;
  appTitle.textContent = APP_NAME;
  footerInfo.textContent = `Produced by N.H.S.　${APP_VERSION}　${APP_DATE}`;
+}
+
+function showWeatherAlert(){
+ weatherAlert.textContent = "⚠ 今後1時間以内に降雨の予報";
+ weatherAlert.hidden = false;
+}
+
+async function updateRainAlert(){
+ if(!navigator.geolocation || !window.fetch) return;
+
+ navigator.geolocation.getCurrentPosition(async position => {
+  try{
+   const latitude = position.coords.latitude;
+   const longitude = position.coords.longitude;
+   const url = "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(latitude) +
+    "&longitude=" + encodeURIComponent(longitude) +
+    "&hourly=precipitation_probability&forecast_days=1&timezone=auto";
+   const response = await fetch(url);
+   if(!response.ok) return;
+
+   const data = await response.json();
+   const times = data.hourly && data.hourly.time;
+   const probabilities = data.hourly && data.hourly.precipitation_probability;
+   if(!Array.isArray(times) || !Array.isArray(probabilities)) return;
+
+   const now = new Date();
+   const endTime = new Date(now.getTime() + WEATHER_FORECAST_HOURS * 60 * 60 * 1000);
+   const maxProbability = probabilities.reduce((maximum, probability, index) => {
+    const forecastTime = new Date(times[index]);
+    if(forecastTime >= now && forecastTime <= endTime){
+     return Math.max(maximum, Number(probability) || 0);
+    }
+    return maximum;
+   }, 0);
+
+   if(maxProbability >= WEATHER_PROBABILITY_THRESHOLD){
+    showWeatherAlert();
+   }
+  }catch(error){
+   // 天気情報を取得できない場合は、通常どおり計算画面を表示する。
+  }
+ }, () => {
+  // 位置情報が許可されない場合は、通常どおり計算画面を表示する。
+ }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
 }
 
 function add(select, text, value = text){
@@ -997,6 +1058,7 @@ document.addEventListener("keydown", event => {
 initializeAppInfo();
 updateThinnerUI();
 loadData();
+updateRainAlert();
 </script>
 
 </body>
