@@ -636,7 +636,7 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.3";
+const APP_VERSION = "Voice Test Ver.4";
 const APP_DATE = "2026/08/01";
 const APP_TIME = "音声入力試作";
 const HISTORY_MAX = 10;
@@ -1210,8 +1210,6 @@ const voiceSteps = [
 function normalizeVoiceText(text){
  const kanjiDigits = { "〇":"0", "零":"0", "一":"1", "二":"2", "三":"3", "四":"4", "五":"5", "六":"6", "七":"7", "八":"8", "九":"9" };
  return text
-  // Chromeが「8対2」を「ハッシュタグ2」と認識する場合があるため、配合比として扱える表記に補正する。
-  .replace(/ハッシュタグ/g, "8対")
   .replace(/[〇零一二三四五六七八九]/g, character => kanjiDigits[character])
   .replace(/[：:]/g, "対")
   .replace(/たい|対|to/gi, "対")
