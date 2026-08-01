@@ -458,6 +458,7 @@ button:active{
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
+<div class="weather-alert" id="heatstrokeAlert" hidden role="status"></div>
 
 <div class="box info history-inline">
  <div class="history-inline-top">
@@ -539,12 +540,13 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.15.4";
-const APP_DATE = "2026/07/31";
-const APP_TIME = "22:27";
+const APP_VERSION = "Ver.15.5";
+const APP_DATE = "2026/08/01";
+const APP_TIME = "16:55";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
+const HEATSTROKE_ALERT_URL = "https://www.wbgt.env.go.jp/alert.php";
 
 const STORAGE_HISTORY = "paintHistory";
 const STORAGE_LAST = "paintLastData";
@@ -553,6 +555,7 @@ const STORAGE_LAST = "paintLastData";
 const appTitle = document.getElementById("appTitle");
 const footerInfo = document.getElementById("footerInfo");
 const weatherAlert = document.getElementById("weatherAlert");
+const heatstrokeAlert = document.getElementById("heatstrokeAlert");
 const ratioBox = document.getElementById("ratioBox");
 const ratio = document.getElementById("ratio");
 const customRatioBox = document.getElementById("customRatioBox");
@@ -578,6 +581,37 @@ function initializeAppInfo(){
 function showWeatherAlert(){
  weatherAlert.textContent = "⚠ 今後1時間以内に降雨の予報";
  weatherAlert.hidden = false;
+}
+
+function showHeatstrokeAlert(){
+ heatstrokeAlert.textContent = "⚠ 千葉県に熱中症警戒アラートが発表されています";
+ heatstrokeAlert.hidden = false;
+}
+
+async function updateHeatstrokeAlert(){
+ if(!window.fetch || !window.DOMParser) return;
+
+ try{
+  const response = await fetch(HEATSTROKE_ALERT_URL);
+  if(!response.ok) return;
+
+  const html = await response.text();
+  const documentForAlert = new DOMParser().parseFromString(html, "text/html");
+  const chibaRow = Array.from(documentForAlert.querySelectorAll("tr")).find(row => {
+   const cells = Array.from(row.querySelectorAll("th, td"));
+   return cells.some(cell => cell.textContent.trim() === "千葉");
+  });
+  if(!chibaRow) return;
+
+  const hasAlert = Array.from(chibaRow.querySelectorAll("td")).some(cell => {
+   const text = cell.textContent.replace(/\s+/g, "");
+   return text.includes("●") || text.includes("警戒アラート");
+  });
+
+  if(hasAlert) showHeatstrokeAlert();
+ }catch(error){
+  // アラート情報を取得できない場合は、通常どおり計算画面を表示する。
+ }
 }
 
 async function updateRainAlert(){
@@ -1060,6 +1094,7 @@ initializeAppInfo();
 updateThinnerUI();
 loadData();
 updateRainAlert();
+updateHeatstrokeAlert();
 </script>
 
 </body>
