@@ -638,8 +638,9 @@ const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
 const HEATSTROKE_ALERT_URL = "https://www.wbgt.env.go.jp/alert.php";
 
-const STORAGE_HISTORY = "paintHistory";
-const STORAGE_LAST = "paintLastData";
+// Ver.15.7の履歴・前回使用データには触れない。
+const STORAGE_HISTORY = "paintVoiceTestHistory";
+const STORAGE_LAST = "paintVoiceTestLastData";
 
 // ===== 画面要素 =====
 const appTitle = document.getElementById("appTitle");
