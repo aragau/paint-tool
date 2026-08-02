@@ -234,6 +234,11 @@ button:active{
 .voice-item-top{display:flex;justify-content:space-between;gap:10px;align-items:center;}
 .voice-item-label{font-size:18px;font-weight:bold;color:#1f2937;}
 .voice-item-state{font-size:14px;color:#4b5563;font-weight:bold;white-space:nowrap;}
+.voice-listening-dots{display:inline-flex;gap:3px;margin-left:5px;vertical-align:middle;}
+.voice-listening-dots i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.25;animation:voice-dot-pulse 1.05s infinite ease-in-out;}
+.voice-listening-dots i:nth-child(2){animation-delay:.16s;}
+.voice-listening-dots i:nth-child(3){animation-delay:.32s;}
+@keyframes voice-dot-pulse{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
 .voice-item.active .voice-item-state{color:#1d4ed8;}
 .voice-item.done .voice-item-state{color:#15803d;}
 .voice-item.error .voice-item-state{color:#b45309;}
@@ -639,9 +644,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.2.2";
+const APP_VERSION = "Voice Test Ver.2.3";
 const APP_DATE = "2026/08/02";
-const APP_TIME = "21:16";
+const APP_TIME = "21:19";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1248,7 +1253,7 @@ function renderVoiceStep(){
   if(index < voiceStepIndex){
    voiceStates[index].textContent = "完了 ✓";
   }else if(index === voiceStepIndex){
-   voiceStates[index].textContent = "聞き取り中";
+   voiceStates[index].innerHTML = '聞き取り中<span class="voice-listening-dots" aria-hidden="true"><i></i><i></i><i></i></span>';
    voiceValues[index].textContent = voiceSteps[index].example;
   }else{
    voiceStates[index].textContent = "未入力";
