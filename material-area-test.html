@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>材料情報・面積計算（試作）</title>
+<style>
+*{box-sizing:border-box} body{margin:0;padding:12px 12px 88px;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;font-size:17px;color:#172033;background:linear-gradient(180deg,#f8fbff,#eef5ff)} h1{font-size:25px;text-align:center;margin:8px 0 12px}.head{background:#2d6cdf;color:#fff;font-weight:700;font-size:21px;text-align:center;padding:14px;border-radius:11px}.box{margin-top:12px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 1px 5px #1b3f6b1c}.box.blue{background:#eaf3ff}.box.warn{background:#fff7e8;border:1px solid #f2bd55}label{display:block;font-weight:700;margin-bottom:7px}select,input,button{width:100%;font:inherit;border-radius:9px;padding:12px;border:1px solid #a9bfdc;background:#fff}button{border:0;background:#2d6cdf;color:#fff;font-weight:700;margin-top:12px;font-size:20px}.sub{background:#627a99;font-size:16px}.muted{color:#526277;font-size:14px;line-height:1.55}.data{font-size:16px;line-height:1.65}.data b{color:#1c5bc4}.result{margin-top:12px;padding:14px;border-radius:11px;background:#edf8ee;border:2px solid #4ca75a;line-height:1.7}.big{font-size:31px;font-weight:800;color:#d96c2f}.hidden{display:none}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.footer{text-align:center;color:#617086;font-size:13px;margin-top:22px}.saved{margin-top:10px;padding:10px;background:#f4f8fd;border-radius:8px;font-size:14px;line-height:1.55}.source{word-break:break-all}.notice{font-size:14px;line-height:1.55;color:#805a18}.tag{display:inline-block;background:#d9eaff;color:#164b9e;border-radius:99px;padding:3px 8px;font-size:13px;font-weight:700;margin-bottom:7px}
+</style>
+</head>
+<body>
+<h1>材料情報・面積計算</h1>
+<div class="head">試作 Ver.0.1</div>
+
+<div class="box warn">
+ <b>この画面の考え方</b>
+ <div class="notice">一般的な使用量は使いません。選んだ製品の公式資料に登録された値だけで計算します。下地や施工状況による判断は、数値を勝手に補正せず、基準値・範囲と現場メモを残します。</div>
+</div>
+
+<div class="box blue">
+ <label for="product">材料を選ぶ</label>
+ <select id="product"></select>
+ <div id="productInfo" class="data"></div>
+</div>
+
+<div class="box">
+ <label for="method">塗装方法</label>
+ <select id="method"></select>
+</div>
+
+<div class="box">
+ <label for="area">塗装面積（㎡）</label>
+ <input id="area" type="number" inputmode="decimal" min="0.01" step="0.1" placeholder="例：36.5">
+ <button id="calculate">必要量を確認</button>
+ <div id="calculation" class="hidden"></div>
+</div>
+
+<div class="box">
+ <span class="tag">現場記録</span>
+ <div class="muted">製造年月日・ロット番号・下地状況は、計算の根拠とは別に残します。</div>
+ <div class="row" style="margin-top:10px">
+  <div><label for="madeAt">製造年月日</label><input id="madeAt" placeholder="例：2026/06"></div>
+  <div><label for="lot">ロット番号</label><input id="lot" placeholder="缶の表示どおり"></div>
+ </div>
+ <label for="memo" style="margin-top:10px">下地・施工メモ</label>
+ <input id="memo" placeholder="例：滑りが強く、基準上限では垂れやすい">
+ <button class="sub" id="save">この現場記録を端末に保存</button>
+ <div id="saved" class="saved">保存済みの現場記録はありません。</div>
+</div>
+
+<div class="footer">Produced by N.H.S.　材料情報・面積計算 試作 Ver.0.1　2026/08/02 23:04</div>
+
+<script>
+const products = [
+ { id:'fine-perfect-top-si', maker:'日本ペイント', name:'ファインパーフェクトトップ Si', process:'上塗り', liquid:'1液・弱溶剤', thinner:'塗料用シンナーA', methods:[
+   {name:'はけ・ウールローラー', min:0.11, max:0.17, dilution:'3〜13％'},
+   {name:'エアレススプレー', min:0.11, max:0.17, dilution:'3〜8％'}
+  ], drying:'塗り重ね乾燥：23℃で3時間以上', source:'https://www.nipponpaint.co.jp/products/building/345/', checked:'2026/08/02', revision:'公式製品ページ（改訂日は掲載なし）' }
+];
+const product = document.getElementById('product');
+const method = document.getElementById('method');
+const productInfo = document.getElementById('productInfo');
+const area = document.getElementById('area');
+const calculation = document.getElementById('calculation');
+const STORAGE_KEY = 'nhsMaterialAreaRecordsV01';
+
+function current(){ return products.find(item => item.id === product.value); }
+function renderProducts(){ products.forEach(item => { const op=document.createElement('option'); op.value=item.id; op.textContent=`${item.maker}｜${item.name}`; product.appendChild(op); }); }
+function renderProduct(){
+ const item=current(); method.innerHTML=''; item.methods.forEach((itemMethod,index)=>{const op=document.createElement('option');op.value=index;op.textContent=itemMethod.name;method.appendChild(op)});
+ productInfo.innerHTML=`<div style="margin-top:12px"><b>${item.name}</b><br>メーカー：${item.maker}　工程：${item.process}<br>種類：${item.liquid}　希釈剤：${item.thinner}<br>${item.drying}<br><span class="muted">資料改訂：${item.revision}<br>最終確認：${item.checked}<br>根拠：<a class="source" href="${item.source}" target="_blank" rel="noopener">公式製品ページを開く</a></span></div>`;
+ calculation.className='hidden'; calculation.innerHTML='';
+}
+function calc(){
+ const item=current(), spec=item.methods[Number(method.value)], sqm=Number(area.value);
+ if(!Number.isFinite(sqm)||sqm<=0){alert('塗装面積を入力してください');return;}
+ const min=(sqm*spec.min).toFixed(2), max=(sqm*spec.max).toFixed(2);
+ calculation.className='result';
+ calculation.innerHTML=`<b>${item.name}｜${spec.name}</b><br>メーカー基準使用量：${spec.min.toFixed(2)}〜${spec.max.toFixed(2)}kg／㎡／回<br>メーカー基準希釈率：${spec.dilution}<hr style="border:0;border-top:1px solid #bed5c0"><b>面積 ${sqm.toFixed(1)}㎡・1回塗りの材料量</b><br><span class="big">${min}〜${max}kg</span><br><span class="muted">下地・形状・垂れ・吸い込み・施工条件によって増減します。これは公式基準値からの計算であり、現場判断を置き換える数値ではありません。</span>`;
+}
+function showSaved(){
+ const raw=localStorage.getItem(STORAGE_KEY); let arr=[]; try{arr=raw?JSON.parse(raw):[]}catch(e){}
+ const el=document.getElementById('saved'); if(!arr.length){el.textContent='保存済みの現場記録はありません。';return;}
+ el.innerHTML='<b>最新の現場記録</b><br>'+arr.slice(0,3).map(x=>`${x.date}<br>${x.product}／製造：${x.madeAt||'未入力'}／ロット：${x.lot||'未入力'}<br>メモ：${x.memo||'なし'}`).join('<hr style="border:0;border-top:1px solid #d9e3f0">');
+}
+document.getElementById('save').addEventListener('click',()=>{
+ const arr=(()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){return[]}})();
+ arr.unshift({date:new Date().toLocaleString('ja-JP'),product:current().maker+' '+current().name,madeAt:document.getElementById('madeAt').value.trim(),lot:document.getElementById('lot').value.trim(),memo:document.getElementById('memo').value.trim()});
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(arr.slice(0,50))); showSaved();
+});
+product.addEventListener('change',renderProduct); method.addEventListener('change',()=>{calculation.className='hidden'}); document.getElementById('calculate').addEventListener('click',calc);
+renderProducts();renderProduct();showSaved();
+</script>
+</body></html>
