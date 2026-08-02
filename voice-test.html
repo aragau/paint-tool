@@ -644,9 +644,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.2.5";
+const APP_VERSION = "Voice Test Ver.2.6";
 const APP_DATE = "2026/08/02";
-const APP_TIME = "21:29";
+const APP_TIME = "21:36";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1209,6 +1209,7 @@ const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRe
 let voiceRecognition = null;
 let voiceStepIndex = 0;
 let voiceIsListening = false;
+let voiceRetryTimer = null;
 const voiceSteps = [
  { label:"① 配合比", question:"配合比をどうぞ", example:"例：9対1" },
  { label:"② 主剤重量", question:"主剤重量をどうぞ", example:"例：3キロ" },
@@ -1271,6 +1272,22 @@ function showVoiceRecognitionFailure(message){
  voiceStatus.textContent = message;
 }
 
+function clearVoiceRetry(){
+ if(voiceRetryTimer) clearTimeout(voiceRetryTimer);
+ voiceRetryTimer = null;
+}
+
+function retryVoiceStep(message){
+ clearVoiceRetry();
+ showVoiceRecognitionFailure(message);
+ voiceRetryTimer = window.setTimeout(() => {
+  voiceRetryTimer = null;
+  if(!voiceOverlay.classList.contains("open")) return;
+  renderVoiceStep();
+  startVoiceListening();
+ }, 1200);
+}
+
 function createVoiceRecognition(){
  if(!SpeechRecognitionClass) return null;
  const recognition = new SpeechRecognitionClass();
@@ -1287,9 +1304,10 @@ function createVoiceRecognition(){
  recognition.onerror = event => {
   voiceIsListening = false;
   if(event.error === "not-allowed" || event.error === "service-not-allowed"){
+   clearVoiceRetry();
    voiceStatus.textContent = "通常の入力操作をご利用ください";
   }else if(event.error !== "aborted"){
-   showVoiceRecognitionFailure("聞き取れませんでした。もう一度を押してください");
+   retryVoiceStep("聞き取れませんでした。もう一度聞き取ります…");
   }
  };
  recognition.onend = () => { voiceIsListening = false; };
@@ -1318,7 +1336,7 @@ function handleVoiceResult(text){
  }
  const value = parseVoiceValue(text);
  if(value === null){
-  showVoiceRecognitionFailure("確認できませんでした。もう一度を押してください");
+  retryVoiceStep("確認できませんでした。もう一度聞き取ります…");
   return;
  }
 
@@ -1362,6 +1380,7 @@ function openVoiceInput(){
 }
 
 function closeVoiceInput(){
+ clearVoiceRetry();
  if(voiceRecognition && voiceIsListening){
   try{ voiceRecognition.abort(); }catch(error){}
  }
@@ -1372,6 +1391,7 @@ function closeVoiceInput(){
 
 function repeatVoiceStep(){
  if(!voiceOverlay.classList.contains("open")) return;
+ clearVoiceRetry();
  if(voiceRecognition && voiceIsListening){
   try{ voiceRecognition.abort(); }catch(error){}
  }
@@ -1380,6 +1400,7 @@ function repeatVoiceStep(){
 }
 
 function restartVoiceInput(){
+ clearVoiceRetry();
  if(voiceRecognition && voiceIsListening){
   try{ voiceRecognition.abort(); }catch(error){}
  }
