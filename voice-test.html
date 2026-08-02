@@ -226,9 +226,6 @@ button:active{
 }
 .voice-body{padding:16px 14px 14px;}
 .voice-guide{text-align:center;color:#4b5563;font-size:15px;margin:0 0 12px;}
-.voice-level-meter{display:flex;align-items:center;justify-content:center;gap:4px;height:38px;margin:-3px 0 12px;color:#2d6cdf;}
-.voice-level-bar{width:5px;height:9px;border-radius:999px;background:currentColor;opacity:.32;transform:scaleY(1);transform-origin:center;transition:transform 70ms linear,opacity 70ms linear;}
-.voice-level-note{margin:-5px 0 10px;text-align:center;color:#52606f;font-size:12px;}
 .voice-list{display:flex;flex-direction:column;gap:10px;}
 .voice-item{padding:12px;border:2px solid #bed4ee;border-radius:12px;background:#eaf3ff;}
 .voice-item.active{border-color:#2d6cdf;background:#f7fbff;box-shadow:0 0 0 3px rgba(45,108,223,.12);}
@@ -621,10 +618,6 @@ button:active{
   </div>
   <div class="voice-body">
    <div class="voice-guide">順番に声で入力します</div>
-   <div class="voice-level-meter" id="voiceLevelMeter" hidden aria-label="マイク音量表示">
-    <span class="voice-level-bar"></span><span class="voice-level-bar"></span><span class="voice-level-bar"></span><span class="voice-level-bar"></span><span class="voice-level-bar"></span><span class="voice-level-bar"></span><span class="voice-level-bar"></span><span class="voice-level-bar"></span><span class="voice-level-bar"></span>
-   </div>
-   <div class="voice-level-note" id="voiceLevelNote" hidden>声でバーが動けば、マイクは入力されています</div>
    <div class="voice-list">
     <div class="voice-item active" data-voice-item="0">
      <div class="voice-item-top"><div class="voice-item-label">① 配合比</div><div class="voice-item-state" data-voice-state="0">聞き取り中</div></div>
@@ -651,9 +644,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.2.4";
+const APP_VERSION = "Voice Test Ver.2.5";
 const APP_DATE = "2026/08/02";
-const APP_TIME = "21:23";
+const APP_TIME = "21:29";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -686,9 +679,6 @@ const historyCount = document.getElementById("historyCount");
 const voiceStartBtn = document.getElementById("voiceStartBtn");
 const voiceOverlay = document.getElementById("voiceOverlay");
 const voiceStatus = document.getElementById("voiceStatus");
-const voiceLevelMeter = document.getElementById("voiceLevelMeter");
-const voiceLevelNote = document.getElementById("voiceLevelNote");
-const voiceLevelBars = Array.from(document.querySelectorAll(".voice-level-bar"));
 const voiceItems = Array.from(document.querySelectorAll("[data-voice-item]"));
 const voiceStates = Array.from(document.querySelectorAll("[data-voice-state]"));
 const voiceValues = Array.from(document.querySelectorAll("[data-voice-value]"));
@@ -1219,9 +1209,6 @@ const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRe
 let voiceRecognition = null;
 let voiceStepIndex = 0;
 let voiceIsListening = false;
-let voiceLevelStream = null;
-let voiceLevelContext = null;
-let voiceLevelFrame = null;
 const voiceSteps = [
  { label:"① 配合比", question:"配合比をどうぞ", example:"例：9対1" },
  { label:"② 主剤重量", question:"主剤重量をどうぞ", example:"例：3キロ" },
@@ -1282,51 +1269,6 @@ function showVoiceRecognitionFailure(message){
  item.classList.add("error");
  voiceStates[voiceStepIndex].textContent = "確認できません";
  voiceStatus.textContent = message;
-}
-
-function stopVoiceLevelMeter(){
- if(voiceLevelFrame) cancelAnimationFrame(voiceLevelFrame);
- voiceLevelFrame = null;
- if(voiceLevelStream) voiceLevelStream.getTracks().forEach(track => track.stop());
- voiceLevelStream = null;
- if(voiceLevelContext) voiceLevelContext.close();
- voiceLevelContext = null;
- voiceLevelMeter.hidden = true;
- voiceLevelNote.hidden = true;
-}
-
-async function startVoiceLevelMeter(){
- if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
- try{
-  voiceLevelStream = await navigator.mediaDevices.getUserMedia({ audio:true });
-  if(!voiceOverlay.classList.contains("open")){
-   stopVoiceLevelMeter();
-   return;
-  }
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if(!AudioContextClass) return;
-  voiceLevelContext = new AudioContextClass();
-  const analyser = voiceLevelContext.createAnalyser();
-  analyser.fftSize = 64;
-  voiceLevelContext.createMediaStreamSource(voiceLevelStream).connect(analyser);
-  const data = new Uint8Array(analyser.fftSize);
-  voiceLevelMeter.hidden = false;
-  voiceLevelNote.hidden = false;
-  const draw = () => {
-   analyser.getByteTimeDomainData(data);
-   const level = data.reduce((sum, value) => sum + Math.abs(value - 128), 0) / data.length / 26;
-   voiceLevelBars.forEach((bar, index) => {
-    const center = 1 - Math.abs(index - (voiceLevelBars.length - 1) / 2) / voiceLevelBars.length;
-    const scale = Math.min(3.7, 1 + level * (1.6 + center * 2.1));
-    bar.style.transform = `scaleY(${scale})`;
-    bar.style.opacity = String(Math.min(.95, .32 + level * .75));
-   });
-   voiceLevelFrame = requestAnimationFrame(draw);
-  };
-  draw();
- }catch(error){
-  stopVoiceLevelMeter();
- }
 }
 
 function createVoiceRecognition(){
@@ -1416,7 +1358,6 @@ function openVoiceInput(){
  voiceOverlay.classList.add("open");
  document.body.style.overflow = "hidden";
  renderVoiceStep();
- startVoiceLevelMeter();
  startVoiceListening();
 }
 
@@ -1425,7 +1366,6 @@ function closeVoiceInput(){
   try{ voiceRecognition.abort(); }catch(error){}
  }
  voiceIsListening = false;
- stopVoiceLevelMeter();
  voiceOverlay.classList.remove("open");
  document.body.style.overflow = "";
 }
