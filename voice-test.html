@@ -230,7 +230,6 @@ button:active{
 .voice-item{padding:12px;border:2px solid #bed4ee;border-radius:12px;background:#eaf3ff;}
 .voice-item.active{border-color:#2d6cdf;background:#f7fbff;box-shadow:0 0 0 3px rgba(45,108,223,.12);}
 .voice-item.done{border-color:#4caf50;background:#e8f5e9;}
-.voice-item.error{border-color:#d97706;background:#fff7ed;box-shadow:0 0 0 3px rgba(217,119,6,.12);}
 .voice-item-top{display:flex;justify-content:space-between;gap:10px;align-items:center;}
 .voice-item-label{font-size:18px;font-weight:bold;color:#1f2937;}
 .voice-item-state{font-size:14px;color:#4b5563;font-weight:bold;white-space:nowrap;}
@@ -241,11 +240,9 @@ button:active{
 @keyframes voice-dot-pulse{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
 .voice-item.active .voice-item-state{color:#1d4ed8;}
 .voice-item.done .voice-item-state{color:#15803d;}
-.voice-item.error .voice-item-state{color:#b45309;}
 .voice-item-value{min-height:34px;margin-top:6px;color:#52606f;font-size:21px;font-weight:bold;line-height:1.3;}
 .voice-item.active .voice-item-value{color:#1f3c70;}
 .voice-item.done .voice-item-value{color:#166534;font-size:27px;}
-.voice-item.error .voice-item-value{color:#9a3412;}
 .voice-status{min-height:22px;margin-top:12px;text-align:center;color:#4b5563;font-size:15px;}
 .voice-tools{display:flex;gap:10px;margin-top:12px;}
 .voice-tools button{margin:0;font-size:18px;padding:12px 8px;}
@@ -644,9 +641,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.2.8";
+const APP_VERSION = "Voice Test Ver.2.2";
 const APP_DATE = "2026/08/05";
-const APP_TIME = "20:00";
+const APP_TIME = "21:50";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1210,8 +1207,6 @@ let voiceRecognition = null;
 let voiceStepIndex = 0;
 let voiceIsListening = false;
 let voiceRetryTimer = null;
-let voiceAwaitingThinnerApproval = false;
-let voiceSpeechToken = 0;
 const voiceSteps = [
  { label:"① 配合比", question:"配合比をどうぞ", example:"例：9対1" },
  { label:"② 主剤重量", question:"主剤重量をどうぞ", example:"例：3キロ" },
@@ -1252,7 +1247,6 @@ function renderVoiceStep(){
  voiceItems.forEach((item, index) => {
   item.classList.toggle("active", index === voiceStepIndex);
   item.classList.toggle("done", index < voiceStepIndex);
-  item.classList.remove("error");
   if(index < voiceStepIndex){
    voiceStates[index].textContent = "完了 ✓";
   }else if(index === voiceStepIndex){
@@ -1266,14 +1260,6 @@ function renderVoiceStep(){
  voiceStatus.textContent = "マイクに向かって話してください";
 }
 
-function showVoiceRecognitionFailure(message){
- const item = voiceItems[voiceStepIndex];
- item.classList.remove("active");
- item.classList.add("error");
- voiceStates[voiceStepIndex].textContent = "確認できません";
- voiceStatus.textContent = message;
-}
-
 function clearVoiceRetry(){
  if(voiceRetryTimer) clearTimeout(voiceRetryTimer);
  voiceRetryTimer = null;
@@ -1281,91 +1267,13 @@ function clearVoiceRetry(){
 
 function retryVoiceStep(message){
  clearVoiceRetry();
- showVoiceRecognitionFailure(message);
+ voiceStatus.textContent = message;
  voiceRetryTimer = window.setTimeout(() => {
   voiceRetryTimer = null;
   if(!voiceOverlay.classList.contains("open")) return;
   renderVoiceStep();
   startVoiceListening();
  }, 1200);
-}
-
-function stopVoiceSpeech(){
- voiceSpeechToken += 1;
- if("speechSynthesis" in window) window.speechSynthesis.cancel();
-}
-
-function speakVoice(text, afterSpeak){
- const token = ++voiceSpeechToken;
- if(!("speechSynthesis" in window)){
-  afterSpeak();
-  return;
- }
- const utterance = new SpeechSynthesisUtterance(text);
- utterance.lang = "ja-JP";
- utterance.rate = 1;
- const finish = () => {
-  if(token === voiceSpeechToken) afterSpeak();
- };
- utterance.onend = finish;
- utterance.onerror = finish;
- window.speechSynthesis.cancel();
- window.speechSynthesis.speak(utterance);
-}
-
-function advanceVoiceStep(){
- if(voiceStepIndex < voiceSteps.length - 1){
-  voiceStepIndex += 1;
-  window.setTimeout(() => {
-   if(!voiceOverlay.classList.contains("open")) return;
-   // Safariでは、終了済みの認識インスタンスを再利用すると次の項目で止まることがある。
-   voiceRecognition = createVoiceRecognition();
-   renderVoiceStep();
-   startVoiceListening();
-  }, 700);
- }else{
-  window.setTimeout(() => {
-   closeVoiceInput();
-   calc();
-  }, 300);
- }
-}
-
-function waitForThinnerApproval(value){
- voiceAwaitingThinnerApproval = true;
- voiceItems[voiceStepIndex].classList.remove("done");
- voiceItems[voiceStepIndex].classList.add("active");
- voiceStates[voiceStepIndex].textContent = "確認待ち";
- const message = `希釈率、${value}パーセントですね。かなり多めですが大丈夫ですか？`;
- voiceStatus.textContent = message;
- speakVoice(message, () => {
-  if(!voiceOverlay.classList.contains("open") || !voiceAwaitingThinnerApproval) return;
-  voiceStates[voiceStepIndex].textContent = "返答待ち";
-  voiceStatus.textContent = "大丈夫です、または、やり直し、と話してください";
-  startVoiceListening();
- });
-}
-
-function handleThinnerApproval(normalized){
- if(/大丈夫|問題ない|はい|OK|オーケー/i.test(normalized)){
-  voiceAwaitingThinnerApproval = false;
-  voiceStates[voiceStepIndex].textContent = "完了 ✓";
-  voiceItems[voiceStepIndex].classList.remove("active");
-  voiceItems[voiceStepIndex].classList.add("done");
-  speakVoice("承知しました", advanceVoiceStep);
-  return;
- }
- if(/やり直|いいえ|違う|戻/i.test(normalized)){
-  voiceAwaitingThinnerApproval = false;
-  speakVoice("もう一度、希釈率をどうぞ", () => {
-   if(!voiceOverlay.classList.contains("open")) return;
-   renderVoiceStep();
-   startVoiceListening();
-  });
-  return;
- }
- voiceStatus.textContent = "大丈夫です、または、やり直し、と話してください";
- startVoiceListening();
 }
 
 function createVoiceRecognition(){
@@ -1383,7 +1291,7 @@ function createVoiceRecognition(){
  };
  recognition.onerror = event => {
   voiceIsListening = false;
-  if(event.error === "not-allowed" || event.error === "service-not-allowed"){
+ if(event.error === "not-allowed" || event.error === "service-not-allowed"){
    clearVoiceRetry();
    voiceStatus.textContent = "通常の入力操作をご利用ください";
   }else if(event.error !== "aborted"){
@@ -1404,14 +1312,29 @@ function startVoiceListening(){
  }
 }
 
+function playConfirmTone(){
+ const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+ if(!AudioContextClass) return;
+ try{
+  const context = new AudioContextClass();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = 780;
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.075, context.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.11);
+  oscillator.connect(gain).connect(context.destination);
+  oscillator.start();
+  oscillator.stop(context.currentTime + 0.12);
+  oscillator.onended = () => context.close();
+ }catch(error){}
+}
+
 function handleVoiceResult(text){
  const normalized = normalizeVoiceText(text);
  if(normalized.includes("最初から")){
   restartVoiceInput();
-  return;
- }
- if(voiceAwaitingThinnerApproval){
-  handleThinnerApproval(normalized);
   return;
  }
  if(normalized.includes("もう1度") || normalized.includes("もう一度")){
@@ -1435,27 +1358,22 @@ function handleVoiceResult(text){
  voiceStates[voiceStepIndex].textContent = "完了 ✓";
  voiceItems[voiceStepIndex].classList.remove("active");
  voiceItems[voiceStepIndex].classList.add("done");
- const thinnerValue = Number(value);
- if(voiceStepIndex === 2 && thinnerValue >= 21){
-  waitForThinnerApproval(value);
-  return;
+ playConfirmTone();
+ voiceStatus.textContent = "認識しました";
+
+ if(voiceStepIndex < voiceSteps.length - 1){
+  voiceStepIndex += 1;
+  window.setTimeout(() => {
+   if(!voiceOverlay.classList.contains("open")) return;
+   renderVoiceStep();
+   startVoiceListening();
+  }, 700);
+ }else{
+  window.setTimeout(() => {
+   closeVoiceInput();
+   calc();
+  }, 700);
  }
- const message = voiceStepIndex === 0
-  ? `はい、${value.replace(":", "対")}ですね`
-  : voiceStepIndex === 1
-   ? `はい、${Number(value)}キロですね`
-   : thinnerValue >= 14
-    ? `希釈率、${value}パーセントですね。少し多めです`
-    : `希釈率、${value}パーセントですね`;
- voiceStatus.textContent = message;
- // 読み上げの onend を待つと、Safariでは次の認識開始が呼ばれない場合がある。
- // 現在の認識を先に閉じ、読み上げとは独立して次の項目へ進める。
- if(voiceRecognition && voiceIsListening){
-  try{ voiceRecognition.abort(); }catch(error){}
- }
- voiceIsListening = false;
- speakVoice(message);
- window.setTimeout(advanceVoiceStep, 250);
 }
 
 function openVoiceInput(){
@@ -1463,8 +1381,6 @@ function openVoiceInput(){
  closeHistoryModal();
  voiceRecognition = createVoiceRecognition();
  voiceStepIndex = 0;
- voiceAwaitingThinnerApproval = false;
- stopVoiceSpeech();
  voiceOverlay.classList.add("open");
  document.body.style.overflow = "hidden";
  renderVoiceStep();
@@ -1473,8 +1389,6 @@ function openVoiceInput(){
 
 function closeVoiceInput(){
  clearVoiceRetry();
- voiceAwaitingThinnerApproval = false;
- stopVoiceSpeech();
  if(voiceRecognition && voiceIsListening){
   try{ voiceRecognition.abort(); }catch(error){}
  }
@@ -1486,8 +1400,6 @@ function closeVoiceInput(){
 function repeatVoiceStep(){
  if(!voiceOverlay.classList.contains("open")) return;
  clearVoiceRetry();
- voiceAwaitingThinnerApproval = false;
- stopVoiceSpeech();
  if(voiceRecognition && voiceIsListening){
   try{ voiceRecognition.abort(); }catch(error){}
  }
@@ -1497,8 +1409,6 @@ function repeatVoiceStep(){
 
 function restartVoiceInput(){
  clearVoiceRetry();
- voiceAwaitingThinnerApproval = false;
- stopVoiceSpeech();
  if(voiceRecognition && voiceIsListening){
   try{ voiceRecognition.abort(); }catch(error){}
  }
