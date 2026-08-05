@@ -230,6 +230,7 @@ button:active{
 .voice-item{padding:12px;border:2px solid #bed4ee;border-radius:12px;background:#eaf3ff;}
 .voice-item.active{border-color:#2d6cdf;background:#f7fbff;box-shadow:0 0 0 3px rgba(45,108,223,.12);}
 .voice-item.done{border-color:#4caf50;background:#e8f5e9;}
+.voice-item.error{border-color:#7f1d1d;background:#fff1f2;box-shadow:0 0 0 3px rgba(127,29,29,.16);}
 .voice-item-top{display:flex;justify-content:space-between;gap:10px;align-items:center;}
 .voice-item-label{font-size:18px;font-weight:bold;color:#1f2937;}
 .voice-item-state{font-size:14px;color:#4b5563;font-weight:bold;white-space:nowrap;}
@@ -244,6 +245,7 @@ button:active{
 .voice-item.active .voice-item-value{color:#1f3c70;}
 .voice-item.done .voice-item-value{color:#166534;font-size:27px;}
 .voice-status{min-height:22px;margin-top:12px;text-align:center;color:#4b5563;font-size:15px;}
+.voice-status.error{color:#7f1d1d;font-weight:bold;}
 .voice-tools{display:flex;gap:10px;margin-top:12px;}
 .voice-tools button{margin:0;font-size:18px;padding:12px 8px;}
 .voice-repeat{background:#f59e0b;}
@@ -641,9 +643,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.2.2";
+const APP_VERSION = "Voice Test Ver.2.4";
 const APP_DATE = "2026/08/05";
-const APP_TIME = "21:50";
+const APP_TIME = "22:01";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1244,9 +1246,11 @@ function parseVoiceValue(text){
 }
 
 function renderVoiceStep(){
+ voiceStatus.classList.remove("error");
  voiceItems.forEach((item, index) => {
-  item.classList.toggle("active", index === voiceStepIndex);
-  item.classList.toggle("done", index < voiceStepIndex);
+ item.classList.toggle("active", index === voiceStepIndex);
+ item.classList.toggle("done", index < voiceStepIndex);
+  item.classList.remove("error");
   if(index < voiceStepIndex){
    voiceStates[index].textContent = "完了 ✓";
   }else if(index === voiceStepIndex){
@@ -1267,6 +1271,10 @@ function clearVoiceRetry(){
 
 function retryVoiceStep(message){
  clearVoiceRetry();
+ voiceItems[voiceStepIndex].classList.remove("active");
+ voiceItems[voiceStepIndex].classList.add("error");
+ voiceStates[voiceStepIndex].textContent = "確認できません";
+ voiceStatus.classList.add("error");
  voiceStatus.textContent = message;
  voiceRetryTimer = window.setTimeout(() => {
   voiceRetryTimer = null;
