@@ -644,9 +644,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.2.7";
-const APP_DATE = "2026/08/02";
-const APP_TIME = "21:46";
+const APP_VERSION = "Voice Test Ver.2.8";
+const APP_DATE = "2026/08/05";
+const APP_TIME = "20:00";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1318,9 +1318,11 @@ function advanceVoiceStep(){
   voiceStepIndex += 1;
   window.setTimeout(() => {
    if(!voiceOverlay.classList.contains("open")) return;
+   // Safariでは、終了済みの認識インスタンスを再利用すると次の項目で止まることがある。
+   voiceRecognition = createVoiceRecognition();
    renderVoiceStep();
    startVoiceListening();
-  }, 300);
+  }, 700);
  }else{
   window.setTimeout(() => {
    closeVoiceInput();
@@ -1446,7 +1448,14 @@ function handleVoiceResult(text){
     ? `希釈率、${value}パーセントですね。少し多めです`
     : `希釈率、${value}パーセントですね`;
  voiceStatus.textContent = message;
- speakVoice(message, advanceVoiceStep);
+ // 読み上げの onend を待つと、Safariでは次の認識開始が呼ばれない場合がある。
+ // 現在の認識を先に閉じ、読み上げとは独立して次の項目へ進める。
+ if(voiceRecognition && voiceIsListening){
+  try{ voiceRecognition.abort(); }catch(error){}
+ }
+ voiceIsListening = false;
+ speakVoice(message);
+ window.setTimeout(advanceVoiceStep, 250);
 }
 
 function openVoiceInput(){
