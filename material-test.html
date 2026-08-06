@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>材料仕様確認・試作</title>
+<style>
+*{box-sizing:border-box} body{margin:0;padding:14px 12px 48px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:#172033;background:linear-gradient(160deg,#f8fbff,#edf5ee)}
+main{max-width:680px;margin:auto} h1{font-size:25px;text-align:center;margin:8px 0} .sub{text-align:center;margin:0 0 16px;color:#52606f;font-size:14px;line-height:1.5}
+.card{background:#fff;border:1px solid #d7e2ee;border-radius:14px;padding:15px;margin-top:12px;box-shadow:0 5px 16px rgba(40,70,100,.07)} h2{font-size:19px;margin:0 0 10px;color:#17467c}
+label{display:block;font-weight:700;font-size:16px;margin-top:10px} input{width:100%;margin-top:6px;padding:12px;border:1px solid #9eb7d2;border-radius:9px;font-size:17px;background:#fff}
+input[type=file]{padding:10px;font-size:15px} button{width:100%;margin-top:12px;padding:13px;border:0;border-radius:9px;background:#2864bf;color:#fff;font-weight:700;font-size:18px} button.secondary{background:#5a738d} button:disabled{background:#94a3b8}
+#preview{display:none;width:100%;max-height:330px;object-fit:contain;margin-top:12px;border-radius:10px;background:#eef3f8}.note{font-size:14px;color:#51606f;line-height:1.55;margin:8px 0 0}.status{min-height:24px;margin-top:10px;font-weight:700;color:#17467c}.raw{display:none;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow:auto;background:#f4f7fa;border-radius:8px;padding:10px;font-size:13px;line-height:1.45}
+.result{display:none;border:2px solid #319560;background:#f0fbf4;border-radius:12px;padding:13px;margin-top:12px}.result h3{margin:0 0 8px;font-size:21px}.result dl{margin:0}.result dt{font-weight:700;margin-top:10px;color:#27523b}.result dd{margin:2px 0 0;line-height:1.45}.unmatched{display:none;background:#fff8e8;border:1px solid #e6b74f;border-radius:10px;padding:12px;margin-top:12px;line-height:1.5}.footer{text-align:center;color:#607080;font-size:13px;margin-top:20px;line-height:1.5}
+</style>
+</head>
+<body>
+<main>
+ <h1>材料仕様確認・試作</h1>
+ <p class="sub">缶ラベルを撮影して製品候補を探す試作版<br>仕様は登録済みのメーカー公表値だけを表示します。</p>
+
+ <section class="card">
+  <h2>1. 缶ラベルを撮影</h2>
+  <input id="photo" type="file" accept="image/*" capture="environment">
+  <img id="preview" alt="選択した缶ラベル写真">
+  <button id="ocrButton" type="button" disabled>写真から文字を読み取る</button>
+  <div id="ocrStatus" class="status"></div>
+  <div id="rawText" class="raw"></div>
+  <p class="note">初回だけ文字読み取り用データの読み込みに時間がかかります。写真から製品名を正しく拾えない場合は、下の入力欄を使います。</p>
+ </section>
+
+ <section class="card">
+  <h2>2. 製品名で確認</h2>
+  <label for="productName">メーカー名・製品名</label>
+  <input id="productName" type="search" autocomplete="off" placeholder="例：ハイポンファインプライマーII">
+  <button id="searchButton" class="secondary" type="button">登録済み仕様を確認</button>
+  <div id="unmatched" class="unmatched">この試作版のDBには未登録です。仕様を推定して表示することはありません。</div>
+  <div id="result" class="result"></div>
+ </section>
+
+ <div class="footer">Produced by N.H.S.<br>材料仕様確認・試作 Ver.0.1　2026/08/06 22:26 JST</div>
+</main>
+
+<script>
+const materials = [{
+ manufacturer:"日本ペイント",
+ name:"ハイポンファインプライマーII",
+ aliases:["ハイポンファインプライマーⅡ","HI-PON FINE PRIMER II","HIPON FINE PRIMER II"],
+ type:"弱溶剤形2液エポキシさび止め塗料",
+ mixing:"塗料液：硬化剤＝9：1（重量比）",
+ thinner:"塗料用シンナーA または 塗料用シンナーSA",
+ dilution:"はけ・ウールローラー：0～10％／エアレス：0～5％",
+ potLife:"5℃：8時間 ／ 23℃：6時間 ／ 30℃：4時間",
+ source:"日本ペイント公式製品ページ（確認日：2026/08/06）"
+}];
+
+const photo = document.getElementById("photo");
+const preview = document.getElementById("preview");
+const ocrButton = document.getElementById("ocrButton");
+const ocrStatus = document.getElementById("ocrStatus");
+const rawText = document.getElementById("rawText");
+const productName = document.getElementById("productName");
+const searchButton = document.getElementById("searchButton");
+const result = document.getElementById("result");
+const unmatched = document.getElementById("unmatched");
+
+function normalize(value){ return (value || "").toUpperCase().replace(/[\s　\-‐－_]/g, "").replace(/Ⅱ/g,"II"); }
+
+function findMaterial(value){
+ const query = normalize(value);
+ if(!query) return null;
+ return materials.find(material => [material.name, ...material.aliases].some(alias => {
+  const key = normalize(alias);
+  return query.includes(key) || key.includes(query);
+ }));
+}
+
+function showMaterial(material){
+ unmatched.style.display = "none";
+ if(!material){ result.style.display = "none"; unmatched.style.display = "block"; return; }
+ result.style.display = "block";
+ result.innerHTML = "";
+ const title = document.createElement("h3"); title.textContent = `${material.manufacturer}　${material.name}`; result.appendChild(title);
+ const type = document.createElement("div"); type.textContent = material.type; result.appendChild(type);
+ const list = document.createElement("dl");
+ [["混合比",material.mixing],["指定希釈剤",material.thinner],["希釈率",material.dilution],["ポットライフ（メーカー公表値）",material.potLife],["根拠",material.source]].forEach(([label,value]) => {
+  const dt = document.createElement("dt"); dt.textContent = label;
+  const dd = document.createElement("dd"); dd.textContent = value;
+  list.append(dt,dd);
+ });
+ result.appendChild(list);
+}
+
+function lookup(){ showMaterial(findMaterial(productName.value)); }
+searchButton.addEventListener("click", lookup);
+productName.addEventListener("keydown", event => { if(event.key === "Enter"){ event.preventDefault(); lookup(); }});
+
+photo.addEventListener("change", () => {
+ const file = photo.files && photo.files[0];
+ ocrStatus.textContent = ""; rawText.style.display = "none"; rawText.textContent = "";
+ if(!file){ preview.style.display = "none"; ocrButton.disabled = true; return; }
+ preview.src = URL.createObjectURL(file); preview.style.display = "block"; ocrButton.disabled = false;
+});
+
+function loadOcr(){
+ return new Promise((resolve,reject) => {
+  if(window.Tesseract) return resolve();
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+  script.onload = resolve; script.onerror = () => reject(new Error("OCRライブラリを読み込めませんでした"));
+  document.head.appendChild(script);
+ });
+}
+
+ocrButton.addEventListener("click", async () => {
+ const file = photo.files && photo.files[0];
+ if(!file) return;
+ ocrButton.disabled = true; ocrStatus.textContent = "文字読み取りを準備しています…";
+ try{
+  await loadOcr();
+  const response = await Tesseract.recognize(file, "jpn+eng", { logger: message => {
+   if(message.status === "recognizing text") ocrStatus.textContent = `文字を読み取り中… ${Math.round(message.progress * 100)}％`;
+  }});
+  const text = response.data.text || "";
+  rawText.textContent = text.trim() || "文字を読み取れませんでした。"; rawText.style.display = "block";
+  ocrStatus.textContent = "文字読み取りが完了しました。";
+  const match = materials.find(material => [material.name, ...material.aliases].some(alias => normalize(text).includes(normalize(alias))));
+  if(match){ productName.value = match.name; showMaterial(match); }
+  else{ productName.value = ""; showMaterial(null); }
+ }catch(error){ ocrStatus.textContent = "文字読み取りを開始できませんでした。製品名を手入力してください。"; }
+ finally{ ocrButton.disabled = false; }
+});
+</script>
+</body>
+</html>
