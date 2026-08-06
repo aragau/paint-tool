@@ -649,9 +649,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.3.4";
+const APP_VERSION = "Voice Test Ver.3.5";
 const APP_DATE = "2026/08/06";
-const APP_TIME = "21:18";
+const APP_TIME = "21:40";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1604,6 +1604,56 @@ function restartVoiceInput(){
 // ===== トップ画面で行う音声入力 =====
 const voiceInlineStatus = document.getElementById("voiceInlineStatus");
 const voiceInputBoxes = [ratioBox, document.getElementById("baseBox"), document.getElementById("thinnerBox")];
+const VOICE_RELOAD_STATE = "paintVoiceTestReloadState";
+
+function isIPhoneVoiceInput(){
+ return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function saveVoiceReloadState(calculateAfterReload){
+ try{
+  sessionStorage.setItem(VOICE_RELOAD_STATE, JSON.stringify({
+   ratio: ratio.value,
+   customRatioMain: customRatioMain.value,
+   customRatioHard: customRatioHard.value,
+   base: base.value,
+   actual: actual.value,
+   actualOpen: actualBox.style.display === "block",
+   thinner: thinner.value,
+   calculate: Boolean(calculateAfterReload)
+  }));
+  return true;
+ }catch(error){
+  return false;
+ }
+}
+
+function restoreVoiceReloadState(){
+ let state;
+ try{
+  const raw = sessionStorage.getItem(VOICE_RELOAD_STATE);
+  if(!raw) return;
+  sessionStorage.removeItem(VOICE_RELOAD_STATE);
+  state = JSON.parse(raw);
+ }catch(error){
+  return;
+ }
+ if(!state || typeof state !== "object") return;
+ ratio.value = state.ratio || "";
+ customRatioMain.value = state.customRatioMain || "";
+ customRatioHard.value = state.customRatioHard || "";
+ base.value = state.base || "";
+ updateCustomRatioUI();
+ updateActual();
+ thinner.value = state.thinner ?? "";
+ updateThinnerUI();
+ if(state.actualOpen){
+  actualBox.style.display = "block";
+  if(showActualBtn) showActualBtn.style.display = "none";
+  actual.value = state.actual || "";
+ }
+ if(state.calculate) window.setTimeout(calc, 80);
+}
 
 function renderVoiceStep(){
  voiceInputBoxes.forEach((box, index) => box.classList.toggle("voice-inline-active", index === voiceStepIndex));
@@ -1618,8 +1668,8 @@ function showVoiceRecognitionFailure(message){
 
 function advanceVoiceStep(){
  if(voiceStepIndex >= voiceSteps.length - 1){
-  closeVoiceInput();
-  calc();
+  const isReloading = closeVoiceInput(true);
+  if(!isReloading) calc();
   return;
  }
  voiceStepIndex += 1;
@@ -1658,13 +1708,18 @@ function openVoiceInput(){
  startVoiceListening();
 }
 
-function closeVoiceInput(){
+function closeVoiceInput(calculateAfterReload = false){
  clearVoiceRetry();
  releaseVoiceRecognition();
  voiceIsListening = false;
  voiceOverlay.classList.remove("open");
  voiceInputBoxes.forEach(box => box.classList.remove("voice-inline-active"));
  voiceInlineStatus.classList.remove("open");
+ if(isIPhoneVoiceInput() && saveVoiceReloadState(calculateAfterReload)){
+  window.setTimeout(() => window.location.reload(), 100);
+  return true;
+ }
+ return false;
 }
 
 function restartVoiceInput(){
@@ -1681,6 +1736,7 @@ if(!SpeechRecognitionClass){
 initializeAppInfo();
 updateThinnerUI();
 loadData();
+restoreVoiceReloadState();
 updateRainAlert();
 updateHeatstrokeAlert();
 </script>
