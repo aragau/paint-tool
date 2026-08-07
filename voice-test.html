@@ -659,9 +659,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.0";
+const APP_VERSION = "Voice Test Ver.4.1";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "21:33";
+const APP_TIME = "21:43";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1520,17 +1520,6 @@ function handleVoiceResult(text){
  const thinnerValue = Number(value);
  if(voiceStepIndex === 2 && thinnerValue >= 21){
   waitForThinnerApproval(value);
-  return;
- }
- if(voiceStepIndex === 1){
-  voiceAwaitingActualChoice = true;
-  voiceStates[1].textContent = "完了 ✓";
-  voiceValues[1].textContent = `${value}kg　多く入った場合は「多く入った」と話してください`;
-  voiceStatus.textContent = "多く入った場合は、多く入った。通常は、希釈率をどうぞ";
-  if(voiceRecognition && voiceIsListening){ try{ voiceRecognition.abort(); }catch(error){} }
-  voiceIsListening = false;
-  speakVoice(`はい、${Number(value)}キロですね。多く入った場合は、多く入った。通常は、希釈率をどうぞ`);
-  window.setTimeout(() => { voiceRecognition = createVoiceRecognition(); startVoiceListening(); }, 1800);
   return;
  }
  const message = voiceStepIndex === 0
