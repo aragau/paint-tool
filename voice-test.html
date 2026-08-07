@@ -187,6 +187,7 @@ button:active{
 }
 .voice-inline-status{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#eef5ff;color:#1f3c70;font-size:16px;font-weight:bold;text-align:center;}
 .voice-inline-status.open{display:block;}
+.voice-inline-heard{margin-top:5px;color:#52606f;font-size:15px;font-weight:normal;word-break:break-word;}
 .voice-inline-active{outline:3px solid #2d6cdf;box-shadow:0 0 0 5px rgba(45,108,223,.15);}
 .voice-overlay.open{display:none;}
 .voice-overlay{
@@ -648,9 +649,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.3.7";
+const APP_VERSION = "Voice Test Ver.3.8";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "21:17";
+const APP_TIME = "21:24";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1388,8 +1389,13 @@ function createVoiceRecognition(){
  recognition.interimResults = true;
  recognition.maxAlternatives = 1;
  recognition.onresult = event => {
-  const text = Array.from(event.results).map(result => result[0].transcript).join("").trim();
-  if(text) voiceValues[voiceStepIndex].textContent = text;
+ const text = Array.from(event.results).map(result => result[0].transcript).join("").trim();
+  if(text){
+   voiceValues[voiceStepIndex].textContent = text;
+   if(voiceOverlay.classList.contains("open")){
+    setInlineVoiceStatus(`${voiceSteps[voiceStepIndex].label}を聞き取り中`, text, true);
+   }
+  }
   const finalResult = event.results[event.results.length - 1];
   if(finalResult && finalResult.isFinal) handleVoiceResult(text);
  };
@@ -1605,6 +1611,23 @@ const voiceInlineStatus = document.getElementById("voiceInlineStatus");
 const voiceInputBoxes = [ratioBox, document.getElementById("baseBox"), document.getElementById("thinnerBox")];
 const VOICE_RELOAD_STATE = "paintVoiceTestReloadState";
 
+function escapeVoiceText(text){
+ const container = document.createElement("div");
+ container.textContent = text;
+ return container.innerHTML;
+}
+
+function setInlineVoiceStatus(message, heardText = "", isListening = false){
+ const dots = isListening
+  ? '<span class="voice-listening-dots" aria-label="聞き取り中"><i></i><i></i><i></i></span>'
+  : "";
+ const heard = heardText
+  ? `<div class="voice-inline-heard">聞こえた内容：${escapeVoiceText(heardText)}</div>`
+  : "";
+ voiceInlineStatus.classList.add("open");
+ voiceInlineStatus.innerHTML = `<div>${message}${dots}</div>${heard}`;
+}
+
 function isIPhoneVoiceInput(){
  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
@@ -1656,13 +1679,11 @@ function restoreVoiceReloadState(){
 
 function renderVoiceStep(){
  voiceInputBoxes.forEach((box, index) => box.classList.toggle("voice-inline-active", index === voiceStepIndex));
- voiceInlineStatus.classList.add("open");
- voiceInlineStatus.textContent = `${voiceSteps[voiceStepIndex].label}を聞き取り中：${voiceSteps[voiceStepIndex].example}`;
+ setInlineVoiceStatus(`${voiceSteps[voiceStepIndex].label}を聞き取り中：${voiceSteps[voiceStepIndex].example}`, "", true);
 }
 
 function showVoiceRecognitionFailure(message){
- voiceInlineStatus.classList.add("open");
- voiceInlineStatus.textContent = message;
+ setInlineVoiceStatus(message);
 }
 
 function advanceVoiceStep(){
@@ -1690,7 +1711,7 @@ function handleVoiceResult(text){
  if(voiceStepIndex === 1) base.value = value;
  if(voiceStepIndex === 2) thinner.value = value;
  updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
- voiceInlineStatus.textContent = `${voiceSteps[voiceStepIndex].label}：${voiceStepIndex === 0 ? value.replace(":", "：") : voiceStepIndex === 1 ? `${value}kg` : `${value}％`}　完了 ✓`;
+ setInlineVoiceStatus(`${voiceSteps[voiceStepIndex].label}：${voiceStepIndex === 0 ? value.replace(":", "：") : voiceStepIndex === 1 ? `${value}kg` : `${value}％`}　完了 ✓`, text);
  if(voiceRecognition && voiceIsListening){ try{ voiceRecognition.abort(); }catch(error){} }
  voiceIsListening = false;
  speakVoice("入力完了");
