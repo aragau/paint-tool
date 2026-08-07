@@ -543,8 +543,6 @@ button:active{
  <button id="voiceStartBtn" class="voice-start" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力">🎤</button>
 </div>
 
-<div id="voiceInlineStatus" class="voice-inline-status" role="status"></div>
-
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
 <div class="weather-alert" id="heatstrokeAlert" hidden role="status"></div>
 
@@ -659,9 +657,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.1";
+const APP_VERSION = "Voice Test Ver.4.2";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "21:43";
+const APP_TIME = "21:49";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1402,9 +1400,6 @@ function createVoiceRecognition(){
  const text = Array.from(event.results).map(result => result[0].transcript).join("").trim();
   if(text){
    voiceValues[voiceStepIndex].textContent = text;
-   if(voiceOverlay.classList.contains("open")){
-    setInlineVoiceStatus(`${voiceSteps[voiceStepIndex].label}を聞き取り中`, text, true);
-   }
   }
   const finalResult = event.results[event.results.length - 1];
   if(finalResult && finalResult.isFinal) handleVoiceResult(text);
