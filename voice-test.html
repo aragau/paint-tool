@@ -42,10 +42,14 @@ h1{
  color:white;
  font-size:22px;
  font-weight:bold;
- text-align:center;
+ display:grid;
+ grid-template-columns:48px 1fr 48px;
+ align-items:center;
  padding:14px;
  border-radius:10px;
 }
+.header::before{content:"";}
+.header-title{text-align:center;}
 
 .weather-alert{
  background:#fff1f0;
@@ -181,9 +185,15 @@ button:active{
 }
 
 .voice-start{
- margin-top:12px;
- background:#4f46a5;
- font-size:19px;
+ grid-column:3;
+ width:48px;
+ height:48px;
+ margin:0;
+ padding:0;
+ background:transparent;
+ color:white;
+ font-size:27px;
+ line-height:1;
 }
 .voice-inline-status{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#eef5ff;color:#1f3c70;font-size:16px;font-weight:bold;text-align:center;}
 .voice-inline-status.open{display:block;}
@@ -529,10 +539,10 @@ button:active{
 <h1 id="appTitle">塗料配合計算</h1>
 
 <div class="header">
-配合設定
+ <span class="header-title">配合設定</span>
+ <button id="voiceStartBtn" class="voice-start" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力">🎤</button>
 </div>
 
-<button id="voiceStartBtn" class="voice-start" type="button" onclick="openVoiceInput()">🎤 音声入力</button>
 <div id="voiceInlineStatus" class="voice-inline-status" role="status"></div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
@@ -649,9 +659,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.3.8";
+const APP_VERSION = "Voice Test Ver.3.9";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "21:24";
+const APP_TIME = "21:29";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
