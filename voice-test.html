@@ -200,10 +200,6 @@ button:active{
 }
 .voice-start:active{transform:scale(.96);}
 .voice-start svg{width:25px;height:25px;stroke:#2d6cdf;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
-.voice-inline-status{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#eef5ff;color:#1f3c70;font-size:16px;font-weight:bold;text-align:center;}
-.voice-inline-status.open{display:block;}
-.voice-inline-heard{margin-top:5px;color:#52606f;font-size:15px;font-weight:normal;word-break:break-word;}
-.voice-inline-active{outline:3px solid #2d6cdf;box-shadow:0 0 0 5px rgba(45,108,223,.15);}
 .voice-overlay.open{display:flex;}
 .voice-overlay{
  position:fixed;
@@ -662,9 +658,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.5";
+const APP_VERSION = "Voice Test Ver.4.6";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "22:10";
+const APP_TIME = "22:33";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -917,7 +913,7 @@ actual.addEventListener("change", clearResult);
 thinner.addEventListener("change", () => {
  updateThinnerUI();
  clearResult();
- smoothScrollTo(document.getElementById("calculateButton"), "center");
+ smoothScrollTo(document.getElementById("calculateButton"), "start");
 });
 
 function updateThinnerUI(){
@@ -1614,27 +1610,8 @@ function restartVoiceInput(){
  window.setTimeout(startVoiceListening, 120);
 }
 
-// ===== トップ画面で行う音声入力 =====
-const voiceInlineStatus = document.getElementById("voiceInlineStatus");
-const voiceInputBoxes = [ratioBox, document.getElementById("baseBox"), document.getElementById("thinnerBox")];
+// iPhone Safariでは、音声入力終了後にページを再読み込みしてマイクを確実に解放する。
 const VOICE_RELOAD_STATE = "paintVoiceTestReloadState";
-
-function escapeVoiceText(text){
- const container = document.createElement("div");
- container.textContent = text;
- return container.innerHTML;
-}
-
-function setInlineVoiceStatus(message, heardText = "", isListening = false){
- const dots = isListening
-  ? '<span class="voice-listening-dots" aria-label="聞き取り中"><i></i><i></i><i></i></span>'
-  : "";
- const heard = heardText
-  ? `<div class="voice-inline-heard">聞こえた内容：${escapeVoiceText(heardText)}</div>`
-  : "";
- voiceInlineStatus.classList.add("open");
- voiceInlineStatus.innerHTML = `<div>${message}${dots}</div>${heard}`;
-}
 
 function isIPhoneVoiceInput(){
  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1685,86 +1662,12 @@ function restoreVoiceReloadState(){
  if(state.calculate) window.setTimeout(calc, 80);
 }
 
-function renderInlineVoiceStep(){
- voiceInputBoxes.forEach((box, index) => box.classList.toggle("voice-inline-active", index === voiceStepIndex));
- setInlineVoiceStatus(`${voiceSteps[voiceStepIndex].label}を聞き取り中：${voiceSteps[voiceStepIndex].example}`, "", true);
-}
-
-function showInlineVoiceRecognitionFailure(message){
- setInlineVoiceStatus(message);
-}
-
-function advanceInlineVoiceStep(){
- if(voiceStepIndex >= voiceSteps.length - 1){
-  const isReloading = closeVoiceInput(true);
-  if(!isReloading) calc();
-  return;
- }
- voiceStepIndex += 1;
- window.setTimeout(() => {
-  if(!voiceOverlay.classList.contains("open")) return;
-  // iPhone Safariだけは認識処理を作り直す。PC Chromeは同じ処理を使い、許可画面を繰り返さない。
-  if(/iPhone|iPad|iPod/i.test(navigator.userAgent)) voiceRecognition = createVoiceRecognition();
-  renderVoiceStep();
-  startVoiceListening();
- }, 300);
-}
-
-function handleInlineVoiceResult(text){
- const normalized = normalizeVoiceText(text);
- if(normalized.includes("最初から")){ restartVoiceInput(); return; }
- const value = parseVoiceValue(text);
- if(value === null){ retryVoiceStep("確認できませんでした。もう一度聞き取ります…"); return; }
- if(voiceStepIndex === 0) ratio.value = value;
- if(voiceStepIndex === 1) base.value = value;
- if(voiceStepIndex === 2) thinner.value = value;
- updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
- setInlineVoiceStatus(`${voiceSteps[voiceStepIndex].label}：${voiceStepIndex === 0 ? value.replace(":", "：") : voiceStepIndex === 1 ? `${value}kg` : `${value}％`}　完了 ✓`, text);
- if(voiceRecognition && voiceIsListening){ try{ voiceRecognition.abort(); }catch(error){} }
- voiceIsListening = false;
- speakVoice("入力完了");
- window.setTimeout(advanceVoiceStep, 120);
-}
-
-function openInlineVoiceInput(){
- if(!SpeechRecognitionClass) return;
- closeHistoryModal();
- voiceRecognition = createVoiceRecognition();
- voiceStepIndex = 0;
- voiceOverlay.classList.add("open");
- renderVoiceStep();
- startVoiceListening();
-}
-
-function closeInlineVoiceInput(calculateAfterReload = false){
- clearVoiceRetry();
- releaseVoiceRecognition();
- voiceIsListening = false;
- voiceOverlay.classList.remove("open");
- voiceInputBoxes.forEach(box => box.classList.remove("voice-inline-active"));
- voiceInlineStatus.classList.remove("open");
- if(isIPhoneVoiceInput() && saveVoiceReloadState(calculateAfterReload)){
-  window.setTimeout(() => window.location.reload(), 100);
-  return true;
- }
- return false;
-}
-
-function restartInlineVoiceInput(){
- if(voiceRecognition && voiceIsListening){ try{ voiceRecognition.abort(); }catch(error){} }
- voiceRecognition = createVoiceRecognition(); voiceStepIndex = 0; renderVoiceStep(); window.setTimeout(startVoiceListening, 200);
-}
-
-function repeatInlineVoiceStep(){ restartInlineVoiceInput(); }
-
 // iPhone Safariを閉じる・別アプリへ移る時も、認識処理を残さない。
 function stopVoiceInputForPageExit(){
  clearVoiceRetry();
  releaseVoiceRecognition();
  voiceIsListening = false;
  voiceOverlay.classList.remove("open");
- voiceInputBoxes.forEach(box => box.classList.remove("voice-inline-active"));
- voiceInlineStatus.classList.remove("open");
 }
 
 window.addEventListener("pagehide", stopVoiceInputForPageExit);
