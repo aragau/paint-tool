@@ -662,7 +662,7 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.5.1";
+const APP_VERSION = "Voice Test Ver.5.2";
 const APP_DATE = "2026/08/07";
 const APP_TIME = "22:48";
 const HISTORY_MAX = 10;
@@ -896,6 +896,8 @@ function clearResult(){
 
 function hideLastUseBox(){
  if(lastUseBox) lastUseBox.classList.add("is-hidden");
+ // 前回使用を消した後は、画面の先頭から新しい入力を始められる位置に戻す。
+ window.setTimeout(() => appTitle.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
 }
 
 function showLastUseBox(){
@@ -914,7 +916,6 @@ ratio.addEventListener("change", () => {
  updateCustomRatioUI();
  clearResult();
  hideLastUseBox();
- if(ratio.value !== "other") smoothScrollTo(document.getElementById("baseBox"), "center");
 });
 customRatioMain.addEventListener("input", () => { clearResult(); hideLastUseBox(); });
 customRatioHard.addEventListener("input", () => { clearResult(); hideLastUseBox(); });
@@ -922,14 +923,12 @@ base.addEventListener("change", () => {
  updateActual();
  clearResult();
  hideLastUseBox();
- smoothScrollTo(document.getElementById("thinnerBox"), "center");
 });
 actual.addEventListener("change", () => { clearResult(); hideLastUseBox(); });
 thinner.addEventListener("change", () => {
  updateThinnerUI();
  clearResult();
  hideLastUseBox();
- smoothScrollTo(document.getElementById("calculateButton"), "start");
 });
 
 function updateThinnerUI(){
