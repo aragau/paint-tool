@@ -598,7 +598,7 @@ button:active{
 <select id="thinner"></select>
 </div>
 
-<button onclick="calc()">
+<button id="calculateButton" onclick="calc()">
 ▶ 配合計算
 </button>
 
@@ -657,9 +657,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.2";
+const APP_VERSION = "Voice Test Ver.4.3";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "21:49";
+const APP_TIME = "21:56";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -898,17 +898,20 @@ function smoothScrollTo(element, block = "start"){
 ratio.addEventListener("change", () => {
  updateCustomRatioUI();
  clearResult();
+ if(ratio.value !== "other") smoothScrollTo(document.getElementById("baseBox"), "center");
 });
 customRatioMain.addEventListener("input", clearResult);
 customRatioHard.addEventListener("input", clearResult);
 base.addEventListener("change", () => {
  updateActual();
  clearResult();
+ smoothScrollTo(document.getElementById("thinnerBox"), "center");
 });
 actual.addEventListener("change", clearResult);
 thinner.addEventListener("change", () => {
  updateThinnerUI();
  clearResult();
+ smoothScrollTo(document.getElementById("calculateButton"), "center");
 });
 
 function updateThinnerUI(){
