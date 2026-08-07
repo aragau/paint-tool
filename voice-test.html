@@ -199,7 +199,7 @@ button:active{
 .voice-inline-status.open{display:block;}
 .voice-inline-heard{margin-top:5px;color:#52606f;font-size:15px;font-weight:normal;word-break:break-word;}
 .voice-inline-active{outline:3px solid #2d6cdf;box-shadow:0 0 0 5px rgba(45,108,223,.15);}
-.voice-overlay.open{display:none;}
+.voice-overlay.open{display:flex;}
 .voice-overlay{
  position:fixed;
  inset:0;
@@ -659,9 +659,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.3.9";
+const APP_VERSION = "Voice Test Ver.4.0";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "21:29";
+const APP_TIME = "21:33";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1348,8 +1348,8 @@ function advanceVoiceStep(){
   }, 700);
  }else{
   window.setTimeout(() => {
-   closeVoiceInput();
-   calc();
+   const isReloading = closeVoiceInput(true);
+   if(!isReloading) calc();
   }, 300);
  }
 }
@@ -1576,7 +1576,7 @@ function releaseVoiceRecognition(){
  try{ recognition.abort(); }catch(error){ try{ recognition.stop(); }catch(stopError){} }
 }
 
-function closeVoiceInput(){
+function closeVoiceInput(calculateAfterReload = false){
  clearVoiceRetry();
  voiceAwaitingThinnerApproval = false;
  voiceAwaitingActualChoice = false;
@@ -1586,6 +1586,11 @@ function closeVoiceInput(){
  voiceIsListening = false;
  voiceOverlay.classList.remove("open");
  document.body.style.overflow = "";
+ if(isIPhoneVoiceInput() && saveVoiceReloadState(calculateAfterReload)){
+  window.setTimeout(() => window.location.reload(), 100);
+  return true;
+ }
+ return false;
 }
 
 function repeatVoiceStep(){
@@ -1687,16 +1692,16 @@ function restoreVoiceReloadState(){
  if(state.calculate) window.setTimeout(calc, 80);
 }
 
-function renderVoiceStep(){
+function renderInlineVoiceStep(){
  voiceInputBoxes.forEach((box, index) => box.classList.toggle("voice-inline-active", index === voiceStepIndex));
  setInlineVoiceStatus(`${voiceSteps[voiceStepIndex].label}を聞き取り中：${voiceSteps[voiceStepIndex].example}`, "", true);
 }
 
-function showVoiceRecognitionFailure(message){
+function showInlineVoiceRecognitionFailure(message){
  setInlineVoiceStatus(message);
 }
 
-function advanceVoiceStep(){
+function advanceInlineVoiceStep(){
  if(voiceStepIndex >= voiceSteps.length - 1){
   const isReloading = closeVoiceInput(true);
   if(!isReloading) calc();
@@ -1712,7 +1717,7 @@ function advanceVoiceStep(){
  }, 300);
 }
 
-function handleVoiceResult(text){
+function handleInlineVoiceResult(text){
  const normalized = normalizeVoiceText(text);
  if(normalized.includes("最初から")){ restartVoiceInput(); return; }
  const value = parseVoiceValue(text);
@@ -1728,7 +1733,7 @@ function handleVoiceResult(text){
  window.setTimeout(advanceVoiceStep, 120);
 }
 
-function openVoiceInput(){
+function openInlineVoiceInput(){
  if(!SpeechRecognitionClass) return;
  closeHistoryModal();
  voiceRecognition = createVoiceRecognition();
@@ -1738,7 +1743,7 @@ function openVoiceInput(){
  startVoiceListening();
 }
 
-function closeVoiceInput(calculateAfterReload = false){
+function closeInlineVoiceInput(calculateAfterReload = false){
  clearVoiceRetry();
  releaseVoiceRecognition();
  voiceIsListening = false;
@@ -1752,12 +1757,12 @@ function closeVoiceInput(calculateAfterReload = false){
  return false;
 }
 
-function restartVoiceInput(){
+function restartInlineVoiceInput(){
  if(voiceRecognition && voiceIsListening){ try{ voiceRecognition.abort(); }catch(error){} }
  voiceRecognition = createVoiceRecognition(); voiceStepIndex = 0; renderVoiceStep(); window.setTimeout(startVoiceListening, 200);
 }
 
-function repeatVoiceStep(){ restartVoiceInput(); }
+function repeatInlineVoiceStep(){ restartInlineVoiceInput(); }
 
 // iPhone Safariを閉じる・別アプリへ移る時も、認識処理を残さない。
 function stopVoiceInputForPageExit(){
