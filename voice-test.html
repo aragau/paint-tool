@@ -547,7 +547,7 @@ button:active{
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
 <div class="weather-alert" id="heatstrokeAlert" hidden role="status"></div>
 
-<div class="box info history-inline">
+<div class="box info history-inline" id="lastUseBox">
  <div class="history-inline-top">
   <div class="history-inline-label">前回使用</div>
   <button class="history-btn" onclick="openHistoryModal()">履歴</button>
@@ -658,9 +658,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.6";
+const APP_VERSION = "Voice Test Ver.4.7";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "22:33";
+const APP_TIME = "22:40";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -687,6 +687,7 @@ const showActualBtn = document.getElementById("showActualBtn");
 const thinner = document.getElementById("thinner");
 const result = document.getElementById("result");
 const historyBox = document.getElementById("history");
+const lastUseBox = document.getElementById("lastUseBox");
 const historyModal = document.getElementById("historyModal");
 const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
@@ -889,6 +890,10 @@ function clearResult(){
  result.innerHTML = "";
 }
 
+function hideLastUseBox(){
+ if(lastUseBox) lastUseBox.hidden = true;
+}
+
 function smoothScrollTo(element, block = "start"){
  if(!element) return;
  // PCでは<select>が閉じる前のスクロールが打ち消されることがあるため、少し待ってから動かす。
@@ -900,19 +905,22 @@ function smoothScrollTo(element, block = "start"){
 ratio.addEventListener("change", () => {
  updateCustomRatioUI();
  clearResult();
+ hideLastUseBox();
  if(ratio.value !== "other") smoothScrollTo(document.getElementById("baseBox"), "center");
 });
-customRatioMain.addEventListener("input", clearResult);
-customRatioHard.addEventListener("input", clearResult);
+customRatioMain.addEventListener("input", () => { clearResult(); hideLastUseBox(); });
+customRatioHard.addEventListener("input", () => { clearResult(); hideLastUseBox(); });
 base.addEventListener("change", () => {
  updateActual();
  clearResult();
+ hideLastUseBox();
  smoothScrollTo(document.getElementById("thinnerBox"), "center");
 });
-actual.addEventListener("change", clearResult);
+actual.addEventListener("change", () => { clearResult(); hideLastUseBox(); });
 thinner.addEventListener("change", () => {
  updateThinnerUI();
  clearResult();
+ hideLastUseBox();
  smoothScrollTo(document.getElementById("calculateButton"), "start");
 });
 
@@ -1513,6 +1521,7 @@ function handleVoiceResult(text){
  updateActual();
  updateThinnerUI();
  clearResult();
+ hideLastUseBox();
  voiceValues[voiceStepIndex].textContent = voiceStepIndex === 0 ? value.replace(":", "：") : voiceStepIndex === 1 ? `${value}kg` : `${value}％`;
  voiceStates[voiceStepIndex].textContent = "完了 ✓";
  voiceItems[voiceStepIndex].classList.remove("active");
