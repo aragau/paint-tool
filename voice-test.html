@@ -658,9 +658,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.8";
+const APP_VERSION = "Voice Test Ver.4.9";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "22:42";
+const APP_TIME = "22:46";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -894,6 +894,10 @@ function hideLastUseBox(){
  if(lastUseBox) lastUseBox.hidden = true;
 }
 
+function showLastUseBox(){
+ if(lastUseBox) lastUseBox.hidden = false;
+}
+
 function smoothScrollTo(element, block = "start"){
  if(!element) return;
  // PCでは<select>が閉じる前のスクロールが打ち消されることがあるため、少し待ってから動かす。
@@ -1107,6 +1111,7 @@ function calc(){
  }
 
  saveData(ratioInfo);
+ showLastUseBox();
 
  actual.value = "";
  actualBox.style.display = "none";
