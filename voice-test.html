@@ -662,9 +662,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.5.2";
+const APP_VERSION = "Voice Test Ver.5.3";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "22:48";
+const APP_TIME = "22:56";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -896,8 +896,8 @@ function clearResult(){
 
 function hideLastUseBox(){
  if(lastUseBox) lastUseBox.classList.add("is-hidden");
- // 前回使用を消した後は、画面の先頭から新しい入力を始められる位置に戻す。
- window.setTimeout(() => appTitle.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+ // 前回使用を消した後は、タイトル上の余白も含めてページ先頭へ戻す。
+ window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 120);
 }
 
 function showLastUseBox(){
