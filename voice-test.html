@@ -186,15 +186,20 @@ button:active{
 
 .voice-start{
  grid-column:3;
- width:48px;
- height:48px;
+ width:46px;
+ height:46px;
  margin:0;
  padding:0;
- background:transparent;
- color:white;
- font-size:27px;
- line-height:1;
+ justify-self:end;
+ display:grid;
+ place-items:center;
+ background:#fff;
+ border:2px solid rgba(255,255,255,.72);
+ border-radius:50%;
+ box-shadow:0 2px 8px rgba(0,0,0,.18);
 }
+.voice-start:active{transform:scale(.96);}
+.voice-start svg{width:25px;height:25px;stroke:#2d6cdf;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
 .voice-inline-status{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#eef5ff;color:#1f3c70;font-size:16px;font-weight:bold;text-align:center;}
 .voice-inline-status.open{display:block;}
 .voice-inline-heard{margin-top:5px;color:#52606f;font-size:15px;font-weight:normal;word-break:break-word;}
@@ -540,7 +545,7 @@ button:active{
 
 <div class="header">
  <span class="header-title">配合設定</span>
- <button id="voiceStartBtn" class="voice-start" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力">🎤</button>
+ <button id="voiceStartBtn" class="voice-start" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path><path d="M8 21h8"></path></svg></button>
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
@@ -657,9 +662,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.3";
+const APP_VERSION = "Voice Test Ver.4.4";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "21:56";
+const APP_TIME = "22:04";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -890,9 +895,10 @@ function clearResult(){
 
 function smoothScrollTo(element, block = "start"){
  if(!element) return;
- window.requestAnimationFrame(() => {
+ // PCでは<select>が閉じる前のスクロールが打ち消されることがあるため、少し待ってから動かす。
+ window.setTimeout(() => {
   element.scrollIntoView({ behavior: "smooth", block });
- });
+ }, 120);
 }
 
 ratio.addEventListener("change", () => {
