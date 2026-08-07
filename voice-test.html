@@ -658,9 +658,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.7";
+const APP_VERSION = "Voice Test Ver.4.8";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "22:40";
+const APP_TIME = "22:42";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1521,7 +1521,6 @@ function handleVoiceResult(text){
  updateActual();
  updateThinnerUI();
  clearResult();
- hideLastUseBox();
  voiceValues[voiceStepIndex].textContent = voiceStepIndex === 0 ? value.replace(":", "：") : voiceStepIndex === 1 ? `${value}kg` : `${value}％`;
  voiceStates[voiceStepIndex].textContent = "完了 ✓";
  voiceItems[voiceStepIndex].classList.remove("active");
