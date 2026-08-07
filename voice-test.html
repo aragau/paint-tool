@@ -662,9 +662,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.4.4";
+const APP_VERSION = "Voice Test Ver.4.5";
 const APP_DATE = "2026/08/07";
-const APP_TIME = "22:04";
+const APP_TIME = "22:10";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1108,7 +1108,7 @@ function calc(){
  actualBox.style.display = "none";
  if(showActualBtn) showActualBtn.style.display = "inline";
 
- smoothScrollTo(result, "start");
+ smoothScrollTo(document.getElementById("calculateButton"), "start");
 }
 
 function openHistoryModal(){
