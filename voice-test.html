@@ -89,8 +89,8 @@ h1{
  padding:10px 12px;
 }
 
-.history-inline[hidden]{
- display:none;
+.history-inline.is-hidden{
+ display:none !important;
 }
 
 .history-inline-top{
@@ -662,7 +662,7 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Voice Test Ver.5.0";
+const APP_VERSION = "Voice Test Ver.5.1";
 const APP_DATE = "2026/08/07";
 const APP_TIME = "22:48";
 const HISTORY_MAX = 10;
@@ -895,11 +895,11 @@ function clearResult(){
 }
 
 function hideLastUseBox(){
- if(lastUseBox) lastUseBox.hidden = true;
+ if(lastUseBox) lastUseBox.classList.add("is-hidden");
 }
 
 function showLastUseBox(){
- if(lastUseBox) lastUseBox.hidden = false;
+ if(lastUseBox) lastUseBox.classList.remove("is-hidden");
 }
 
 function smoothScrollTo(element, block = "start"){
