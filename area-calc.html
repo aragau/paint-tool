@@ -474,7 +474,7 @@ button:active{
 
 <body>
 
-<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.11</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.12</h1>
 
 <div class="header">
 配合設定
@@ -577,10 +577,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.11";
-const APP_VERSION = "Ver.1.11";
+const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.12";
+const APP_VERSION = "Ver.1.12";
 const APP_DATE = "2026/08/10";
-const APP_TIME = "22:03 JST";
+const APP_TIME = "22:06 JST";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -856,15 +856,17 @@ function smoothScrollTo(element, block = "start"){
 ratio.addEventListener("change", () => {
  updateCustomRatioUI();
  clearResult();
+ smoothScrollTo(calculationMode === "area" ? thinner.parentNode : baseBox, "start");
 });
 customRatioMain.addEventListener("input", clearResult);
 customRatioHard.addEventListener("input", clearResult);
 base.addEventListener("change", () => {
  updateActual();
  clearResult();
+ smoothScrollTo(thinner.parentNode, "start");
 });
-paintArea.addEventListener("change", () => { updateNeededTotal(); clearResult(); });
-coverage.addEventListener("change", () => { updateNeededTotal(); clearResult(); });
+paintArea.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(coverage.parentNode, "start"); });
+coverage.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(ratioBox, "start"); });
 actual.addEventListener("change", clearResult);
 thinner.addEventListener("change", () => {
  updateThinnerUI();
