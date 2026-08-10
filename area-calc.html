@@ -482,7 +482,7 @@ button:active{
 
 <body>
 
-<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.9</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.10</h1>
 
 <div class="header">
 配合設定
@@ -586,10 +586,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.9";
-const APP_VERSION = "Ver.1.9";
+const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.10";
+const APP_VERSION = "Ver.1.10";
 const APP_DATE = "2026/08/10";
-const APP_TIME = "21:57 JST";
+const APP_TIME = "21:59 JST";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -822,16 +822,16 @@ for(let i = 0; i <= 30; i++){
 
 add(paintArea, "", "");
 for(let i = 1; i <= 100; i++){
- add(paintArea, `${i}㎡`, String(i));
+ add(paintArea, String(i), String(i));
 }
 for(let i = 105; i <= 500; i += 5){
- add(paintArea, `${i}㎡`, String(i));
+ add(paintArea, String(i), String(i));
 }
 
 add(coverage, "", "");
 for(let i = 1; i <= 100; i++){
  const value = (i / 100).toFixed(2);
- add(coverage, `${value}kg/㎡/回`, value);
+ add(coverage, value, value);
 }
 
 function updateActual(){
