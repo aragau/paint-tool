@@ -468,21 +468,13 @@ button:active{
  font-size:15px;
  line-height:1.5;
 }
-.needed-total{
- margin-top:10px;
- font-weight:bold;
- font-size:18px;
- display:none;
-}
-.needed-total.open{display:block;}
-.needed-total strong{color:#d96c2f;font-size:28px;}
 
 </style>
 </head>
 
 <body>
 
-<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.10</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.11</h1>
 
 <div class="header">
 配合設定
@@ -512,7 +504,6 @@ button:active{
  <select id="paintArea"></select>
  <label style="margin-top:12px;">塗布量（kg/㎡/回）</label>
  <select id="coverage"></select>
- <div id="neededTotalBox"></div>
 </div>
 
 <div class="box" id="ratioBox">
@@ -586,10 +577,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.10";
-const APP_VERSION = "Ver.1.10";
+const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.11";
+const APP_VERSION = "Ver.1.11";
 const APP_DATE = "2026/08/10";
-const APP_TIME = "21:59 JST";
+const APP_TIME = "22:03 JST";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -621,7 +612,6 @@ const historyCount = document.getElementById("historyCount");
 const areaBox = document.getElementById("areaBox");
 const paintArea = document.getElementById("paintArea");
 const coverage = document.getElementById("coverage");
-const neededTotalBox = document.getElementById("neededTotalBox");
 const baseBox = document.getElementById("baseBox");
 const normalModeBtn = document.getElementById("normalModeBtn");
 const areaModeBtn = document.getElementById("areaModeBtn");
@@ -634,13 +624,7 @@ function initializeAppInfo(){
  footerInfo.textContent = `Produced by N.H.S.　${APP_VERSION}　${APP_DATE} ${APP_TIME}`;
 }
 
-function updateNeededTotal(){
- const total = Number(paintArea.value) * Number(coverage.value);
- const ready = Number.isFinite(total) && total > 0;
- neededTotalBox.innerHTML = ready
-  ? `<div class="needed-total open">完成塗料量：<strong>${total.toFixed(2)}kg</strong></div>`
-  : "";
-}
+function updateNeededTotal(){}
 
 function setMode(mode){
  calculationMode = mode;
@@ -822,16 +806,16 @@ for(let i = 0; i <= 30; i++){
 
 add(paintArea, "", "");
 for(let i = 1; i <= 100; i++){
- add(paintArea, String(i), String(i));
+ add(paintArea, `${i}㎡`, String(i));
 }
 for(let i = 105; i <= 500; i += 5){
- add(paintArea, String(i), String(i));
+ add(paintArea, `${i}㎡`, String(i));
 }
 
 add(coverage, "", "");
 for(let i = 1; i <= 100; i++){
  const value = (i / 100).toFixed(2);
- add(coverage, value, value);
+ add(coverage, `${value}kg/㎡/回`, value);
 }
 
 function updateActual(){
