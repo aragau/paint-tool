@@ -482,7 +482,7 @@ button:active{
 
 <body>
 
-<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.6</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.7</h1>
 
 <div class="header">
 配合設定
@@ -586,10 +586,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.6";
-const APP_VERSION = "Ver.1.6";
+const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.7";
+const APP_VERSION = "Ver.1.7";
 const APP_DATE = "2026/08/10";
-const APP_TIME = "21:47 JST";
+const APP_TIME = "21:52 JST";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -992,8 +992,8 @@ function saveData(ratioInfo){
  renderHistoryList();
 }
 
-function applyDataToForm(item){
- setMode(item.mode === "area" ? "area" : "normal");
+function applyDataToForm(item, restoreMode = true){
+ setMode(restoreMode && item.mode === "area" ? "area" : "normal");
  ratio.value = item.ratio || "";
 
  if(item.ratio === "custom"){
@@ -1036,7 +1036,7 @@ function loadData(){
   return;
  }
 
- applyDataToForm(last);
+ applyDataToForm(last, false);
  renderLatestBox(last);
  renderHistoryList();
 }
