@@ -480,7 +480,7 @@ button:active{
 
 <body>
 
-<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.0</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.2</h1>
 
 <div class="header">
 配合設定
@@ -500,9 +500,9 @@ button:active{
 <div class="box">
  <div class="mode-switch">
   <button type="button" class="active" id="normalModeBtn" onclick="setMode('normal')">通常の配合</button>
-  <button type="button" id="areaModeBtn" onclick="setMode('area')">面積から作る</button>
+  <button type="button" id="areaModeBtn" onclick="setMode('area')">面積から計算</button>
  </div>
- <div class="area-guide" id="normalGuide">主剤重量を指定して、通常どおり配合計算します。</div>
+ <div class="area-guide" id="normalGuide">主剤重量から、硬化剤・希釈剤の量を計算します。</div>
 </div>
 
 <div class="box area-only" id="areaBox">
@@ -510,8 +510,8 @@ button:active{
  <select id="paintArea"></select>
  <label style="margin-top:12px;">塗布量（kg/㎡/回）</label>
  <select id="coverage"></select>
- <div class="needed-total">今回一回分の完成塗料量：<strong id="neededTotal">0.00kg</strong></div>
- <div class="note">二回塗りでも、一度に二回分は作りません。</div>
+ <div class="needed-total">今回一回分に必要な完成塗料量：<strong id="neededTotal">0.00kg</strong></div>
+ <div class="note">二回塗りは、一回分ずつ計算します。</div>
 </div>
 
 <div class="box" id="ratioBox">
@@ -585,10 +585,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.0";
-const APP_VERSION = "Ver.1.0";
+const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.2";
+const APP_VERSION = "Ver.1.2";
 const APP_DATE = "2026/08/10";
-const APP_TIME = "21:29 JST";
+const APP_TIME = "21:35 JST";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -648,8 +648,8 @@ function setMode(mode){
  normalModeBtn.classList.toggle("active", !isArea);
  areaModeBtn.classList.toggle("active", isArea);
  normalGuide.textContent = isArea
-  ? "面積 × 塗布量から、その時に塗る一回分の完成塗料量を逆算します。"
-  : "主剤重量を指定して、通常どおり配合計算します。";
+  ? "塗装面積と塗布量から、今回一回分に必要な完成塗料量を計算します。"
+  : "主剤重量から、硬化剤・希釈剤の量を計算します。";
  clearResult();
  updateNeededTotal();
 }
