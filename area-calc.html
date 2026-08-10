@@ -472,7 +472,9 @@ button:active{
  margin-top:10px;
  font-weight:bold;
  font-size:18px;
+ display:none;
 }
+.needed-total.open{display:block;}
 .needed-total strong{color:#d96c2f;font-size:28px;}
 
 </style>
@@ -480,7 +482,7 @@ button:active{
 
 <body>
 
-<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.3</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.4</h1>
 
 <div class="header">
 配合設定
@@ -510,7 +512,7 @@ button:active{
  <select id="paintArea"></select>
  <label style="margin-top:12px;">塗布量（kg/㎡/回）</label>
  <select id="coverage"></select>
- <div class="needed-total">完成塗料量：<strong id="neededTotal">0.00kg</strong></div>
+ <div class="needed-total" id="neededTotalBox">完成塗料量：<strong id="neededTotal">0.00kg</strong></div>
 </div>
 
 <div class="box" id="ratioBox">
@@ -584,10 +586,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.3";
-const APP_VERSION = "Ver.1.3";
+const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.4";
+const APP_VERSION = "Ver.1.4";
 const APP_DATE = "2026/08/10";
-const APP_TIME = "21:37 JST";
+const APP_TIME = "21:42 JST";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -620,6 +622,7 @@ const areaBox = document.getElementById("areaBox");
 const paintArea = document.getElementById("paintArea");
 const coverage = document.getElementById("coverage");
 const neededTotal = document.getElementById("neededTotal");
+const neededTotalBox = document.getElementById("neededTotalBox");
 const baseBox = document.getElementById("baseBox");
 const normalModeBtn = document.getElementById("normalModeBtn");
 const areaModeBtn = document.getElementById("areaModeBtn");
@@ -634,7 +637,9 @@ function initializeAppInfo(){
 
 function updateNeededTotal(){
  const total = Number(paintArea.value) * Number(coverage.value);
- neededTotal.textContent = Number.isFinite(total) && total > 0 ? `${total.toFixed(2)}kg` : "0.00kg";
+ const ready = Number.isFinite(total) && total > 0;
+ neededTotalBox.classList.toggle("open", ready);
+ neededTotal.textContent = ready ? `${total.toFixed(2)}kg` : "0.00kg";
 }
 
 function setMode(mode){
