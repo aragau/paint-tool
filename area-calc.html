@@ -482,7 +482,7 @@ button:active{
 
 <body>
 
-<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.5</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.6</h1>
 
 <div class="header">
 配合設定
@@ -501,8 +501,8 @@ button:active{
 
 <div class="box">
  <div class="mode-switch">
-  <button type="button" class="active" id="normalModeBtn" onclick="setMode('normal')">通常の配合</button>
-  <button type="button" id="areaModeBtn" onclick="setMode('area')">面積から計算</button>
+  <button type="button" class="active" id="normalModeBtn">通常の配合</button>
+  <button type="button" id="areaModeBtn">面積から計算</button>
  </div>
  <div class="area-guide" id="normalGuide">主剤重量から、硬化剤・希釈剤の量を計算します。</div>
 </div>
@@ -586,10 +586,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.5";
-const APP_VERSION = "Ver.1.5";
+const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.6";
+const APP_VERSION = "Ver.1.6";
 const APP_DATE = "2026/08/10";
-const APP_TIME = "21:45 JST";
+const APP_TIME = "21:47 JST";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -656,6 +656,9 @@ function setMode(mode){
  clearResult();
  updateNeededTotal();
 }
+
+normalModeBtn.addEventListener("click", () => setMode("normal"));
+areaModeBtn.addEventListener("click", () => setMode("area"));
 
 function showWeatherAlert(){
  weatherAlert.textContent = "⚠ 今後1時間以内に降雨の予報";
@@ -1208,6 +1211,7 @@ document.addEventListener("keydown", event => {
 
 initializeAppInfo();
 updateThinnerUI();
+setMode("normal");
 loadData();
 updateRainAlert();
 updateHeatstrokeAlert();
