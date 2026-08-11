@@ -445,12 +445,36 @@ button:active{
  font-size:16px;
 }
 
+.mode-switch{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;
+}
+.mode-switch button{
+ margin-top:0;
+ background:#7898bc;
+ font-size:18px;
+ padding:12px 8px;
+}
+.mode-switch button.active{background:#2d6cdf;}
+.area-only{display:none;}
+.area-only.open{display:block;}
+.area-guide{
+ margin-top:10px;
+ padding:10px 12px;
+ background:#e8f5e9;
+ border:2px solid #4caf50;
+ border-radius:10px;
+ font-size:15px;
+ line-height:1.5;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1 id="appTitle">塗料配合計算</h1>
+<h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.12</h1>
 
 <div class="header">
 配合設定
@@ -465,6 +489,21 @@ button:active{
   <button class="history-btn" onclick="openHistoryModal()">履歴</button>
  </div>
  <div class="history-inline-value" id="history">前回データなし</div>
+</div>
+
+<div class="box">
+ <div class="mode-switch">
+  <button type="button" class="active" id="normalModeBtn">通常の配合</button>
+  <button type="button" id="areaModeBtn">面積から計算</button>
+ </div>
+ <div class="area-guide" id="normalGuide">主剤重量から硬化剤・希釈剤を計算します。</div>
+</div>
+
+<div class="box area-only" id="areaBox">
+ <label>塗装面積（㎡）</label>
+ <select id="paintArea"></select>
+ <label style="margin-top:12px;">塗布量（kg/㎡/回）</label>
+ <select id="coverage"></select>
 </div>
 
 <div class="box" id="ratioBox">
@@ -487,7 +526,7 @@ button:active{
 </div>
 </div>
 
-<div class="box">
+<div class="box" id="baseBox">
 <label style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
 <span>主剤重量（kg）</span>
 <span id="showActualBtn" onclick="showActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">※多く入ったらこちらから修正</span>
@@ -539,16 +578,16 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.15.7";
-const APP_DATE = "2026/08/01";
-const APP_TIME = "21:24";
+const APP_VERSION = "Ver.1.16";
+const APP_DATE = "2026/08/11";
+const APP_TIME = "20:35";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
 const HEATSTROKE_ALERT_URL = "https://www.wbgt.env.go.jp/alert.php";
 
-const STORAGE_HISTORY = "paintHistory";
-const STORAGE_LAST = "paintLastData";
+const STORAGE_HISTORY = "areaCalcHistory";
+const STORAGE_LAST = "areaCalcLastData";
 
 // ===== 画面要素 =====
 const appTitle = document.getElementById("appTitle");
@@ -570,12 +609,42 @@ const historyBox = document.getElementById("history");
 const historyModal = document.getElementById("historyModal");
 const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
+const areaBox = document.getElementById("areaBox");
+const paintArea = document.getElementById("paintArea");
+const coverage = document.getElementById("coverage");
+const baseBox = document.getElementById("baseBox");
+const normalModeBtn = document.getElementById("normalModeBtn");
+const areaModeBtn = document.getElementById("areaModeBtn");
+const normalGuide = document.getElementById("normalGuide");
+let calculationMode = "normal";
 
 function initializeAppInfo(){
  document.title = APP_NAME;
  appTitle.textContent = APP_NAME;
- footerInfo.textContent = `Produced by N.H.S.　${APP_VERSION}　${APP_DATE} ${APP_TIME}`;
+ footerInfo.innerHTML = `Produced by N.H.S.　area-calc ${APP_VERSION}<br>${APP_DATE} ${APP_TIME}`;
 }
+
+function updateNeededTotal(){}
+
+function setMode(mode){
+ calculationMode = mode;
+ const isArea = mode === "area";
+ areaBox.classList.toggle("open", isArea);
+ baseBox.style.display = isArea ? "none" : "block";
+ normalGuide.style.display = "block";
+ actualBox.style.display = "none";
+ if(showActualBtn) showActualBtn.style.display = "inline";
+ normalModeBtn.classList.toggle("active", !isArea);
+ areaModeBtn.classList.toggle("active", isArea);
+ normalGuide.textContent = isArea
+  ? "塗装面積と塗布量から、塗料量を計算します。"
+  : "主剤重量から硬化剤・希釈剤を計算します。";
+ clearResult();
+ updateNeededTotal();
+}
+
+normalModeBtn.addEventListener("click", () => setMode("normal"));
+areaModeBtn.addEventListener("click", () => setMode("area"));
 
 function showWeatherAlert(){
  weatherAlert.textContent = "⚠ 今後1時間以内に降雨の予報";
@@ -735,6 +804,20 @@ for(let i = 0; i <= 30; i++){
  add(thinner, String(i), String(i));
 }
 
+add(paintArea, "", "");
+for(let i = 1; i <= 100; i++){
+ add(paintArea, `${i}㎡`, String(i));
+}
+for(let i = 105; i <= 500; i += 5){
+ add(paintArea, `${i}㎡`, String(i));
+}
+
+add(coverage, "", "");
+for(let i = 1; i <= 100; i++){
+ const value = (i / 100).toFixed(2);
+ add(coverage, `${value}kg/㎡/回`, value);
+}
+
 function updateActual(){
  actual.innerHTML = "";
  add(actual, "", "");
@@ -773,13 +856,17 @@ function smoothScrollTo(element, block = "start"){
 ratio.addEventListener("change", () => {
  updateCustomRatioUI();
  clearResult();
+ smoothScrollTo(calculationMode === "area" ? thinner.parentNode : baseBox, "start");
 });
 customRatioMain.addEventListener("input", clearResult);
 customRatioHard.addEventListener("input", clearResult);
 base.addEventListener("change", () => {
  updateActual();
  clearResult();
+ smoothScrollTo(thinner.parentNode, "start");
 });
+paintArea.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(coverage.parentNode, "start"); });
+coverage.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(ratioBox, "start"); });
 actual.addEventListener("change", clearResult);
 thinner.addEventListener("change", () => {
  updateThinnerUI();
@@ -846,7 +933,9 @@ function renderLatestBox(data){
   return;
  }
 
- const mainLabel = data.usedActual && data.actualValue
+ const mainLabel = data.mode === "area"
+  ? `面積：${data.paintArea}㎡　塗布量：${data.coverage}kg/㎡/回<br>今回必要量：${data.finishedTotal}kg`
+  : data.usedActual && data.actualValue
   ? `実測主剤重量：${data.actualValue}kg`
   : `主剤重量：${data.base}kg`;
 
@@ -876,7 +965,11 @@ function saveData(ratioInfo){
   actualValue: usedActual ? actual.value : "",
   usedActual,
   usedMain,
-  thinner: thinner.value
+  thinner: thinner.value,
+  mode: calculationMode,
+  paintArea: calculationMode === "area" ? paintArea.value : "",
+  coverage: calculationMode === "area" ? coverage.value : "",
+  finishedTotal: calculationMode === "area" ? (Number(paintArea.value) * Number(coverage.value)).toFixed(2) : ""
  };
 
  const arr = getHistory();
@@ -887,7 +980,8 @@ function saveData(ratioInfo){
  renderHistoryList();
 }
 
-function applyDataToForm(item){
+function applyDataToForm(item, restoreMode = true){
+ setMode(restoreMode && item.mode === "area" ? "area" : "normal");
  ratio.value = item.ratio || "";
 
  if(item.ratio === "custom"){
@@ -902,6 +996,11 @@ function applyDataToForm(item){
  base.value = item.base || "";
  updateActual();
  thinner.value = item.thinner ?? "";
+ if(item.mode === "area"){
+  paintArea.value = item.paintArea || "";
+  coverage.value = item.coverage || "";
+  updateNeededTotal();
+ }
  updateThinnerUI();
 
  if(item.usedActual && item.actualValue){
@@ -925,14 +1024,14 @@ function loadData(){
   return;
  }
 
- applyDataToForm(last);
+ applyDataToForm(last, false);
  renderLatestBox(last);
  renderHistoryList();
 }
 
 function calc(){
- if(ratio.value === "" || base.value === "" || thinner.value === ""){
-  alert("配合比・主剤重量・希釈率を選択してください");
+ if(ratio.value === "" || thinner.value === "" || (calculationMode === "normal" && base.value === "")){
+  alert(calculationMode === "area" ? "配合比・希釈率を選択してください" : "配合比・主剤重量・希釈率を選択してください");
   return;
  }
 
@@ -942,7 +1041,14 @@ function calc(){
   return;
  }
 
- const main = actualBox.style.display === "block" && actual.value !== ""
+ const finishedTotal = Number(paintArea.value) * Number(coverage.value);
+ if(calculationMode === "area" && (!Number.isFinite(finishedTotal) || finishedTotal <= 0)){
+  alert("塗装面積と塗布量を入力してください");
+  return;
+ }
+ const main = calculationMode === "area"
+  ? finishedTotal / (1 + Number(thinner.value) / 100) * ratioInfo.mainPart / (ratioInfo.mainPart + ratioInfo.hardPart)
+  : actualBox.style.display === "block" && actual.value !== ""
   ? Number(actual.value)
   : Number(base.value);
 
@@ -1041,7 +1147,9 @@ function renderHistoryList(){
   const div = document.createElement("div");
   div.className = "history-item";
 
-  const mainLabel = item.usedActual && item.actualValue
+  const mainLabel = item.mode === "area"
+   ? `面積：${item.paintArea}㎡<br>塗布量：${item.coverage}kg/㎡/回<br>今回必要量：${item.finishedTotal}kg`
+   : item.usedActual && item.actualValue
    ? `実測主剤重量：${item.actualValue}kg`
    : `主剤重量：${item.base}kg`;
 
@@ -1091,6 +1199,7 @@ document.addEventListener("keydown", event => {
 
 initializeAppInfo();
 updateThinnerUI();
+setMode("normal");
 loadData();
 updateRainAlert();
 updateHeatstrokeAlert();
