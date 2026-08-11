@@ -496,7 +496,7 @@ button:active{
   <button type="button" class="active" id="normalModeBtn">通常の配合</button>
   <button type="button" id="areaModeBtn">面積から計算</button>
  </div>
- <div class="area-guide" id="normalGuide">主剤重量から、硬化剤・希釈剤の量を計算します。</div>
+ <div class="area-guide" id="normalGuide">主剤重量から硬化剤・希釈剤を計算します。</div>
 </div>
 
 <div class="box area-only" id="areaBox">
@@ -577,10 +577,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　面積逆算版 Ver.1.12";
-const APP_VERSION = "Ver.1.12";
-const APP_DATE = "2026/08/10";
-const APP_TIME = "22:06 JST";
+const APP_NAME = "塗料配合計算";
+const APP_VERSION = "Ver.1.16";
+const APP_DATE = "2026/08/11";
+const APP_TIME = "20:35";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -621,7 +621,7 @@ let calculationMode = "normal";
 function initializeAppInfo(){
  document.title = APP_NAME;
  appTitle.textContent = APP_NAME;
- footerInfo.textContent = `Produced by N.H.S.　${APP_VERSION}　${APP_DATE} ${APP_TIME}`;
+ footerInfo.innerHTML = `Produced by N.H.S.　area-calc ${APP_VERSION}<br>${APP_DATE} ${APP_TIME}`;
 }
 
 function updateNeededTotal(){}
@@ -638,7 +638,7 @@ function setMode(mode){
  areaModeBtn.classList.toggle("active", isArea);
  normalGuide.textContent = isArea
   ? "塗装面積と塗布量から、塗料量を計算します。"
-  : "主剤重量から、硬化剤・希釈剤の量を計算します。";
+  : "主剤重量から硬化剤・希釈剤を計算します。";
  clearResult();
  updateNeededTotal();
 }
