@@ -81,9 +81,9 @@ h1{
  line-height:1.5;
 }
 .wbgt-info.warning{
- border-color:#e48b19;
- background:#fff4df;
- color:#a85600;
+ border-color:#d83a34;
+ background:#fff1f0;
+ color:#c62828;
  font-weight:bold;
 }
 .wbgt-info.error{
@@ -515,7 +515,7 @@ button:active{
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
 <div class="weather-status" id="weatherStatus" role="status">降雨情報を確認中…</div>
-<div class="wbgt-info" id="wbgtInfo" role="status">暑さ指数を確認中…</div>
+<div class="wbgt-info" id="wbgtInfo" role="status" hidden></div>
 
 <div class="box info history-inline">
  <div class="history-inline-top">
@@ -612,9 +612,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.18";
+const APP_VERSION = "Ver.1.19";
 const APP_DATE = "2026/08/11";
-const APP_TIME = "21:14";
+const APP_TIME = "21:26";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -694,6 +694,8 @@ function setWeatherStatus(message, isError = false){
 }
 
 function setWbgtInfo(message, style = ""){
+ wbgtInfo.hidden = !message;
+ if(!message) return;
  wbgtInfo.textContent = message;
  wbgtInfo.className = `wbgt-info${style ? " " + style : ""}`;
 }
@@ -730,14 +732,14 @@ function formatWbgtDate(date){
 
 async function updateWbgtInfo(){
  if(!navigator.geolocation || !window.fetch){
-  setWbgtInfo("暑さ指数：この端末では情報を取得できません。", "error");
+  setWbgtInfo("");
   return;
  }
 
  navigator.geolocation.getCurrentPosition(async position => {
   const nearestPoint = getNearestWbgtPoint(position.coords.latitude, position.coords.longitude);
   if(!nearestPoint){
-   setWbgtInfo("暑さ指数：近い情報提供地点を見つけられませんでした。", "error");
+   setWbgtInfo("");
    return;
   }
 
@@ -763,13 +765,13 @@ async function updateWbgtInfo(){
 
    const value = Number(latest.wbgt_WO).toFixed(1);
    const observedAt = String(latest.wbgt_date).replace(/(\d{4})\/(\d{2})\/(\d{2}) (\d{2}):.*/, "$1年$2月$3日 $4時");
-   const message = `暑さ指数（WBGT）：${nearestPoint[1]} ${value}　${observedAt}の取得情報`;
-   setWbgtInfo(value >= WBGT_WARNING_THRESHOLD ? `⚠ ${message}` : message, value >= WBGT_WARNING_THRESHOLD ? "warning" : "");
+   const message = `⚠ 暑さ指数（WBGT）${value}　${nearestPoint[1]}　${observedAt}の取得情報`;
+   setWbgtInfo(Number(value) >= WBGT_WARNING_THRESHOLD ? message : "", "warning");
   }catch(error){
-   setWbgtInfo("暑さ指数：情報を取得できませんでした。", "error");
+   setWbgtInfo("");
   }
  }, () => {
-  setWbgtInfo("暑さ指数：位置情報の許可が必要です。", "error");
+  setWbgtInfo("");
  }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
 }
 
