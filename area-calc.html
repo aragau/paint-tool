@@ -47,6 +47,66 @@ h1{
  border-radius:10px;
 }
 
+.weather-alert{
+ background:#fff1f0;
+ border:1px solid #eea9a2;
+ color:#b42318;
+ margin-top:12px;
+ padding:11px 12px;
+ border-radius:10px;
+ font-size:16px;
+ font-weight:bold;
+ line-height:1.45;
+ white-space:pre-line;
+}
+
+.weather-status{
+ margin-top:8px;
+ color:#5b6472;
+ font-size:13px;
+ line-height:1.45;
+ text-align:center;
+}
+.weather-status.error{
+ color:#b42318;
+}
+
+.weather-refresh{
+ display:block;
+ width:auto;
+ margin:7px auto 0;
+ padding:7px 12px;
+ background:#7898bc;
+ font-size:13px;
+ border-radius:8px;
+}
+.weather-refresh:disabled{
+ opacity:.65;
+ cursor:default;
+}
+
+.wbgt-info{
+ margin-top:8px;
+ padding:10px 12px;
+ border:1px solid #b7c5d7;
+ border-radius:10px;
+ background:#f4f8fc;
+ color:#334155;
+ font-size:14px;
+ line-height:1.5;
+}
+.wbgt-info.warning{
+ border-color:#d83a34;
+ background:#fff1f0;
+ color:#c62828;
+ font-weight:bold;
+}
+.wbgt-info.error{
+ border-color:#e4a09a;
+ background:#fff5f3;
+ color:#b42318;
+}
+
 .box{
  background:#eaf3ff;
  margin-top:12px;
@@ -457,10 +517,6 @@ button:active{
  line-height:1.5;
 }
 
-.weather-alert{margin-top:12px;padding:12px;border-radius:10px;background:#fff3e0;border:2px solid #ff9800;white-space:pre-line;font-weight:bold;}
-.weather-status{margin-top:12px;padding:10px 12px;border-radius:10px;background:#e8f5e9;border:2px solid #4caf50;font-size:16px;}
-.weather-status.error{background:#ffebee;border-color:#ef5350;color:#b91c1c;}
-.weather-refresh{margin-top:10px;background:#7898bc;font-size:16px;padding:10px;}
 </style>
 </head>
 
@@ -472,7 +528,7 @@ button:active{
 配合設定
 </div>
 
-<div class="weather-alert" id="rainAlert" hidden role="status"></div>
+<div class="weather-alert" id="weatherAlert" hidden role="status"></div>
 <div class="weather-status" id="weatherStatus" role="status">降雨情報を確認中…</div>
 <button type="button" class="weather-refresh" id="weatherRefreshBtn">天気情報を更新</button>
 
@@ -571,22 +627,21 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.23";
-const APP_DATE = "2026/08/14";
+const APP_VERSION = "Ver.1.21";
+const APP_DATE = "2026/08/11";
 const APP_TIME = "21:42";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
-const HEAVY_RAINFALL_THRESHOLD = 30;
 const STORAGE_HISTORY = "areaCalcHistory";
 const STORAGE_LAST = "areaCalcLastData";
 
 // ===== 画面要素 =====
 const appTitle = document.getElementById("appTitle");
 const footerInfo = document.getElementById("footerInfo");
+const weatherAlert = document.getElementById("weatherAlert");
 const weatherStatus = document.getElementById("weatherStatus");
 const weatherRefreshBtn = document.getElementById("weatherRefreshBtn");
-const rainAlert = document.getElementById("rainAlert");
 const ratioBox = document.getElementById("ratioBox");
 const ratio = document.getElementById("ratio");
 const customRatioBox = document.getElementById("customRatioBox");
@@ -610,97 +665,7 @@ const normalModeBtn = document.getElementById("normalModeBtn");
 const areaModeBtn = document.getElementById("areaModeBtn");
 const normalGuide = document.getElementById("normalGuide");
 let calculationMode = "normal";
-
-function formatWeatherDate(date){
- return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, "0")}時${String(date.getMinutes()).padStart(2, "0")}分`;
-}
-
-function setWeatherStatus(message, isError = false){
- weatherStatus.textContent = message;
- weatherStatus.style.color = isError ? "#b91c1c" : "";
-}
-
-function setRainAlert(message){
- rainAlert.textContent = message;
- rainAlert.hidden = !message;
-}
-
-function getForecastValues(times, values, startTime, endTime){
- return values.reduce((result, value, index) => {
-  const forecastTime = new Date(times[index]);
-  if(forecastTime >= startTime && forecastTime <= endTime){
-   const number = Number(value);
-   if(Number.isFinite(number)) result.push(number);
-  }
-  return result;
- }, []);
-}
-
-async function updateRainForecast(position){
- const latitude = position.coords.latitude;
- const longitude = position.coords.longitude;
- const url = "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(latitude) +
-  "&longitude=" + encodeURIComponent(longitude) +
-  "&hourly=precipitation_probability,precipitation&forecast_days=1&timezone=auto";
- const response = await fetch(url);
- if(!response.ok) throw new Error("Weather API response error");
-
- const data = await response.json();
- const times = data.hourly && data.hourly.time;
- const probabilities = data.hourly && data.hourly.precipitation_probability;
- const precipitation = data.hourly && data.hourly.precipitation;
- if(!Array.isArray(times) || !Array.isArray(probabilities) || !Array.isArray(precipitation)) throw new Error("Weather API data error");
-
- const now = new Date();
- const endTime = new Date(now.getTime() + WEATHER_FORECAST_HOURS * 60 * 60 * 1000);
- const forecastProbabilities = getForecastValues(times, probabilities, now, endTime);
- const forecastPrecipitation = getForecastValues(times, precipitation, now, endTime);
- if(!forecastProbabilities.length || !forecastPrecipitation.length) throw new Error("Forecast unavailable");
-
- const maxProbability = Math.max(...forecastProbabilities);
- const maxPrecipitation = Math.max(...forecastPrecipitation);
- setWeatherStatus(`降雨情報：${formatWeatherDate(now)}の取得情報`);
- setRainAlert(maxPrecipitation >= HEAVY_RAINFALL_THRESHOLD
-  ? `⚠ 今後1時間以内に激しい雨の予報（最大 ${maxPrecipitation.toFixed(1)}mm/h）`
-  : maxProbability >= WEATHER_PROBABILITY_THRESHOLD
-   ? "⚠ 今後1時間以内に降雨の予報"
-   : "");
-}
-
-function updateRainInformation(isManual = false){
- if(!navigator.geolocation){
-  setWeatherStatus("降雨情報：この端末では位置情報を利用できません。", true);
-  return;
- }
- if(!window.fetch){
-  setWeatherStatus("降雨情報：この端末では予報データを取得できません。", true);
-  return;
- }
-
- weatherRefreshBtn.disabled = true;
- if(isManual) setWeatherStatus("降雨情報：更新中…");
- navigator.geolocation.getCurrentPosition(async position => {
-  try{
-   await updateRainForecast(position);
-  }catch(error){
-   setRainAlert("");
-   setWeatherStatus("降雨情報：取得できませんでした。", true);
-  }finally{
-   weatherRefreshBtn.disabled = false;
-  }
- }, error => {
-  const reason = error && error.code === 1
-   ? "位置情報の許可が必要です。"
-   : error && error.code === 2
-    ? "現在地を取得できませんでした。"
-    : "位置情報の取得が時間切れになりました。";
-  setRainAlert("");
-  setWeatherStatus(`降雨情報：${reason}`, true);
-  weatherRefreshBtn.disabled = false;
- }, { enableHighAccuracy: false, timeout: 10000, maximumAge: isManual ? 0 : 300000 });
-}
-
-weatherRefreshBtn.addEventListener("click", () => updateRainInformation(true));
+const safetyAlerts = new Map();
 
 function initializeAppInfo(){
  document.title = APP_NAME;
@@ -729,6 +694,45 @@ function setMode(mode){
 
 normalModeBtn.addEventListener("click", () => setMode("normal"));
 areaModeBtn.addEventListener("click", () => setMode("area"));
+
+function setSafetyAlert(key, message){
+ if(message){
+  safetyAlerts.set(key, message);
+ }else{
+  safetyAlerts.delete(key);
+ }
+ weatherAlert.textContent = Array.from(safetyAlerts.values()).join("\n");
+ weatherAlert.hidden = safetyAlerts.size === 0;
+}
+
+function setWeatherStatus(message, isError = false){
+ weatherStatus.textContent = message;
+ weatherStatus.classList.toggle("error", isError);
+}
+
+function setWeatherRefreshLoading(isLoading){
+ weatherRefreshBtn.disabled = isLoading;
+ weatherRefreshBtn.textContent = isLoading ? "天気情報を更新中…" : "天気情報を更新";
+}
+
+function formatWeatherDate(date){
+ return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, "0")}時`;
+}
+
+function getForecastValues(times, values, startTime, endTime){
+ return values.reduce((result, value, index) => {
+  const forecastTime = new Date(times[index]);
+  if(forecastTime >= startTime && forecastTime <= endTime){
+   const number = Number(value);
+   if(Number.isFinite(number)) result.push(number);
+  }
+  return result;
+ }, []);
+}
+
+async function updateWeatherAlerts(position){const u="https://api.open-meteo.com/v1/forecast?latitude="+position.coords.latitude+"&longitude="+position.coords.longitude+"&hourly=precipitation_probability&forecast_days=1&timezone=auto";const d=await (await fetch(u)).json(),n=new Date(),e=new Date(n.getTime()+3600000),p=getForecastValues(d.hourly.time,d.hourly.precipitation_probability,n,e),m=Math.max(...p);setWeatherStatus(`天気情報：${formatWeatherDate(n)}の取得情報`);setSafetyAlert("rain",m>=80?"⚠ 今後1時間以内に降雨の予報":"");}
+function updateSafetyInformation(isManual=false){navigator.geolocation.getCurrentPosition(p=>updateWeatherAlerts(p),()=>setWeatherStatus("天気情報：位置情報の許可が必要です。",true),{enableHighAccuracy:false,timeout:10000,maximumAge:isManual?0:300000});}
+weatherRefreshBtn.addEventListener("click", () => updateSafetyInformation(true));
 
 function add(select, text, value = text){
  const op = document.createElement("option");
@@ -1210,7 +1214,7 @@ initializeAppInfo();
 updateThinnerUI();
 setMode("normal");
 loadData();
-updateRainInformation();
+updateSafetyInformation();
 </script>
 
 </body>
