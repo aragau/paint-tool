@@ -577,6 +577,7 @@ const APP_TIME = "21:42";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
+const HEAVY_RAINFALL_THRESHOLD = 30;
 const STORAGE_HISTORY = "areaCalcHistory";
 const STORAGE_LAST = "areaCalcLastData";
 
@@ -640,25 +641,30 @@ async function updateRainForecast(position){
  const longitude = position.coords.longitude;
  const url = "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(latitude) +
   "&longitude=" + encodeURIComponent(longitude) +
-  "&hourly=precipitation_probability&forecast_days=1&timezone=auto";
+  "&hourly=precipitation_probability,precipitation&forecast_days=1&timezone=auto";
  const response = await fetch(url);
  if(!response.ok) throw new Error("Weather API response error");
 
  const data = await response.json();
  const times = data.hourly && data.hourly.time;
  const probabilities = data.hourly && data.hourly.precipitation_probability;
- if(!Array.isArray(times) || !Array.isArray(probabilities)) throw new Error("Weather API data error");
+ const precipitation = data.hourly && data.hourly.precipitation;
+ if(!Array.isArray(times) || !Array.isArray(probabilities) || !Array.isArray(precipitation)) throw new Error("Weather API data error");
 
  const now = new Date();
  const endTime = new Date(now.getTime() + WEATHER_FORECAST_HOURS * 60 * 60 * 1000);
  const forecastProbabilities = getForecastValues(times, probabilities, now, endTime);
- if(!forecastProbabilities.length) throw new Error("Forecast unavailable");
+ const forecastPrecipitation = getForecastValues(times, precipitation, now, endTime);
+ if(!forecastProbabilities.length || !forecastPrecipitation.length) throw new Error("Forecast unavailable");
 
  const maxProbability = Math.max(...forecastProbabilities);
+ const maxPrecipitation = Math.max(...forecastPrecipitation);
  setWeatherStatus(`降雨情報：${formatWeatherDate(now)}の取得情報`);
- setRainAlert(maxProbability >= WEATHER_PROBABILITY_THRESHOLD
-  ? "⚠ 今後1時間以内に降雨の予報"
-  : "");
+ setRainAlert(maxPrecipitation >= HEAVY_RAINFALL_THRESHOLD
+  ? `⚠ 今後1時間以内に激しい雨の予報（最大 ${maxPrecipitation.toFixed(1)}mm/h）`
+  : maxProbability >= WEATHER_PROBABILITY_THRESHOLD
+   ? "⚠ 今後1時間以内に降雨の予報"
+   : "");
 }
 
 function updateRainInformation(isManual = false){
