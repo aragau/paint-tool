@@ -726,7 +726,7 @@ function getForecastValues(times, values, startTime, endTime){
  }, []);
 }
 
-async async function updateWeatherAlerts(position){
+async async async function updateWeatherAlerts(position){
  try{
   const url = "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(position.coords.latitude) + "&longitude=" + encodeURIComponent(position.coords.longitude) + "&hourly=precipitation_probability&forecast_days=1&timezone=auto";
   const response = await fetch(url);
