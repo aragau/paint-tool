@@ -457,6 +457,10 @@ button:active{
  line-height:1.5;
 }
 
+.weather-alert{margin-top:12px;padding:12px;border-radius:10px;background:#fff3e0;border:2px solid #ff9800;white-space:pre-line;font-weight:bold;}
+.weather-status{margin-top:12px;padding:10px 12px;border-radius:10px;background:#e8f5e9;border:2px solid #4caf50;font-size:16px;}
+.weather-status.error{background:#ffebee;border-color:#ef5350;color:#b91c1c;}
+.weather-refresh{margin-top:10px;background:#7898bc;font-size:16px;padding:10px;}
 </style>
 </head>
 
@@ -468,13 +472,9 @@ button:active{
 配合設定
 </div>
 
-<div class="box info" id="weatherBox">
- <div id="weatherStatus">降雨情報：確認中…</div>
- <button type="button" class="btn-gray" id="weatherRefreshBtn">降雨情報を更新</button>
- <div class="note">現在地の今後1時間の予報を表示します。</div>
-</div>
-
-<div class="box alert" id="rainAlert" hidden></div>
+<div class="weather-alert" id="rainAlert" hidden role="status"></div>
+<div class="weather-status" id="weatherStatus" role="status">降雨情報を確認中…</div>
+<button type="button" class="weather-refresh" id="weatherRefreshBtn">天気情報を更新</button>
 
 <div class="box info history-inline">
  <div class="history-inline-top">
