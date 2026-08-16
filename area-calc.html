@@ -683,9 +683,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.25";
+const APP_VERSION = "Ver.1.26";
 const APP_DATE = "2026/08/16";
-const APP_TIME = "20:00";
+const APP_TIME = "20:55";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1259,15 +1259,15 @@ let voiceSteps = [];
 function getVoiceSteps(){
  return calculationMode === "area"
   ? [
-    { key:"paintArea", label:"① 塗装面積", example:"例：30平方メートル" },
-    { key:"coverage", label:"② 塗布量", example:"例：0.15キロ" },
-    { key:"ratio", label:"③ 配合比", example:"例：9対1" },
-    { key:"thinner", label:"④ 希釈率", example:"例：10パーセント" }
+    { key:"paintArea", label:"① 塗装面積", example:"例：30㎡" },
+    { key:"coverage", label:"② 塗布量", example:"例：0.15kg/㎡/回" },
+    { key:"ratio", label:"③ 配合比", example:"例：9：1" },
+    { key:"thinner", label:"④ 希釈率", example:"例：10％" }
    ]
   : [
-    { key:"ratio", label:"① 配合比", example:"例：9対1" },
-    { key:"base", label:"② 主剤重量", example:"例：3キロ" },
-    { key:"thinner", label:"③ 希釈率", example:"例：10パーセント" }
+    { key:"ratio", label:"① 配合比", example:"例：9：1" },
+    { key:"base", label:"② 主剤重量", example:"例：3kg" },
+    { key:"thinner", label:"③ 希釈率", example:"例：10％" }
    ];
 }
 
