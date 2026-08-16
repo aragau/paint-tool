@@ -675,7 +675,7 @@ button:active{
    <div class="voice-guide" id="voiceGuide">順番に声で入力します</div>
    <div class="voice-list" id="voiceList"></div>
    <div class="voice-status" id="voiceStatus">マイクに向かって話してください</div>
-   <div class="voice-tools"><button type="button" class="voice-repeat" onclick="repeatVoiceStep()">もう一度</button><button type="button" class="voice-restart" onclick="restartVoiceInput()">最初から</button></div>
+   <div class="voice-tools"><button type="button" class="voice-repeat" onclick="backVoiceStep()">戻る</button><button type="button" class="voice-restart" onclick="restartVoiceInput()">最初から</button></div>
   </div>
  </div>
 </div>
@@ -683,9 +683,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.26";
+const APP_VERSION = "Ver.1.27";
 const APP_DATE = "2026/08/16";
-const APP_TIME = "20:55";
+const APP_TIME = "21:05";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1361,7 +1361,6 @@ function advanceVoiceStep(){
 function handleVoiceResult(text){
  const normalized = normalizeVoiceText(text);
  if(normalized.includes("最初から")){ restartVoiceInput(); return; }
- if(normalized.includes("もう1度") || normalized.includes("もう一度")){ repeatVoiceStep(); return; }
  const value = parseVoiceValue(text);
  if(value === null){ retryVoiceStep("確認できませんでした。もう一度聞き取ります…"); return; }
  const step = voiceSteps[voiceStepIndex];
@@ -1378,7 +1377,22 @@ function openVoiceInput(){
  closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = 0; voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden"; voiceGuide.textContent = calculationMode === "area" ? "面積から計算する内容を順番に声で入力します" : "順番に声で入力します"; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening();
 }
 function closeVoiceInput(){ clearVoiceRetry(); stopVoiceRecognition(); voiceOverlay.classList.remove("open"); document.body.style.overflow = ""; }
-function repeatVoiceStep(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
+function backVoiceStep(){
+ if(!voiceOverlay.classList.contains("open")) return;
+ if(voiceStepIndex === 0){ voiceStatus.textContent = "最初の項目です"; return; }
+ clearVoiceRetry();
+ stopVoiceRecognition();
+ voiceStepIndex -= 1;
+ const step = voiceSteps[voiceStepIndex];
+ getVoiceSelect(step.key).value = "";
+ if(step.key === "ratio") updateCustomRatioUI();
+ if(step.key === "base") updateActual();
+ if(step.key === "thinner") updateThinnerUI();
+ clearResult();
+ voiceRecognition = createVoiceRecognition();
+ renderVoiceStep();
+ window.setTimeout(startVoiceListening, 120);
+}
 function restartVoiceInput(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceStepIndex = 0; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
 
 document.addEventListener("keydown", event => {
