@@ -700,9 +700,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.29";
+const APP_VERSION = "Ver.1.30";
 const APP_DATE = "2026/08/16";
-const APP_TIME = "21:12";
+const APP_TIME = "21:19";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1359,7 +1359,10 @@ function createVoiceRecognition(){
  recognition.onresult = event => {
   const text = Array.from(event.results).map(result => result[0].transcript).join("").trim();
   const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"] .voice-item-value`);
-  if(text && item) item.textContent = text;
+  if(text && item){
+   const provisionalValue = parseVoiceValue(text);
+   item.textContent = provisionalValue === null ? text : voiceDisplayValue(voiceSteps[voiceStepIndex], provisionalValue);
+  }
   const finalResult = event.results[event.results.length - 1];
   if(finalResult && finalResult.isFinal) handleVoiceResult(text);
  };
