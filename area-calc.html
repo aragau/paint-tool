@@ -683,9 +683,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.27";
+const APP_VERSION = "Ver.1.28";
 const APP_DATE = "2026/08/16";
-const APP_TIME = "21:05";
+const APP_TIME = "21:09";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1368,7 +1368,7 @@ function handleVoiceResult(text){
  updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
  if(item){ item.classList.remove("active"); item.classList.add("done"); item.querySelector(".voice-item-state").textContent = "完了 ✓"; item.querySelector(".voice-item-value").textContent = voiceDisplayValue(step, value); }
- voiceStatus.textContent = `${step.label.replace(/^.[^ ]* /, "")}を入力しました`;
+ voiceStatus.textContent = `はい、${voiceDisplayValue(step, value)}ですね`;
  if(voiceRecognition && voiceIsListening) try{ voiceRecognition.abort(); }catch(error){}
  voiceIsListening = false; advanceVoiceStep();
 }
