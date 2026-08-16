@@ -248,9 +248,26 @@ button:active{
 .result{
  background:#f5f5f5;
  margin-top:18px;
- padding:15px;
+ padding:15px 15px 72px;
  border-radius:10px;
  min-height:30px;
+ position:relative;
+}
+
+.result-scroll-top{
+ position:absolute;
+ right:14px;
+ bottom:13px;
+ width:46px;
+ height:46px;
+ margin:0;
+ padding:0;
+ border-radius:50%;
+ background:#2d6cdf;
+ color:#fff;
+ font-size:28px;
+ line-height:1;
+ box-shadow:0 2px 7px rgba(0,0,0,.20);
 }
 
 .step{
@@ -683,9 +700,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.28";
+const APP_VERSION = "Ver.1.29";
 const APP_DATE = "2026/08/16";
-const APP_TIME = "21:09";
+const APP_TIME = "21:12";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1113,7 +1130,7 @@ function calc(){
  const hasHardener = Math.abs(hard) > 1e-12;
 
  if(!hasHardener){
-  result.innerHTML =
+ result.innerHTML =
    `<div class="step">主剤（${ratioInfo.label}）ここまで入れる<div class="value">${main.toFixed(2)}kg</div></div>` +
    (hasThin
     ? `<div class="step">希釈剤（${thinner.value}％） ${thin.toFixed(2)}kg 入れる<div class="value">${total.toFixed(2)}kg</div></div>`
@@ -1127,6 +1144,8 @@ function calc(){
     : "");
  }
 
+ result.insertAdjacentHTML("beforeend", '<button type="button" class="result-scroll-top" onclick="scrollToAppTop()" aria-label="画面上部へ戻る" title="画面上部へ戻る">↑</button>');
+
  saveData(ratioInfo);
 
  actual.value = "";
@@ -1134,6 +1153,10 @@ function calc(){
  if(showActualBtn) showActualBtn.style.display = "inline";
 
  smoothScrollTo(result, "start");
+}
+
+function scrollToAppTop(){
+ window.scrollTo({ top:0, behavior:"smooth" });
 }
 
 function openHistoryModal(){
