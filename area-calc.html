@@ -188,6 +188,51 @@ button:active{
  transform: translateY(1px);
 }
 
+.header{
+ display:grid;
+ grid-template-columns:1fr auto 1fr;
+ align-items:center;
+}
+.header-title{grid-column:2;}
+.voice-start{
+ grid-column:3;
+ width:46px;
+ height:46px;
+ margin:0;
+ padding:0;
+ justify-self:end;
+ display:grid;
+ place-items:center;
+ background:#fff;
+ border:2px solid rgba(255,255,255,.72);
+ border-radius:50%;
+ box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+.voice-start:active{transform:scale(.96);}
+.voice-start svg{width:25px;height:25px;stroke:#2d6cdf;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.voice-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.52);}
+.voice-overlay.open{display:flex;}
+.voice-panel{width:min(100%,520px);background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(248,251,255,.97));border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(15,23,42,.35);}
+.voice-panel-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:#2d6cdf;color:#fff;font-size:21px;font-weight:bold;}
+.voice-close{width:auto;margin:0;padding:8px 12px;background:#6b7280;font-size:15px;}
+.voice-body{padding:16px 14px 14px;}
+.voice-guide{text-align:center;color:#4b5563;font-size:15px;margin:0 0 12px;}
+.voice-list{display:flex;flex-direction:column;gap:10px;}
+.voice-item{padding:12px;border:2px solid #bed4ee;border-radius:12px;background:#eaf3ff;}
+.voice-item.active{border-color:#2d6cdf;background:#f7fbff;box-shadow:0 0 0 3px rgba(45,108,223,.12);}
+.voice-item.done{border-color:#4caf50;background:#e8f5e9;}
+.voice-item.error{border-color:#d97706;background:#fff7ed;}
+.voice-item-top{display:flex;justify-content:space-between;gap:10px;align-items:center;}
+.voice-item-label{font-size:18px;font-weight:bold;color:#1f2937;}
+.voice-item-state{font-size:14px;color:#4b5563;font-weight:bold;white-space:nowrap;}
+.voice-item-value{min-height:28px;margin-top:6px;color:#52606f;font-size:20px;font-weight:bold;}
+.voice-listening-dots{display:inline-flex;gap:3px;margin-left:5px;vertical-align:middle;}
+.voice-listening-dots i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.25;animation:voice-dot-pulse 1.05s infinite ease-in-out;}
+.voice-listening-dots i:nth-child(2){animation-delay:.16s;}.voice-listening-dots i:nth-child(3){animation-delay:.32s;}
+@keyframes voice-dot-pulse{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+.voice-status{min-height:22px;margin-top:12px;text-align:center;color:#4b5563;font-size:15px;}
+.voice-tools{display:flex;gap:10px;margin-top:12px;}.voice-tools button{margin:0;font-size:18px;padding:12px 8px;}.voice-repeat{background:#f59e0b;}.voice-restart{background:#64748b;}
+
 .btn-sub{
  background:#ff9800;
  font-size:18px;
@@ -525,7 +570,8 @@ button:active{
 <h1 id="appTitle">塗料配合計算　面積逆算版 Ver.1.12</h1>
 
 <div class="header">
-配合設定
+ <span class="header-title">配合設定</span>
+ <button class="voice-start" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path><path d="M8 21h8"></path></svg></button>
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
@@ -622,12 +668,24 @@ button:active{
  </div>
 </div>
 
+<div class="voice-overlay" id="voiceOverlay" aria-modal="true" role="dialog" aria-label="音声入力">
+ <div class="voice-panel">
+  <div class="voice-panel-header"><span>🎤 音声入力</span><button type="button" class="voice-close" onclick="closeVoiceInput()">閉じる</button></div>
+  <div class="voice-body">
+   <div class="voice-guide" id="voiceGuide">順番に声で入力します</div>
+   <div class="voice-list" id="voiceList"></div>
+   <div class="voice-status" id="voiceStatus">マイクに向かって話してください</div>
+   <div class="voice-tools"><button type="button" class="voice-repeat" onclick="repeatVoiceStep()">もう一度</button><button type="button" class="voice-restart" onclick="restartVoiceInput()">最初から</button></div>
+  </div>
+ </div>
+</div>
+
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.24";
-const APP_DATE = "2026/08/14";
-const APP_TIME = "22:06";
+const APP_VERSION = "Ver.1.25";
+const APP_DATE = "2026/08/16";
+const APP_TIME = "20:00";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1186,9 +1244,149 @@ function renderHistoryList(){
  });
 }
 
+// ===== 音声入力 =====
+const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voiceOverlay = document.getElementById("voiceOverlay");
+const voiceList = document.getElementById("voiceList");
+const voiceGuide = document.getElementById("voiceGuide");
+const voiceStatus = document.getElementById("voiceStatus");
+let voiceRecognition = null;
+let voiceStepIndex = 0;
+let voiceIsListening = false;
+let voiceRetryTimer = null;
+let voiceSteps = [];
+
+function getVoiceSteps(){
+ return calculationMode === "area"
+  ? [
+    { key:"paintArea", label:"① 塗装面積", example:"例：30平方メートル" },
+    { key:"coverage", label:"② 塗布量", example:"例：0.15キロ" },
+    { key:"ratio", label:"③ 配合比", example:"例：9対1" },
+    { key:"thinner", label:"④ 希釈率", example:"例：10パーセント" }
+   ]
+  : [
+    { key:"ratio", label:"① 配合比", example:"例：9対1" },
+    { key:"base", label:"② 主剤重量", example:"例：3キロ" },
+    { key:"thinner", label:"③ 希釈率", example:"例：10パーセント" }
+   ];
+}
+
+function normalizeVoiceText(text){
+ const kanjiDigits = { "〇":"0", "零":"0", "一":"1", "二":"2", "三":"3", "四":"4", "五":"5", "六":"6", "七":"7", "八":"8", "九":"9" };
+ return text.replace(/[〇零一二三四五六七八九]/g, character => kanjiDigits[character])
+  .replace(/[：:]/g, "対").replace(/たい|対|to/gi, "対")
+  .replace(/平方メートル|平米|㎡/gi, "").replace(/キログラム|キロ|kg/gi, "")
+  .replace(/パーセント|％|%/gi, "").replace(/点/g, ".").replace(/[\s、。]/g, "");
+}
+
+function parseVoiceValue(text){
+ const step = voiceSteps[voiceStepIndex];
+ const normalized = normalizeVoiceText(text);
+ if(!step) return null;
+ if(step.key === "ratio"){
+  const match = normalized.match(/(10|[1-9])対(10|[0-9])/);
+  if(!match) return null;
+  const value = `${match[1]}:${match[2]}`;
+  return Array.from(ratio.options).some(option => option.value === value) ? value : null;
+ }
+ const match = normalized.match(/\d+(?:\.\d+)?/);
+ if(!match) return null;
+ const number = Number(match[0]);
+ if(step.key === "base") return number >= .5 && number <= 20 && Math.abs(number * 2 - Math.round(number * 2)) < .001 ? number.toFixed(1) : null;
+ if(step.key === "paintArea") return Number.isInteger(number) && number >= 1 && number <= 500 && Array.from(paintArea.options).some(option => option.value === String(number)) ? String(number) : null;
+ if(step.key === "coverage"){
+  const value = number.toFixed(2);
+  return number >= .01 && number <= 1 && Array.from(coverage.options).some(option => option.value === value) ? value : null;
+ }
+ return Number.isInteger(number) && number >= 0 && number <= 30 ? String(number) : null;
+}
+
+function voiceDisplayValue(step, value){
+ if(step.key === "ratio") return value.replace(":", "：");
+ if(step.key === "paintArea") return `${value}㎡`;
+ if(step.key === "coverage") return `${value}kg/㎡/回`;
+ if(step.key === "base") return `${value}kg`;
+ return `${value}％`;
+}
+
+function renderVoiceStep(){
+ voiceList.innerHTML = voiceSteps.map((step, index) => {
+  const state = index < voiceStepIndex ? "完了 ✓" : index === voiceStepIndex ? '聞き取り中<span class="voice-listening-dots" aria-hidden="true"><i></i><i></i><i></i></span>' : "未入力";
+  const value = index < voiceStepIndex ? voiceDisplayValue(step, getVoiceSelect(step.key).value) : step.example;
+  return `<div class="voice-item ${index === voiceStepIndex ? "active" : ""} ${index < voiceStepIndex ? "done" : ""}" data-voice-item="${index}"><div class="voice-item-top"><div class="voice-item-label">${step.label}</div><div class="voice-item-state">${state}</div></div><div class="voice-item-value">${value}</div></div>`;
+ }).join("");
+ voiceStatus.textContent = "マイクに向かって話してください";
+}
+
+function getVoiceSelect(key){ return ({ ratio, base, thinner, paintArea, coverage })[key]; }
+function clearVoiceRetry(){ if(voiceRetryTimer) clearTimeout(voiceRetryTimer); voiceRetryTimer = null; }
+function showVoiceFailure(message){
+ const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
+ if(item){ item.classList.remove("active"); item.classList.add("error"); const state = item.querySelector(".voice-item-state"); if(state) state.textContent = "確認できません"; }
+ voiceStatus.textContent = message;
+}
+function retryVoiceStep(message){
+ clearVoiceRetry(); showVoiceFailure(message);
+ voiceRetryTimer = window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 1200);
+}
+function createVoiceRecognition(){
+ if(!SpeechRecognitionClass) return null;
+ const recognition = new SpeechRecognitionClass();
+ recognition.lang = "ja-JP"; recognition.continuous = false; recognition.interimResults = true; recognition.maxAlternatives = 1;
+ recognition.onresult = event => {
+  const text = Array.from(event.results).map(result => result[0].transcript).join("").trim();
+  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"] .voice-item-value`);
+  if(text && item) item.textContent = text;
+  const finalResult = event.results[event.results.length - 1];
+  if(finalResult && finalResult.isFinal) handleVoiceResult(text);
+ };
+ recognition.onerror = event => { voiceIsListening = false; if(event.error === "not-allowed" || event.error === "service-not-allowed") voiceStatus.textContent = "マイクの許可が必要です"; else if(event.error !== "aborted") retryVoiceStep("聞き取れませんでした。もう一度聞き取ります…"); };
+ recognition.onend = () => { voiceIsListening = false; };
+ return recognition;
+}
+function startVoiceListening(){
+ if(!voiceRecognition || !voiceOverlay.classList.contains("open")) return;
+ try{ voiceIsListening = true; voiceRecognition.start(); }
+ catch(error){ voiceIsListening = false; voiceStatus.textContent = "音声入力を開始し直しています…"; window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); try{ voiceIsListening = true; voiceRecognition.start(); }catch(retryError){ voiceIsListening = false; showVoiceFailure("音声入力を開始できませんでした。もう一度を押してください"); } }, 350); }
+}
+function stopVoiceRecognition(){
+ const recognition = voiceRecognition; voiceRecognition = null; voiceIsListening = false;
+ if(!recognition) return;
+ try{ recognition.onresult = null; recognition.onerror = null; recognition.onend = null; recognition.abort(); }catch(error){ try{ recognition.stop(); }catch(stopError){} }
+}
+function advanceVoiceStep(){
+ if(voiceStepIndex < voiceSteps.length - 1){ voiceStepIndex += 1; window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 500); }
+ else { window.setTimeout(() => { closeVoiceInput(); calc(); }, 250); }
+}
+function handleVoiceResult(text){
+ const normalized = normalizeVoiceText(text);
+ if(normalized.includes("最初から")){ restartVoiceInput(); return; }
+ if(normalized.includes("もう1度") || normalized.includes("もう一度")){ repeatVoiceStep(); return; }
+ const value = parseVoiceValue(text);
+ if(value === null){ retryVoiceStep("確認できませんでした。もう一度聞き取ります…"); return; }
+ const step = voiceSteps[voiceStepIndex];
+ getVoiceSelect(step.key).value = value;
+ updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
+ const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
+ if(item){ item.classList.remove("active"); item.classList.add("done"); item.querySelector(".voice-item-state").textContent = "完了 ✓"; item.querySelector(".voice-item-value").textContent = voiceDisplayValue(step, value); }
+ voiceStatus.textContent = `${step.label.replace(/^.[^ ]* /, "")}を入力しました`;
+ if(voiceRecognition && voiceIsListening) try{ voiceRecognition.abort(); }catch(error){}
+ voiceIsListening = false; advanceVoiceStep();
+}
+function openVoiceInput(){
+ if(!SpeechRecognitionClass){ alert("このブラウザは音声入力に対応していません"); return; }
+ closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = 0; voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden"; voiceGuide.textContent = calculationMode === "area" ? "面積から計算する内容を順番に声で入力します" : "順番に声で入力します"; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening();
+}
+function closeVoiceInput(){ clearVoiceRetry(); stopVoiceRecognition(); voiceOverlay.classList.remove("open"); document.body.style.overflow = ""; }
+function repeatVoiceStep(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
+function restartVoiceInput(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceStepIndex = 0; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
+
 document.addEventListener("keydown", event => {
  if(event.key === "Escape" && historyModal.classList.contains("open")){
   closeHistoryModal();
+ }
+ if(event.key === "Escape" && voiceOverlay.classList.contains("open")){
+  closeVoiceInput();
  }
 });
 
