@@ -702,12 +702,15 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.31";
+const APP_VERSION = "Ver.1.32";
 const APP_DATE = "2026/08/17";
-const APP_TIME = "22:20";
+const APP_TIME = "22:24";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
+const PREFECTURE_NAMES = {
+ "01":"北海道","02":"青森","03":"岩手","04":"宮城","05":"秋田","06":"山形","07":"福島","08":"茨城","09":"栃木","10":"群馬","11":"埼玉","12":"千葉","13":"東京","14":"神奈川","15":"新潟","16":"富山","17":"石川","18":"福井","19":"山梨","20":"長野","21":"岐阜","22":"静岡","23":"愛知","24":"三重","25":"滋賀","26":"京都","27":"大阪","28":"兵庫","29":"奈良","30":"和歌山","31":"鳥取","32":"島根","33":"岡山","34":"広島","35":"山口","36":"徳島","37":"香川","38":"愛媛","39":"高知","40":"福岡","41":"佐賀","42":"長崎","43":"熊本","44":"大分","45":"宮崎","46":"鹿児島","47":"沖縄"
+};
 const STORAGE_HISTORY = "areaCalcHistory";
 const STORAGE_LAST = "areaCalcLastData";
 
@@ -837,12 +840,44 @@ async function updateWeatherAlerts(position){
   }else{
    setSafetyAlert("rain", "");
   }
+  await updateHeatstrokeAlert(latitude, longitude);
   setWeatherStatus("");
  }catch(error){
-  setSafetyAlert("rain", "");
-  setWeatherStatus("降雨予報を取得できませんでした。", true);
+  setWeatherStatus("安全情報を取得できませんでした。", true);
  }finally{
   setWeatherRefreshLoading(false);
+ }
+}
+
+async function updateHeatstrokeAlert(latitude, longitude){
+ try{
+  const locationUrl = new URL("https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress");
+  locationUrl.search = new URLSearchParams({ lat: latitude.toFixed(6), lon: longitude.toFixed(6) });
+  const locationResponse = await fetch(locationUrl);
+  if(!locationResponse.ok) throw new Error("reverse geocode failed");
+  const locationData = await locationResponse.json();
+  const prefectureCode = String(locationData?.results?.muniCd || "").slice(0, 2);
+  const prefecture = PREFECTURE_NAMES[prefectureCode];
+  if(!prefecture) throw new Error("prefecture unavailable");
+
+  const sourceUrl = "https://r.jina.ai/http://https://www.wbgt.env.go.jp/alert.php";
+  const alertResponse = await fetch(sourceUrl);
+  if(!alertResponse.ok) throw new Error("heatstroke alert request failed");
+  const text = await alertResponse.text();
+  const row = text.split("\n").find(line => line.startsWith(`| ${prefecture} |`));
+  if(!row) throw new Error("prefecture row unavailable");
+  const cells = row.split("|").map(cell => cell.trim());
+  const specialAlert = cells[2] === "●";
+  const heatAlert = cells[3] === "●";
+  if(specialAlert){
+   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症特別警戒アラートが発表されています`);
+  }else if(heatAlert){
+   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症警戒アラートが発表されています`);
+  }else{
+   setSafetyAlert("heat", "");
+  }
+ }catch(error){
+  setSafetyAlert("heat", "");
  }
 }
 
