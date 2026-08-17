@@ -592,6 +592,8 @@ button:active{
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
+<div class="weather-status" id="weatherStatus" hidden></div>
+<button class="weather-refresh" id="weatherRefreshBtn" type="button">安全情報を更新</button>
 
 <div class="box info history-inline">
  <div class="history-inline-top">
@@ -700,9 +702,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算";
-const APP_VERSION = "Ver.1.30";
-const APP_DATE = "2026/08/16";
-const APP_TIME = "21:19";
+const APP_VERSION = "Ver.1.31";
+const APP_DATE = "2026/08/17";
+const APP_TIME = "22:20";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -713,6 +715,8 @@ const STORAGE_LAST = "areaCalcLastData";
 const appTitle = document.getElementById("appTitle");
 const footerInfo = document.getElementById("footerInfo");
 const weatherAlert = document.getElementById("weatherAlert");
+const weatherStatus = document.getElementById("weatherStatus");
+const weatherRefreshBtn = document.getElementById("weatherRefreshBtn");
 const ratioBox = document.getElementById("ratioBox");
 const ratio = document.getElementById("ratio");
 const customRatioBox = document.getElementById("customRatioBox");
@@ -779,6 +783,7 @@ function setSafetyAlert(key, message){
 function setWeatherStatus(message, isError = false){
  weatherStatus.textContent = message;
  weatherStatus.classList.toggle("error", isError);
+ weatherStatus.hidden = !message;
 }
 
 function setWeatherRefreshLoading(isLoading){
@@ -787,9 +792,61 @@ function setWeatherRefreshLoading(isLoading){
 }
 
 function updateSafetyInformation(){
- if(!navigator.geolocation) return;
- navigator.geolocation.getCurrentPosition(updateWeatherAlerts, () => setSafetyAlert("rain", ""), { enableHighAccuracy:false, timeout:10000, maximumAge:300000 });
+ if(!navigator.geolocation){
+  setWeatherStatus("このブラウザでは位置情報を取得できません。", true);
+  return;
+ }
+ setWeatherStatus("安全情報を確認中です。");
+ setWeatherRefreshLoading(true);
+ navigator.geolocation.getCurrentPosition(updateWeatherAlerts, () => {
+  setWeatherStatus("位置情報を取得できないため、安全情報を更新できません。", true);
+  setWeatherRefreshLoading(false);
+ }, { enableHighAccuracy:false, timeout:10000, maximumAge:300000 });
 }
+
+async function updateWeatherAlerts(position){
+ try{
+  const { latitude, longitude } = position.coords;
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.search = new URLSearchParams({
+   latitude: latitude.toFixed(4),
+   longitude: longitude.toFixed(4),
+   hourly: "precipitation_probability,precipitation",
+   forecast_days: "2",
+   timezone: "Asia/Tokyo"
+  });
+  const response = await fetch(url);
+  if(!response.ok) throw new Error("forecast request failed");
+  const data = await response.json();
+  const hourly = data.hourly;
+  if(!hourly?.time?.length) throw new Error("forecast data unavailable");
+
+  const now = Date.now();
+  const withinOneHour = hourly.time.reduce((items, time, index) => {
+   const forecastTime = new Date(`${time}:00+09:00`).getTime();
+   if(forecastTime >= now - 30 * 60 * 1000 && forecastTime <= now + 60 * 60 * 1000){
+    items.push({ probability: Number(hourly.precipitation_probability[index]) || 0, precipitation: Number(hourly.precipitation[index]) || 0 });
+   }
+   return items;
+  }, []);
+  const probability = Math.max(0, ...withinOneHour.map(item => item.probability));
+  const precipitation = Math.max(0, ...withinOneHour.map(item => item.precipitation));
+  if(probability >= WEATHER_PROBABILITY_THRESHOLD || precipitation > 0){
+   const detail = probability > 0 ? `（降水確率 ${probability}%）` : "";
+   setSafetyAlert("rain", `⚠ 今後1時間以内に降雨の予報があります${detail}`);
+  }else{
+   setSafetyAlert("rain", "");
+  }
+  setWeatherStatus("");
+ }catch(error){
+  setSafetyAlert("rain", "");
+  setWeatherStatus("降雨予報を取得できませんでした。", true);
+ }finally{
+  setWeatherRefreshLoading(false);
+ }
+}
+
+weatherRefreshBtn.addEventListener("click", updateSafetyInformation);
 
 function add(select, text, value = text){
  const op = document.createElement("option");
