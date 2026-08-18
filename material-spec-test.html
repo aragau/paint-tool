@@ -683,7 +683,10 @@ button:active{
       <input id="materialRatioOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1" hidden>
      </label>
     </div>
-    <label>希釈剤名<input id="materialThinnerName" type="text" maxlength="80" placeholder="例：塗料用シンナーA"></label>
+    <label>希釈剤名
+     <select id="materialThinnerChoice"><option value="">選択してください</option><option value="塗料用シンナー">塗料用シンナー</option><option value="水">水</option><option value="その他">その他（手入力）</option></select>
+     <input id="materialThinnerOther" type="text" maxlength="80" placeholder="例：ウレタンシンナー" hidden>
+    </label>
     <div class="two-columns">
      <label>標準希釈率（％）<input id="materialThinner" type="number" inputmode="numeric" min="0" max="30" step="1" placeholder="例：10"></label>
      <label>標準塗布量（kg/㎡/回）<input id="materialCoverage" type="number" inputmode="decimal" min="0.01" max="1" step="0.01" placeholder="例：0.16"></label>
@@ -783,9 +786,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.8";
+const APP_VERSION = "Ver.1.9";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "21:58";
+const APP_TIME = "22:00";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -859,7 +862,8 @@ const materialLiquid = document.getElementById("materialLiquid");
 const materialRatioField = document.getElementById("materialRatioField");
 const materialRatioChoice = document.getElementById("materialRatioChoice");
 const materialRatioOther = document.getElementById("materialRatioOther");
-const materialThinnerName = document.getElementById("materialThinnerName");
+const materialThinnerChoice = document.getElementById("materialThinnerChoice");
+const materialThinnerOther = document.getElementById("materialThinnerOther");
 const materialThinner = document.getElementById("materialThinner");
 const materialCoverage = document.getElementById("materialCoverage");
 const materialPotLife = document.getElementById("materialPotLife");
@@ -1323,7 +1327,9 @@ function clearMaterialForm(){
  materialRatioOther.value = "";
  materialRatioOther.hidden = true;
  updateMaterialLiquidUI();
- materialThinnerName.value = "";
+ materialThinnerChoice.value = "";
+ materialThinnerOther.value = "";
+ materialThinnerOther.hidden = true;
  materialThinner.value = "";
  materialCoverage.value = "";
  materialPotLife.value = "";
@@ -1384,7 +1390,7 @@ function materialFormData(){
  return {
   id: editingMaterialId || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
   maker, name, liquid:normalizeMaterialLiquid(materialLiquid.value), ratio:ratioValue,
-  thinnerName:materialThinnerName.value.trim(), thinner:thinnerValue,
+  thinnerName:(materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim(), thinner:thinnerValue,
   coverage:coverageValue === "" ? "" : Number(coverageValue).toFixed(2),
   potLife:materialPotLife.value.trim(), url, checked:materialChecked.value, memo:materialMemo.value.trim()
  };
@@ -1418,7 +1424,10 @@ function editMaterial(itemId){
  materialRatioOther.hidden = materialRatioChoice.value !== "その他";
  materialRatioOther.value = materialRatioChoice.value === "その他" ? (item.ratio || "") : "";
  updateMaterialLiquidUI();
- materialThinnerName.value = item.thinnerName || "";
+ const hasThinner = Array.from(materialThinnerChoice.options).some(option => option.value === item.thinnerName);
+ materialThinnerChoice.value = hasThinner ? item.thinnerName : (item.thinnerName ? "その他" : "");
+ materialThinnerOther.hidden = materialThinnerChoice.value !== "その他";
+ materialThinnerOther.value = materialThinnerChoice.value === "その他" ? (item.thinnerName || "") : "";
  materialThinner.value = item.thinner ?? "";
  materialCoverage.value = item.coverage ?? "";
  materialPotLife.value = item.potLife || "";
@@ -1506,6 +1515,13 @@ materialRatioChoice.addEventListener("change", () => {
 });
 
 materialLiquid.addEventListener("change", updateMaterialLiquidUI);
+
+materialThinnerChoice.addEventListener("change", () => {
+ const isOther = materialThinnerChoice.value === "その他";
+ materialThinnerOther.hidden = !isOther;
+ if(!isOther) materialThinnerOther.value = "";
+ if(isOther) materialThinnerOther.focus();
+});
 
 function renderLatestBox(data){
  if(!data){
