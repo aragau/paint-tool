@@ -670,7 +670,10 @@ button:active{
      </select>
      <input id="materialMakerOther" type="text" maxlength="80" placeholder="メーカー名を入力" hidden>
     </label>
-    <label>製品名<input id="materialName" type="text" maxlength="100" placeholder="例：ハイポンファインプライマーII"></label>
+    <label>製品名
+     <select id="materialProductChoice"><option value="">メーカーを先に選択してください</option></select>
+     <input id="materialProductOther" type="text" maxlength="100" placeholder="製品名を入力" hidden>
+    </label>
     <label>色・用途<input id="materialUse" type="text" maxlength="100" placeholder="例：グレー／錆止め"></label>
     <div class="two-columns">
      <label>液数<select id="materialLiquid"><option value="二液">二液</option><option value="一液">一液</option></select></label>
@@ -776,9 +779,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.1";
+const APP_VERSION = "Ver.1.2";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "21:09";
+const APP_TIME = "21:32";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -788,6 +791,23 @@ const PREFECTURE_NAMES = {
 const STORAGE_HISTORY = "materialSpecTestHistory";
 const STORAGE_LAST = "materialSpecTestLastData";
 const STORAGE_MATERIALS = "materialSpecTestMaterials";
+const MATERIAL_PRODUCT_OPTIONS = {
+ "日本ペイント": [
+  "パーフェクトトップSi", "ファインパーフェクトトップSi", "ケンエースG-II", "水性ケンエース",
+  "ハイポンファインプライマーII", "ファインパーフェクトベスト", "ファインパーフェクトルーフ",
+  "水性パーフェクトシーラー", "1液ファインパーフェクトシーラー", "ファイン浸透造膜シーラー"
+ ],
+ "菊水化学工業": [
+  "水系ファインコートシリコン", "水系ファインコートフッ素BMB", "ロイヤルシリコン", "ロイヤル無機α",
+  "水系ファインコートシリコン遮熱", "ロイヤル無機α遮熱", "キクスイ SPパワールーフSi",
+  "水系バンノウプライマーエポ", "キクスイ浸透性プライマーE", "カチコテSP"
+ ],
+ "エスケー化研": [
+  "水性セラミシリコン", "エスケープレミアムシリコン", "クリーンマイルドシリコン", "水性弾性セラミシリコン",
+  "アートフレッシュ", "水性ヤネフレッシュシリコン", "一液プレミアムルーフシリコン",
+  "マイルドサビガード", "水性ミラクシーラーエコ", "水性ソフトサーフSG"
+ ]
+};
 
 // ===== 画面要素 =====
 const appTitle = document.getElementById("appTitle");
@@ -816,7 +836,8 @@ const materialModal = document.getElementById("materialModal");
 const materialList = document.getElementById("materialList");
 const materialMakerChoice = document.getElementById("materialMakerChoice");
 const materialMakerOther = document.getElementById("materialMakerOther");
-const materialName = document.getElementById("materialName");
+const materialProductChoice = document.getElementById("materialProductChoice");
+const materialProductOther = document.getElementById("materialProductOther");
 const materialUse = document.getElementById("materialUse");
 const materialLiquid = document.getElementById("materialLiquid");
 const materialRatio = document.getElementById("materialRatio");
@@ -1259,7 +1280,10 @@ function clearMaterialForm(){
  materialMakerChoice.value = "";
  materialMakerOther.value = "";
  materialMakerOther.hidden = true;
- materialName.value = "";
+ materialProductChoice.innerHTML = '<option value="">メーカーを先に選択してください</option>';
+ materialProductChoice.disabled = true;
+ materialProductOther.value = "";
+ materialProductOther.hidden = true;
  materialUse.value = "";
  materialLiquid.value = "二液";
  materialRatio.value = "";
@@ -1274,6 +1298,20 @@ function clearMaterialForm(){
 
 function resetMaterialForm(){
  clearMaterialForm();
+}
+
+function updateMaterialProductOptions(selectedProduct = ""){
+ const maker = materialMakerChoice.value;
+ const products = MATERIAL_PRODUCT_OPTIONS[maker] || [];
+ materialProductChoice.innerHTML = "";
+ add(materialProductChoice, products.length ? "製品を選択してください" : "候補なし", "");
+ products.forEach(product => add(materialProductChoice, product, product));
+ add(materialProductChoice, "その他（手入力）", "その他");
+ materialProductChoice.disabled = !maker;
+ const hasProduct = products.includes(selectedProduct);
+ materialProductChoice.value = hasProduct ? selectedProduct : (selectedProduct ? "その他" : "");
+ materialProductOther.hidden = materialProductChoice.value !== "その他";
+ materialProductOther.value = materialProductChoice.value === "その他" ? selectedProduct : "";
 }
 
 function openMaterialModal(){
@@ -1292,7 +1330,7 @@ function closeMaterialModal(event){
 
 function materialFormData(){
  const maker = materialMakerChoice.value === "その他" ? materialMakerOther.value.trim() : materialMakerChoice.value;
- const name = materialName.value.trim();
+ const name = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
  const ratioValue = normalizeMaterialRatio(materialRatio.value);
  const thinnerValue = materialThinner.value.trim();
  const coverageValue = materialCoverage.value.trim();
@@ -1336,7 +1374,7 @@ function editMaterial(itemId){
  materialMakerChoice.value = predefinedMaker ? item.maker : "その他";
  materialMakerOther.hidden = predefinedMaker;
  materialMakerOther.value = predefinedMaker ? "" : (item.maker || "");
- materialName.value = item.name || "";
+ updateMaterialProductOptions(item.name || "");
  materialUse.value = item.use || "";
  materialLiquid.value = item.liquid || "二液";
  materialRatio.value = item.ratio || "";
@@ -1410,6 +1448,14 @@ materialMakerChoice.addEventListener("change", () => {
  materialMakerOther.hidden = !isOther;
  if(!isOther) materialMakerOther.value = "";
  if(isOther) materialMakerOther.focus();
+ updateMaterialProductOptions();
+});
+
+materialProductChoice.addEventListener("change", () => {
+ const isOther = materialProductChoice.value === "その他";
+ materialProductOther.hidden = !isOther;
+ if(!isOther) materialProductOther.value = "";
+ if(isOther) materialProductOther.focus();
 });
 
 function renderLatestBox(data){
