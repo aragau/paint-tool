@@ -166,6 +166,19 @@ label{
  display:none !important;
 }
 
+.field-label-row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+}
+
+.maker-site-link{
+ font-size:14px;
+ font-weight:normal;
+ white-space:nowrap;
+}
+
 .note{
  color:#cc6600;
  font-size:15px;
@@ -705,7 +718,7 @@ button:active{
      <select id="materialPotLifeChoice"><option value="">選択してください</option><option value="23℃で30分">23℃で30分</option><option value="23℃で1時間">23℃で1時間</option><option value="23℃で2時間">23℃で2時間</option><option value="23℃で3時間">23℃で3時間</option><option value="23℃で4時間">23℃で4時間</option><option value="23℃で5時間">23℃で5時間</option><option value="23℃で6時間">23℃で6時間</option><option value="23℃で7時間">23℃で7時間</option><option value="23℃で8時間">23℃で8時間</option><option value="23℃で12時間">23℃で12時間</option><option value="23℃で24時間">23℃で24時間</option><option value="その他">その他（手入力）</option></select>
      <input id="materialPotLifeOther" type="text" maxlength="80" placeholder="例：20℃で5時間" hidden>
     </label>
-    <label>公式資料URL<input id="materialUrl" type="url" maxlength="500" placeholder="https://..."></label>
+    <label><span class="field-label-row">公式資料URL<a id="makerSiteLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>メーカー公式サイト</a></span><input id="materialUrl" type="url" maxlength="500" placeholder="https://..."></label>
     <label>公式確認日<input id="materialChecked" type="date"></label>
     <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
     <div class="modal-tools"><button class="material-save" type="button" onclick="saveMaterial()">材料仕様を保存</button><button class="material-cancel" type="button" onclick="resetMaterialForm()">入力を取り消す</button></div>
@@ -799,9 +812,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.14";
+const APP_VERSION = "Ver.1.15";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "22:24";
+const APP_TIME = "22:27";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -840,6 +853,14 @@ const MATERIAL_PRODUCT_OPTIONS = {
   "ユメロック", "ユメロックDX", "ハイパーユメロック", "サンフロンUV", "サンフロンUVエコ",
   "ロック水性外壁", "ロック水性プロテクトルーフ", "ユメロックルーフ", "サビカットプラス", "ロックエポキシプライマー"
  ]
+};
+const MAKER_SITE_URLS = {
+ "日本ペイント":"https://www.nipponpaint.co.jp/",
+ "関西ペイント":"https://www.kansai.co.jp/",
+ "エスケー化研":"https://www.sk-kaken.co.jp/",
+ "菊水化学工業":"https://www.kikusui-chem.co.jp/",
+ "水谷ペイント":"https://www.polyma.co.jp/",
+ "ロックペイント":"https://www.rockpaint.co.jp/"
 };
 
 // ===== 画面要素 =====
@@ -884,6 +905,7 @@ const materialCoverageOther = document.getElementById("materialCoverageOther");
 const materialPotLifeField = document.getElementById("materialPotLifeField");
 const materialPotLifeChoice = document.getElementById("materialPotLifeChoice");
 const materialPotLifeOther = document.getElementById("materialPotLifeOther");
+const makerSiteLink = document.getElementById("makerSiteLink");
 const materialUrl = document.getElementById("materialUrl");
 const materialChecked = document.getElementById("materialChecked");
 const materialMemo = document.getElementById("materialMemo");
@@ -1284,6 +1306,22 @@ function restoreChoice(choice, other, value){
  other.value = choice.value === "その他" ? (value || "") : "";
 }
 
+function updateMakerSiteLink(){
+ const maker = materialMakerChoice.value;
+ const url = MAKER_SITE_URLS[maker];
+ makerSiteLink.hidden = !url;
+ makerSiteLink.href = url || "#";
+ makerSiteLink.textContent = url ? `${maker}公式サイト` : "メーカー公式サイト";
+}
+
+function setCheckedToday(){
+ const now = new Date();
+ const year = now.getFullYear();
+ const month = String(now.getMonth() + 1).padStart(2, "0");
+ const day = String(now.getDate()).padStart(2, "0");
+ materialChecked.value = `${year}-${month}-${day}`;
+}
+
 function updateMaterialLiquidUI(){
  const isOneLiquid = materialLiquid.value === "1液";
  materialRatioField.hidden = isOneLiquid;
@@ -1350,6 +1388,7 @@ function clearMaterialForm(){
  materialMakerChoice.value = "";
  materialMakerOther.value = "";
  materialMakerOther.hidden = true;
+ updateMakerSiteLink();
  materialProductChoice.innerHTML = '<option value="">メーカーを先に選択してください</option>';
  materialProductChoice.disabled = true;
  materialProductOther.value = "";
@@ -1455,6 +1494,7 @@ function editMaterial(itemId){
  materialMakerChoice.value = predefinedMaker ? item.maker : "その他";
  materialMakerOther.hidden = predefinedMaker;
  materialMakerOther.value = predefinedMaker ? "" : (item.maker || "");
+ updateMakerSiteLink();
  updateMaterialProductOptions(item.name || "");
  materialLiquid.value = normalizeMaterialLiquid(item.liquid);
  const hasRatio = Array.from(materialRatioChoice.options).some(option => option.value === item.ratio);
@@ -1536,7 +1576,10 @@ materialMakerChoice.addEventListener("change", () => {
  if(!isOther) materialMakerOther.value = "";
  if(isOther) materialMakerOther.focus();
  updateMaterialProductOptions();
+ updateMakerSiteLink();
 });
+
+makerSiteLink.addEventListener("click", setCheckedToday);
 
 materialProductChoice.addEventListener("change", () => {
  const isOther = materialProductChoice.value === "その他";
