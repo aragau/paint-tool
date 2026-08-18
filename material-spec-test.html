@@ -675,8 +675,13 @@ button:active{
      <input id="materialProductOther" type="text" maxlength="100" placeholder="製品名を入力" hidden>
     </label>
     <div class="two-columns">
-     <label>液数<select id="materialLiquid"><option value="二液">二液</option><option value="一液">一液</option></select></label>
-     <label>配合比<input id="materialRatio" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1"></label>
+     <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="一液">一液</option><option value="二液">二液</option></select></label>
+     <label>配合比
+      <select id="materialRatioChoice">
+       <option value="">選択してください</option><option value="1:0">1：0</option><option value="1:1">1：1</option><option value="2:1">2：1</option><option value="3:1">3：1</option><option value="4:1">4：1</option><option value="5:1">5：1</option><option value="6:1">6：1</option><option value="8:1">8：1</option><option value="9:1">9：1</option><option value="10:1">10：1</option><option value="14:1">14：1</option><option value="その他">その他（手入力）</option>
+      </select>
+      <input id="materialRatioOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1" hidden>
+     </label>
     </div>
     <label>希釈剤名<input id="materialThinnerName" type="text" maxlength="80" placeholder="例：塗料用シンナーA"></label>
     <div class="two-columns">
@@ -778,9 +783,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.4";
+const APP_VERSION = "Ver.1.5";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "21:34";
+const APP_TIME = "21:47";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -851,7 +856,8 @@ const materialMakerOther = document.getElementById("materialMakerOther");
 const materialProductChoice = document.getElementById("materialProductChoice");
 const materialProductOther = document.getElementById("materialProductOther");
 const materialLiquid = document.getElementById("materialLiquid");
-const materialRatio = document.getElementById("materialRatio");
+const materialRatioChoice = document.getElementById("materialRatioChoice");
+const materialRatioOther = document.getElementById("materialRatioOther");
 const materialThinnerName = document.getElementById("materialThinnerName");
 const materialThinner = document.getElementById("materialThinner");
 const materialCoverage = document.getElementById("materialCoverage");
@@ -1295,8 +1301,10 @@ function clearMaterialForm(){
  materialProductChoice.disabled = true;
  materialProductOther.value = "";
  materialProductOther.hidden = true;
- materialLiquid.value = "二液";
- materialRatio.value = "";
+ materialLiquid.value = "";
+ materialRatioChoice.value = "";
+ materialRatioOther.value = "";
+ materialRatioOther.hidden = true;
  materialThinnerName.value = "";
  materialThinner.value = "";
  materialCoverage.value = "";
@@ -1341,11 +1349,12 @@ function closeMaterialModal(event){
 function materialFormData(){
  const maker = materialMakerChoice.value === "その他" ? materialMakerOther.value.trim() : materialMakerChoice.value;
  const name = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
- const ratioValue = normalizeMaterialRatio(materialRatio.value);
+ const ratioValue = normalizeMaterialRatio(materialRatioChoice.value === "その他" ? materialRatioOther.value : materialRatioChoice.value);
  const thinnerValue = materialThinner.value.trim();
  const coverageValue = materialCoverage.value.trim();
  if(!maker || !name){ alert("メーカーと製品名を入力してください"); return null; }
- if(!ratioValue){ alert("配合比を「9:1」の形で入力してください"); return null; }
+ if(!materialLiquid.value){ alert("液数を選択してください"); return null; }
+ if(!ratioValue){ alert("配合比を選択、または「9:1」の形で入力してください"); return null; }
  if(thinnerValue !== "" && (!Number.isInteger(Number(thinnerValue)) || Number(thinnerValue) < 0 || Number(thinnerValue) > 30)){
   alert("標準希釈率は0〜30％で入力してください"); return null;
  }
@@ -1385,8 +1394,11 @@ function editMaterial(itemId){
  materialMakerOther.hidden = predefinedMaker;
  materialMakerOther.value = predefinedMaker ? "" : (item.maker || "");
  updateMaterialProductOptions(item.name || "");
- materialLiquid.value = item.liquid || "二液";
- materialRatio.value = item.ratio || "";
+ materialLiquid.value = item.liquid || "";
+ const hasRatio = Array.from(materialRatioChoice.options).some(option => option.value === item.ratio);
+ materialRatioChoice.value = hasRatio ? item.ratio : (item.ratio ? "その他" : "");
+ materialRatioOther.hidden = materialRatioChoice.value !== "その他";
+ materialRatioOther.value = materialRatioChoice.value === "その他" ? (item.ratio || "") : "";
  materialThinnerName.value = item.thinnerName || "";
  materialThinner.value = item.thinner ?? "";
  materialCoverage.value = item.coverage ?? "";
@@ -1465,6 +1477,13 @@ materialProductChoice.addEventListener("change", () => {
  materialProductOther.hidden = !isOther;
  if(!isOther) materialProductOther.value = "";
  if(isOther) materialProductOther.focus();
+});
+
+materialRatioChoice.addEventListener("change", () => {
+ const isOther = materialRatioChoice.value === "その他";
+ materialRatioOther.hidden = !isOther;
+ if(!isOther) materialRatioOther.value = "";
+ if(isOther) materialRatioOther.focus();
 });
 
 function renderLatestBox(data){
