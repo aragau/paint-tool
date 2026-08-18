@@ -692,10 +692,19 @@ button:active{
      <input id="materialThinnerOther" type="text" maxlength="80" placeholder="例：ウレタンシンナー" hidden>
     </label>
     <div class="two-columns">
-     <label>標準希釈率（％）<input id="materialThinner" type="number" inputmode="numeric" min="0" max="30" step="1" placeholder="例：10"></label>
-     <label>標準塗布量（kg/㎡/回）<input id="materialCoverage" type="number" inputmode="decimal" min="0.01" max="1" step="0.01" placeholder="例：0.16"></label>
+     <label>標準希釈率（％）
+      <select id="materialThinnerRateChoice"><option value="">選択してください</option><option value="0">0％</option><option value="5">5％</option><option value="10">10％</option><option value="15">15％</option><option value="20">20％</option><option value="25">25％</option><option value="30">30％</option><option value="その他">その他（手入力）</option></select>
+      <input id="materialThinnerRateOther" type="number" inputmode="numeric" min="0" max="30" step="1" placeholder="例：8" hidden>
+     </label>
+     <label>標準塗布量（kg/㎡/回）
+      <select id="materialCoverageChoice"><option value="">選択してください</option><option value="0.05">0.05</option><option value="0.06">0.06</option><option value="0.07">0.07</option><option value="0.08">0.08</option><option value="0.09">0.09</option><option value="0.10">0.10</option><option value="0.11">0.11</option><option value="0.12">0.12</option><option value="0.13">0.13</option><option value="0.14">0.14</option><option value="0.15">0.15</option><option value="0.16">0.16</option><option value="0.17">0.17</option><option value="0.18">0.18</option><option value="0.19">0.19</option><option value="0.20">0.20</option><option value="0.25">0.25</option><option value="0.30">0.30</option><option value="0.40">0.40</option><option value="0.50">0.50</option><option value="1.00">1.00</option><option value="その他">その他（手入力）</option></select>
+      <input id="materialCoverageOther" type="number" inputmode="decimal" min="0.01" max="1" step="0.01" placeholder="例：0.22" hidden>
+     </label>
     </div>
-    <label id="materialPotLifeField">ポットライフ<input id="materialPotLife" type="text" maxlength="80" placeholder="例：23℃で6時間"></label>
+    <label id="materialPotLifeField">ポットライフ
+     <select id="materialPotLifeChoice"><option value="">選択してください</option><option value="23℃で30分">23℃で30分</option><option value="23℃で1時間">23℃で1時間</option><option value="23℃で2時間">23℃で2時間</option><option value="23℃で3時間">23℃で3時間</option><option value="23℃で4時間">23℃で4時間</option><option value="23℃で5時間">23℃で5時間</option><option value="23℃で6時間">23℃で6時間</option><option value="23℃で7時間">23℃で7時間</option><option value="23℃で8時間">23℃で8時間</option><option value="23℃で12時間">23℃で12時間</option><option value="23℃で24時間">23℃で24時間</option><option value="その他">その他（手入力）</option></select>
+     <input id="materialPotLifeOther" type="text" maxlength="80" placeholder="例：20℃で5時間" hidden>
+    </label>
     <label>公式資料URL<input id="materialUrl" type="url" maxlength="500" placeholder="https://..."></label>
     <label>公式確認日<input id="materialChecked" type="date"></label>
     <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
@@ -790,9 +799,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.13";
+const APP_VERSION = "Ver.1.14";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "22:22";
+const APP_TIME = "22:24";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -868,10 +877,13 @@ const materialRatioChoice = document.getElementById("materialRatioChoice");
 const materialRatioOther = document.getElementById("materialRatioOther");
 const materialThinnerChoice = document.getElementById("materialThinnerChoice");
 const materialThinnerOther = document.getElementById("materialThinnerOther");
-const materialThinner = document.getElementById("materialThinner");
-const materialCoverage = document.getElementById("materialCoverage");
+const materialThinnerRateChoice = document.getElementById("materialThinnerRateChoice");
+const materialThinnerRateOther = document.getElementById("materialThinnerRateOther");
+const materialCoverageChoice = document.getElementById("materialCoverageChoice");
+const materialCoverageOther = document.getElementById("materialCoverageOther");
 const materialPotLifeField = document.getElementById("materialPotLifeField");
-const materialPotLife = document.getElementById("materialPotLife");
+const materialPotLifeChoice = document.getElementById("materialPotLifeChoice");
+const materialPotLifeOther = document.getElementById("materialPotLifeOther");
 const materialUrl = document.getElementById("materialUrl");
 const materialChecked = document.getElementById("materialChecked");
 const materialMemo = document.getElementById("materialMemo");
@@ -1261,6 +1273,17 @@ function normalizeMaterialLiquid(value){
  return value === "1液" || value === "2液" ? value : "";
 }
 
+function choiceValue(choice, other){
+ return choice.value === "その他" ? other.value.trim() : choice.value;
+}
+
+function restoreChoice(choice, other, value){
+ const isListed = Array.from(choice.options).some(option => option.value === value);
+ choice.value = isListed ? value : (value ? "その他" : "");
+ other.hidden = choice.value !== "その他";
+ other.value = choice.value === "その他" ? (value || "") : "";
+}
+
 function updateMaterialLiquidUI(){
  const isOneLiquid = materialLiquid.value === "1液";
  materialRatioField.hidden = isOneLiquid;
@@ -1269,7 +1292,9 @@ function updateMaterialLiquidUI(){
   materialRatioChoice.value = "";
   materialRatioOther.value = "";
   materialRatioOther.hidden = true;
-  materialPotLife.value = "";
+  materialPotLifeChoice.value = "";
+  materialPotLifeOther.value = "";
+  materialPotLifeOther.hidden = true;
  }
 }
 
@@ -1337,9 +1362,15 @@ function clearMaterialForm(){
  materialThinnerChoice.value = "";
  materialThinnerOther.value = "";
  materialThinnerOther.hidden = true;
- materialThinner.value = "";
- materialCoverage.value = "";
- materialPotLife.value = "";
+ materialThinnerRateChoice.value = "";
+ materialThinnerRateOther.value = "";
+ materialThinnerRateOther.hidden = true;
+ materialCoverageChoice.value = "";
+ materialCoverageOther.value = "";
+ materialCoverageOther.hidden = true;
+ materialPotLifeChoice.value = "";
+ materialPotLifeOther.value = "";
+ materialPotLifeOther.hidden = true;
  materialUrl.value = "";
  materialChecked.value = "";
  materialMemo.value = "";
@@ -1381,8 +1412,8 @@ function materialFormData(){
  const maker = materialMakerChoice.value === "その他" ? materialMakerOther.value.trim() : materialMakerChoice.value;
  const name = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
  const ratioValue = materialLiquid.value === "1液" ? "10:0" : normalizeMaterialRatio(materialRatioChoice.value === "その他" ? materialRatioOther.value : materialRatioChoice.value);
- const thinnerValue = materialThinner.value.trim();
- const coverageValue = materialCoverage.value.trim();
+ const thinnerValue = choiceValue(materialThinnerRateChoice, materialThinnerRateOther);
+ const coverageValue = choiceValue(materialCoverageChoice, materialCoverageOther);
  if(!maker || !name){ alert("メーカーと製品名を入力してください"); return null; }
  if(!materialLiquid.value){ alert("液数を選択してください"); return null; }
  if(materialLiquid.value === "2液" && !ratioValue){ alert("配合比を選択、または「9:1」の形で入力してください"); return null; }
@@ -1399,7 +1430,7 @@ function materialFormData(){
   maker, name, liquid:normalizeMaterialLiquid(materialLiquid.value), ratio:ratioValue,
   thinnerName:(materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim(), thinner:thinnerValue,
   coverage:coverageValue === "" ? "" : Number(coverageValue).toFixed(2),
-  potLife:materialLiquid.value === "1液" ? "" : materialPotLife.value.trim(), url, checked:materialChecked.value, memo:materialMemo.value.trim()
+  potLife:materialLiquid.value === "1液" ? "" : choiceValue(materialPotLifeChoice, materialPotLifeOther), url, checked:materialChecked.value, memo:materialMemo.value.trim()
  };
 }
 
@@ -1435,9 +1466,9 @@ function editMaterial(itemId){
  materialThinnerChoice.value = hasThinner ? item.thinnerName : (item.thinnerName ? "その他" : "");
  materialThinnerOther.hidden = materialThinnerChoice.value !== "その他";
  materialThinnerOther.value = materialThinnerChoice.value === "その他" ? (item.thinnerName || "") : "";
- materialThinner.value = item.thinner ?? "";
- materialCoverage.value = item.coverage ?? "";
- materialPotLife.value = materialLiquid.value === "1液" ? "" : (item.potLife || "");
+ restoreChoice(materialThinnerRateChoice, materialThinnerRateOther, item.thinner ?? "");
+ restoreChoice(materialCoverageChoice, materialCoverageOther, item.coverage ?? "");
+ restoreChoice(materialPotLifeChoice, materialPotLifeOther, materialLiquid.value === "1液" ? "" : (item.potLife || ""));
  materialUrl.value = item.url || "";
  materialChecked.value = item.checked || "";
  materialMemo.value = item.memo || "";
@@ -1529,6 +1560,19 @@ materialThinnerChoice.addEventListener("change", () => {
  if(!isOther) materialThinnerOther.value = "";
  if(isOther) materialThinnerOther.focus();
 });
+
+function bindOtherChoice(choice, other){
+ choice.addEventListener("change", () => {
+  const isOther = choice.value === "その他";
+  other.hidden = !isOther;
+  if(!isOther) other.value = "";
+  if(isOther) other.focus();
+ });
+}
+
+bindOtherChoice(materialThinnerRateChoice, materialThinnerRateOther);
+bindOtherChoice(materialCoverageChoice, materialCoverageOther);
+bindOtherChoice(materialPotLifeChoice, materialPotLifeOther);
 
 function renderLatestBox(data){
  if(!data){
