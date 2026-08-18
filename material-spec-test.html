@@ -657,7 +657,19 @@ button:active{
   <div class="modal-body">
    <div class="material-form">
     <div class="form-note">計算に使う仕様だけを端末内に保存します。未登録材料の数値は表示しません。</div>
-    <label>メーカー<input id="materialMaker" type="text" maxlength="80" placeholder="例：日本ペイント"></label>
+    <label>メーカー
+     <select id="materialMakerChoice">
+      <option value="">選択してください</option>
+      <option value="日本ペイント">日本ペイント</option>
+      <option value="関西ペイント">関西ペイント</option>
+      <option value="エスケー化研">エスケー化研</option>
+      <option value="菊水化学工業">菊水化学工業</option>
+      <option value="水谷ペイント">水谷ペイント</option>
+      <option value="ロックペイント">ロックペイント</option>
+      <option value="その他">その他（手入力）</option>
+     </select>
+     <input id="materialMakerOther" type="text" maxlength="80" placeholder="メーカー名を入力" hidden>
+    </label>
     <label>製品名<input id="materialName" type="text" maxlength="100" placeholder="例：ハイポンファインプライマーII"></label>
     <label>色・用途<input id="materialUse" type="text" maxlength="100" placeholder="例：グレー／錆止め"></label>
     <div class="two-columns">
@@ -764,9 +776,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.0";
+const APP_VERSION = "Ver.1.1";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "20:53";
+const APP_TIME = "21:09";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -802,7 +814,8 @@ const materialSelect = document.getElementById("materialSelect");
 const materialSummary = document.getElementById("materialSummary");
 const materialModal = document.getElementById("materialModal");
 const materialList = document.getElementById("materialList");
-const materialMaker = document.getElementById("materialMaker");
+const materialMakerChoice = document.getElementById("materialMakerChoice");
+const materialMakerOther = document.getElementById("materialMakerOther");
 const materialName = document.getElementById("materialName");
 const materialUse = document.getElementById("materialUse");
 const materialLiquid = document.getElementById("materialLiquid");
@@ -1243,7 +1256,9 @@ function renderMaterialSelect(selectedId = materialSelect.value){
 
 function clearMaterialForm(){
  editingMaterialId = null;
- materialMaker.value = "";
+ materialMakerChoice.value = "";
+ materialMakerOther.value = "";
+ materialMakerOther.hidden = true;
  materialName.value = "";
  materialUse.value = "";
  materialLiquid.value = "二液";
@@ -1276,7 +1291,7 @@ function closeMaterialModal(event){
 }
 
 function materialFormData(){
- const maker = materialMaker.value.trim();
+ const maker = materialMakerChoice.value === "その他" ? materialMakerOther.value.trim() : materialMakerChoice.value;
  const name = materialName.value.trim();
  const ratioValue = normalizeMaterialRatio(materialRatio.value);
  const thinnerValue = materialThinner.value.trim();
@@ -1317,7 +1332,10 @@ function editMaterial(itemId){
  const item = getMaterials().find(entry => entry.id === itemId);
  if(!item) return;
  editingMaterialId = item.id;
- materialMaker.value = item.maker || "";
+ const predefinedMaker = Array.from(materialMakerChoice.options).some(option => option.value === item.maker);
+ materialMakerChoice.value = predefinedMaker ? item.maker : "その他";
+ materialMakerOther.hidden = predefinedMaker;
+ materialMakerOther.value = predefinedMaker ? "" : (item.maker || "");
  materialName.value = item.name || "";
  materialUse.value = item.use || "";
  materialLiquid.value = item.liquid || "二液";
@@ -1385,6 +1403,13 @@ materialSelect.addEventListener("change", () => {
  const item = getMaterials().find(entry => entry.id === materialSelect.value) || null;
  renderMaterialSummary(item);
  if(item) applyMaterialToForm(item);
+});
+
+materialMakerChoice.addEventListener("change", () => {
+ const isOther = materialMakerChoice.value === "その他";
+ materialMakerOther.hidden = !isOther;
+ if(!isOther) materialMakerOther.value = "";
+ if(isOther) materialMakerOther.focus();
 });
 
 function renderLatestBox(data){
