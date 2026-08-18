@@ -674,7 +674,6 @@ button:active{
      <select id="materialProductChoice"><option value="">メーカーを先に選択してください</option></select>
      <input id="materialProductOther" type="text" maxlength="100" placeholder="製品名を入力" hidden>
     </label>
-    <label>色・用途<input id="materialUse" type="text" maxlength="100" placeholder="例：グレー／錆止め"></label>
     <div class="two-columns">
      <label>液数<select id="materialLiquid"><option value="二液">二液</option><option value="一液">一液</option></select></label>
      <label>配合比<input id="materialRatio" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1"></label>
@@ -779,7 +778,7 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.3";
+const APP_VERSION = "Ver.1.4";
 const APP_DATE = "2026/08/18";
 const APP_TIME = "21:34";
 const HISTORY_MAX = 10;
@@ -851,7 +850,6 @@ const materialMakerChoice = document.getElementById("materialMakerChoice");
 const materialMakerOther = document.getElementById("materialMakerOther");
 const materialProductChoice = document.getElementById("materialProductChoice");
 const materialProductOther = document.getElementById("materialProductOther");
-const materialUse = document.getElementById("materialUse");
 const materialLiquid = document.getElementById("materialLiquid");
 const materialRatio = document.getElementById("materialRatio");
 const materialThinnerName = document.getElementById("materialThinnerName");
@@ -1297,7 +1295,6 @@ function clearMaterialForm(){
  materialProductChoice.disabled = true;
  materialProductOther.value = "";
  materialProductOther.hidden = true;
- materialUse.value = "";
  materialLiquid.value = "二液";
  materialRatio.value = "";
  materialThinnerName.value = "";
@@ -1359,7 +1356,7 @@ function materialFormData(){
  if(url && !/^https?:\/\//i.test(url)){ alert("公式資料URLは https:// から入力してください"); return null; }
  return {
   id: editingMaterialId || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-  maker, name, use:materialUse.value.trim(), liquid:materialLiquid.value, ratio:ratioValue,
+  maker, name, liquid:materialLiquid.value, ratio:ratioValue,
   thinnerName:materialThinnerName.value.trim(), thinner:thinnerValue,
   coverage:coverageValue === "" ? "" : Number(coverageValue).toFixed(2),
   potLife:materialPotLife.value.trim(), url, checked:materialChecked.value, memo:materialMemo.value.trim()
@@ -1388,7 +1385,6 @@ function editMaterial(itemId){
  materialMakerOther.hidden = predefinedMaker;
  materialMakerOther.value = predefinedMaker ? "" : (item.maker || "");
  updateMaterialProductOptions(item.name || "");
- materialUse.value = item.use || "";
  materialLiquid.value = item.liquid || "二液";
  materialRatio.value = item.ratio || "";
  materialThinnerName.value = item.thinnerName || "";
