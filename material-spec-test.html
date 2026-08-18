@@ -675,7 +675,7 @@ button:active{
      <input id="materialProductOther" type="text" maxlength="100" placeholder="製品名を入力" hidden>
     </label>
     <div class="two-columns">
-     <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="一液">一液</option><option value="二液">二液</option></select></label>
+     <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="1液">1液</option><option value="2液">2液</option></select></label>
      <label>配合比
       <select id="materialRatioChoice">
        <option value="">選択してください</option><option value="1:0">1：0</option><option value="1:1">1：1</option><option value="2:1">2：1</option><option value="3:1">3：1</option><option value="4:1">4：1</option><option value="5:1">5：1</option><option value="6:1">6：1</option><option value="8:1">8：1</option><option value="9:1">9：1</option><option value="10:1">10：1</option><option value="14:1">14：1</option><option value="その他">その他（手入力）</option>
@@ -783,9 +783,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.5";
+const APP_VERSION = "Ver.1.6";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "21:47";
+const APP_TIME = "21:49";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1245,6 +1245,12 @@ function normalizeMaterialRatio(value){
  return `${formatRatioNumber(mainPart)}:${formatRatioNumber(hardPart)}`;
 }
 
+function normalizeMaterialLiquid(value){
+ if(value === "一液") return "1液";
+ if(value === "二液") return "2液";
+ return value === "1液" || value === "2液" ? value : "";
+}
+
 function materialDisplayName(item){
  return [item.maker, item.name].filter(Boolean).join("　");
 }
@@ -1365,7 +1371,7 @@ function materialFormData(){
  if(url && !/^https?:\/\//i.test(url)){ alert("公式資料URLは https:// から入力してください"); return null; }
  return {
   id: editingMaterialId || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-  maker, name, liquid:materialLiquid.value, ratio:ratioValue,
+  maker, name, liquid:normalizeMaterialLiquid(materialLiquid.value), ratio:ratioValue,
   thinnerName:materialThinnerName.value.trim(), thinner:thinnerValue,
   coverage:coverageValue === "" ? "" : Number(coverageValue).toFixed(2),
   potLife:materialPotLife.value.trim(), url, checked:materialChecked.value, memo:materialMemo.value.trim()
@@ -1394,7 +1400,7 @@ function editMaterial(itemId){
  materialMakerOther.hidden = predefinedMaker;
  materialMakerOther.value = predefinedMaker ? "" : (item.maker || "");
  updateMaterialProductOptions(item.name || "");
- materialLiquid.value = item.liquid || "";
+ materialLiquid.value = normalizeMaterialLiquid(item.liquid);
  const hasRatio = Array.from(materialRatioChoice.options).some(option => option.value === item.ratio);
  materialRatioChoice.value = hasRatio ? item.ratio : (item.ratio ? "その他" : "");
  materialRatioOther.hidden = materialRatioChoice.value !== "その他";
@@ -1428,7 +1434,7 @@ function renderMaterialList(){
   title.textContent = materialDisplayName(item);
   const detail = document.createElement("div");
   detail.className = "material-item-detail";
-  detail.textContent = `${item.liquid || ""}　配合比：${item.ratio}${item.thinner !== "" ? `　標準希釈率：${item.thinner}％` : ""}${item.coverage !== "" ? `　塗布量：${item.coverage}kg/㎡/回` : ""}`;
+  detail.textContent = `${normalizeMaterialLiquid(item.liquid) || ""}　配合比：${item.ratio}${item.thinner !== "" ? `　標準希釈率：${item.thinner}％` : ""}${item.coverage !== "" ? `　塗布量：${item.coverage}kg/㎡/回` : ""}`;
   const actions = document.createElement("div");
   actions.className = "material-item-actions";
   const edit = document.createElement("button");
