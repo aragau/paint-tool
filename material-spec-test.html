@@ -691,7 +691,7 @@ button:active{
      <label>標準希釈率（％）<input id="materialThinner" type="number" inputmode="numeric" min="0" max="30" step="1" placeholder="例：10"></label>
      <label>標準塗布量（kg/㎡/回）<input id="materialCoverage" type="number" inputmode="decimal" min="0.01" max="1" step="0.01" placeholder="例：0.16"></label>
     </div>
-    <label>ポットライフ<input id="materialPotLife" type="text" maxlength="80" placeholder="例：23℃で6時間"></label>
+    <label id="materialPotLifeField">ポットライフ<input id="materialPotLife" type="text" maxlength="80" placeholder="例：23℃で6時間"></label>
     <label>公式資料URL<input id="materialUrl" type="url" maxlength="500" placeholder="https://..."></label>
     <label>公式確認日<input id="materialChecked" type="date"></label>
     <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
@@ -786,9 +786,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.9";
+const APP_VERSION = "Ver.1.10";
 const APP_DATE = "2026/08/18";
-const APP_TIME = "22:00";
+const APP_TIME = "22:01";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -866,6 +866,7 @@ const materialThinnerChoice = document.getElementById("materialThinnerChoice");
 const materialThinnerOther = document.getElementById("materialThinnerOther");
 const materialThinner = document.getElementById("materialThinner");
 const materialCoverage = document.getElementById("materialCoverage");
+const materialPotLifeField = document.getElementById("materialPotLifeField");
 const materialPotLife = document.getElementById("materialPotLife");
 const materialUrl = document.getElementById("materialUrl");
 const materialChecked = document.getElementById("materialChecked");
@@ -1259,10 +1260,12 @@ function normalizeMaterialLiquid(value){
 function updateMaterialLiquidUI(){
  const isOneLiquid = materialLiquid.value === "1液";
  materialRatioField.hidden = isOneLiquid;
+ materialPotLifeField.hidden = isOneLiquid;
  if(isOneLiquid){
   materialRatioChoice.value = "";
   materialRatioOther.value = "";
   materialRatioOther.hidden = true;
+  materialPotLife.value = "";
  }
 }
 
@@ -1285,7 +1288,7 @@ function renderMaterialSummary(item){
   item.thinnerName ? `希釈剤：${item.thinnerName}` : "",
   item.thinner !== "" ? `標準希釈率：${item.thinner}％` : "",
   item.coverage !== "" ? `標準塗布量：${item.coverage}kg/㎡/回` : "",
-  item.potLife ? `ポットライフ：${item.potLife}` : "",
+  normalizeMaterialLiquid(item.liquid) !== "1液" && item.potLife ? `ポットライフ：${item.potLife}` : "",
   item.checked ? `公式確認日：${item.checked}` : ""
  ].filter(Boolean);
  lines.forEach((line, index) => {
@@ -1392,7 +1395,7 @@ function materialFormData(){
   maker, name, liquid:normalizeMaterialLiquid(materialLiquid.value), ratio:ratioValue,
   thinnerName:(materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim(), thinner:thinnerValue,
   coverage:coverageValue === "" ? "" : Number(coverageValue).toFixed(2),
-  potLife:materialPotLife.value.trim(), url, checked:materialChecked.value, memo:materialMemo.value.trim()
+  potLife:materialLiquid.value === "1液" ? "" : materialPotLife.value.trim(), url, checked:materialChecked.value, memo:materialMemo.value.trim()
  };
 }
 
@@ -1430,7 +1433,7 @@ function editMaterial(itemId){
  materialThinnerOther.value = materialThinnerChoice.value === "その他" ? (item.thinnerName || "") : "";
  materialThinner.value = item.thinner ?? "";
  materialCoverage.value = item.coverage ?? "";
- materialPotLife.value = item.potLife || "";
+ materialPotLife.value = materialLiquid.value === "1液" ? "" : (item.potLife || "");
  materialUrl.value = item.url || "";
  materialChecked.value = item.checked || "";
  materialMemo.value = item.memo || "";
