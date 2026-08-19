@@ -838,9 +838,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.19";
+const APP_VERSION = "Ver.1.20";
 const APP_DATE = "2026/08/19";
-const APP_TIME = "21:45";
+const APP_TIME = "22:01";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -881,12 +881,12 @@ const MATERIAL_PRODUCT_OPTIONS = {
  ]
 };
 const MAKER_SITE_URLS = {
- "日本ペイント":"https://www.nipponpaint.co.jp/",
- "関西ペイント":"https://www.kansai.co.jp/",
- "エスケー化研":"https://www.sk-kaken.co.jp/",
- "菊水化学工業":"https://www.kikusui-chem.co.jp/",
- "水谷ペイント":"https://www.polyma.co.jp/",
- "ロックペイント":"https://www.rockpaint.co.jp/"
+ "日本ペイント":"https://www.nipponpaint.co.jp/products/building/",
+ "関西ペイント":"https://www.kansai.co.jp/products/decorative/seihinkensaku/",
+ "エスケー化研":"https://www.sk-kaken.co.jp/product/",
+ "菊水化学工業":"https://www.kikusui-chem.co.jp/products/search/",
+ "水谷ペイント":"https://www.polyma.co.jp/products/",
+ "ロックペイント":"https://www.rockpaint.co.jp/architecture/"
 };
 
 // ===== 画面要素 =====
@@ -1344,7 +1344,7 @@ function updateMakerSiteLink(){
  const url = MAKER_SITE_URLS[maker];
  makerSiteLink.hidden = !url;
  makerSiteLink.href = url || "#";
- makerSiteLink.textContent = url ? `${maker}公式サイト` : "メーカー公式サイト";
+ makerSiteLink.textContent = url ? `${maker}製品を探す` : "メーカー製品を探す";
 }
 
 function setCheckedToday(){
