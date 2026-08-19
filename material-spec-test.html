@@ -519,6 +519,11 @@ button:active{
   linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94));
 }
 
+.modal-panel,.modal-header,.modal-body,.material-form,.material-form label,.material-form .two-columns{
+ min-width:0;
+ max-width:100%;
+}
+
 .modal-header{
  background:#7898bc;
  color:white;
@@ -530,6 +535,8 @@ button:active{
  align-items:center;
  gap:12px;
 }
+
+.modal-title{min-width:0;overflow-wrap:anywhere;}
 
 .modal-title{
  font-size:22px;
@@ -551,6 +558,7 @@ button:active{
  padding:0 2px 2px;
  overflow:auto;
  min-width:0;
+ overflow-x:hidden;
 }
 
 .modal-tools{
@@ -829,9 +837,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.16";
+const APP_VERSION = "Ver.1.17";
 const APP_DATE = "2026/08/19";
-const APP_TIME = "21:05";
+const APP_TIME = "21:30";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
