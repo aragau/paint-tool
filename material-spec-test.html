@@ -487,6 +487,8 @@ button:active{
  justify-content:center;
  z-index:999;
  padding:12px;
+ box-sizing:border-box;
+ overflow:hidden;
 }
 
 .modal.open{
@@ -494,10 +496,12 @@ button:active{
 }
 
 .modal-panel{
- width:100%;
+ width:min(100%, 720px);
  max-width:720px;
- max-height:90vh;
+ max-height:calc(100dvh - 24px);
  padding:12px;
+ box-sizing:border-box;
+ overflow:hidden;
  border-radius:18px 18px 12px 12px;
  overflow:hidden;
  box-shadow:0 10px 35px rgba(0,0,0,0.22);
@@ -546,6 +550,7 @@ button:active{
 .modal-body{
  padding:0 2px 2px;
  overflow:auto;
+ min-width:0;
 }
 
 .modal-tools{
@@ -616,6 +621,18 @@ button:active{
 .material-item-actions{display:flex;gap:8px;margin-top:10px;}
 .material-item-actions button{margin:0;padding:9px 11px;width:auto;font-size:14px;}
 .material-delete{background:#c58f84;}
+
+@media (max-width: 420px){
+ .modal{padding:8px;}
+ .modal-panel{max-height:calc(100dvh - 16px);padding:8px;}
+ .modal-header{padding:11px;gap:8px;}
+ .modal-title{font-size:19px;}
+ .modal-close{padding:8px 10px;font-size:14px;}
+ .material-form .two-columns{grid-template-columns:1fr;gap:10px;}
+ .material-form input,.material-form select,.material-form textarea{box-sizing:border-box;min-width:0;}
+ .modal-tools{flex-direction:column;}
+ .modal-tools button{width:100%;}
+}
 
 </style>
 </head>
@@ -812,9 +829,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.15";
-const APP_DATE = "2026/08/18";
-const APP_TIME = "22:27";
+const APP_VERSION = "Ver.1.16";
+const APP_DATE = "2026/08/19";
+const APP_TIME = "21:05";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
