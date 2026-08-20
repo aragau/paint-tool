@@ -722,13 +722,13 @@ button:active{
      <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="1液">1液</option><option value="2液">2液</option></select></label>
      <label id="materialRatioField">配合比
       <select id="materialRatioChoice">
-       <option value="">選択してください</option><option value="1:1">1：1</option><option value="2:1">2：1</option><option value="3:1">3：1</option><option value="4:1">4：1</option><option value="5:1">5：1</option><option value="6:1">6：1</option><option value="7:1">7：1</option><option value="8:1">8：1</option><option value="9:1">9：1</option><option value="その他">その他（手入力）</option>
+       <option value="">選択してください</option><option value="1:1">1：1</option><option value="2:1">2：1</option><option value="3:1">3：1</option><option value="4:1">4：1</option><option value="5:1">5：1</option><option value="6:1">6：1</option><option value="7:1">7：1</option><option value="8:1">8：1</option><option value="9:1">9：1</option><option value="10:1">10：1</option><option value="11:1">11：1</option><option value="12:1">12：1</option><option value="13:1">13：1</option><option value="14:1">14：1</option><option value="その他">その他（手入力）</option>
       </select>
       <input id="materialRatioOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1" hidden>
      </label>
     </div>
     <label id="materialThinnerField">希釈剤名
-     <select id="materialThinnerChoice"><option value="">選択してください</option><option value="なし">希釈なし</option><option value="塗料用シンナー">塗料用シンナー</option><option value="水">水</option><option value="その他">その他（手入力）</option></select>
+     <select id="materialThinnerChoice"><option value="">選択してください</option><option value="なし">希釈なし</option><option value="塗料用シンナーA">塗料用シンナーA</option><option value="水">水</option><option value="その他">その他（手入力）</option></select>
      <input id="materialThinnerOther" type="text" maxlength="80" placeholder="例：ウレタンシンナー" hidden>
     </label>
     <div class="two-columns">
@@ -736,15 +736,15 @@ button:active{
       <div class="rate-range"><select id="materialThinnerMin"><option value="">下限</option></select><span>～</span><select id="materialThinnerMax"><option value="">上限</option></select></div>
      </label>
      <label>標準塗布量（kg/㎡/回）
-      <select id="materialCoverageChoice"><option value="">選択してください</option><option value="0.05">0.05</option><option value="0.06">0.06</option><option value="0.07">0.07</option><option value="0.08">0.08</option><option value="0.09">0.09</option><option value="0.10">0.10</option><option value="0.11">0.11</option><option value="0.12">0.12</option><option value="0.13">0.13</option><option value="0.14">0.14</option><option value="0.15">0.15</option><option value="0.16">0.16</option><option value="0.17">0.17</option><option value="0.18">0.18</option><option value="0.19">0.19</option><option value="0.20">0.20</option><option value="0.25">0.25</option><option value="0.30">0.30</option><option value="0.40">0.40</option><option value="0.50">0.50</option><option value="1.00">1.00</option><option value="その他">その他（手入力）</option></select>
-      <input id="materialCoverageOther" type="number" inputmode="decimal" min="0.01" max="1" step="0.01" placeholder="例：0.22" hidden>
+      <div class="rate-range"><select id="materialCoverageChoice"><option value="">下限</option><option value="0.05">0.05</option><option value="0.06">0.06</option><option value="0.07">0.07</option><option value="0.08">0.08</option><option value="0.09">0.09</option><option value="0.10">0.10</option><option value="0.11">0.11</option><option value="0.12">0.12</option><option value="0.13">0.13</option><option value="0.14">0.14</option><option value="0.15">0.15</option><option value="0.16">0.16</option><option value="0.17">0.17</option><option value="0.18">0.18</option><option value="0.19">0.19</option><option value="0.20">0.20</option><option value="0.25">0.25</option><option value="0.30">0.30</option><option value="0.40">0.40</option><option value="0.50">0.50</option><option value="1.00">1.00</option><option value="その他">その他（手入力）</option></select><span>～</span><select id="materialCoverageMax"><option value="">上限</option></select></div>
+      <input id="materialCoverageOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：0.16～0.18" hidden>
      </label>
     </div>
     <label id="materialPotLifeField">ポットライフ
      <select id="materialPotLifeChoice"><option value="">選択してください</option><option value="23℃で30分">23℃で30分</option><option value="23℃で1時間">23℃で1時間</option><option value="23℃で2時間">23℃で2時間</option><option value="23℃で3時間">23℃で3時間</option><option value="23℃で4時間">23℃で4時間</option><option value="23℃で5時間">23℃で5時間</option><option value="23℃で6時間">23℃で6時間</option><option value="23℃で7時間">23℃で7時間</option><option value="23℃で8時間">23℃で8時間</option><option value="23℃で12時間">23℃で12時間</option><option value="23℃で24時間">23℃で24時間</option><option value="その他">その他（手入力）</option></select>
      <input id="materialPotLifeOther" type="text" maxlength="80" placeholder="例：20℃で5時間" hidden>
     </label>
-    <label><span class="field-label-row">公式資料URL<a id="makerSiteLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>メーカー公式サイト</a></span><input id="materialUrl" type="url" maxlength="500" placeholder="https://..."></label>
+    <label><span class="field-label-row">公式資料URL<a id="makerSiteLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>メーカー製品を探す</a></span><input id="materialUrl" type="url" maxlength="500" placeholder="https://..."><a id="materialUrlLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>入力した公式資料を開く</a></label>
     <label>公式確認日<input id="materialChecked" type="date"></label>
     <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
     <div class="modal-tools"><button class="material-save" type="button" onclick="saveMaterial()">材料仕様を保存</button><button class="material-cancel" type="button" onclick="resetMaterialForm()">入力を取り消す</button></div>
@@ -838,9 +838,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.20";
-const APP_DATE = "2026/08/19";
-const APP_TIME = "22:01";
+const APP_VERSION = "Ver.1.21";
+const APP_DATE = "2026/08/20";
+const APP_TIME = "20:05";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -929,12 +929,14 @@ const materialThinnerRateField = document.getElementById("materialThinnerRateFie
 const materialThinnerMin = document.getElementById("materialThinnerMin");
 const materialThinnerMax = document.getElementById("materialThinnerMax");
 const materialCoverageChoice = document.getElementById("materialCoverageChoice");
+const materialCoverageMax = document.getElementById("materialCoverageMax");
 const materialCoverageOther = document.getElementById("materialCoverageOther");
 const materialPotLifeField = document.getElementById("materialPotLifeField");
 const materialPotLifeChoice = document.getElementById("materialPotLifeChoice");
 const materialPotLifeOther = document.getElementById("materialPotLifeOther");
 const makerSiteLink = document.getElementById("makerSiteLink");
 const materialUrl = document.getElementById("materialUrl");
+const materialUrlLink = document.getElementById("materialUrlLink");
 const materialChecked = document.getElementById("materialChecked");
 const materialMemo = document.getElementById("materialMemo");
 let editingMaterialId = null;
@@ -1347,6 +1349,35 @@ function updateMakerSiteLink(){
  makerSiteLink.textContent = url ? `${maker}製品を探す` : "メーカー製品を探す";
 }
 
+function updateMaterialUrlLink(){
+ const url = materialUrl.value.trim();
+ const isValid = /^https?:\/\//i.test(url);
+ materialUrlLink.hidden = !isValid;
+ materialUrlLink.href = isValid ? url : "#";
+}
+
+function populateCoverageMaxOptions(){
+ materialCoverageMax.innerHTML = '<option value="">上限</option>';
+ Array.from(materialCoverageChoice.options)
+  .filter(option => option.value && option.value !== "その他")
+  .forEach(option => add(materialCoverageMax, option.textContent, option.value));
+}
+
+function materialCoverageRange(item){
+ const legacy = item.coverage ?? "";
+ const min = item.coverageMin ?? legacy;
+ const max = item.coverageMax ?? legacy;
+ return min === "" || max === "" ? null : { min:Number(min), max:Number(max) };
+}
+
+function materialCoverageText(item){
+ const range = materialCoverageRange(item);
+ if(!range || !Number.isFinite(range.min) || !Number.isFinite(range.max)) return "";
+ const min = range.min.toFixed(2);
+ const max = range.max.toFixed(2);
+ return min === max ? min : `${min}～${max}`;
+}
+
 function setCheckedToday(){
  const now = new Date();
  const year = now.getFullYear();
@@ -1409,7 +1440,7 @@ function renderMaterialSummary(item){
   `配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}`,
   item.thinnerName ? `希釈剤：${item.thinnerName}` : "",
   materialThinnerText(item) ? `標準希釈率：${materialThinnerText(item)}％` : "",
-  item.coverage !== "" ? `標準塗布量：${item.coverage}kg/㎡/回` : "",
+  materialCoverageText(item) ? `標準塗布量：${materialCoverageText(item)}kg/㎡/回` : "",
   normalizeMaterialLiquid(item.liquid) !== "1液" && item.potLife ? `ポットライフ：${item.potLife}` : "",
   item.checked ? `公式確認日：${item.checked}` : ""
  ].filter(Boolean);
@@ -1459,12 +1490,14 @@ function clearMaterialForm(){
  materialThinnerMin.value = "";
  materialThinnerMax.value = "";
  materialCoverageChoice.value = "";
+ materialCoverageMax.value = "";
  materialCoverageOther.value = "";
  materialCoverageOther.hidden = true;
  materialPotLifeChoice.value = "";
  materialPotLifeOther.value = "";
  materialPotLifeOther.hidden = true;
  materialUrl.value = "";
+ updateMaterialUrlLink();
  materialChecked.value = "";
  materialMemo.value = "";
 }
@@ -1507,7 +1540,10 @@ function materialFormData(){
  const ratioValue = materialLiquid.value === "1液" ? "10:0" : normalizeMaterialRatio(materialRatioChoice.value === "その他" ? materialRatioOther.value : materialRatioChoice.value);
  const thinnerMin = materialThinnerMin.value === "" ? "" : Number(materialThinnerMin.value);
  const thinnerMax = materialThinnerMax.value === "" ? "" : Number(materialThinnerMax.value);
- const coverageValue = choiceValue(materialCoverageChoice, materialCoverageOther);
+ const coverageOther = materialCoverageOther.value.trim().replace(/[～〜]/g, "-");
+ const coverageParts = coverageOther ? coverageOther.split("-").map(value => Number(value.trim())) : [];
+ const coverageMin = materialCoverageChoice.value === "その他" ? coverageParts[0] : (materialCoverageChoice.value === "" ? "" : Number(materialCoverageChoice.value));
+ const coverageMax = materialCoverageChoice.value === "その他" ? (coverageParts.length === 2 ? coverageParts[1] : coverageParts[0]) : (materialCoverageMax.value === "" ? "" : Number(materialCoverageMax.value));
  if(!maker || !name){ alert("メーカーと製品名を入力してください"); return null; }
  if(!materialLiquid.value){ alert("液数を選択してください"); return null; }
  if(materialLiquid.value === "2液" && !ratioValue){ alert("配合比を選択、または「9:1」の形で入力してください"); return null; }
@@ -1517,8 +1553,11 @@ function materialFormData(){
  if(thinnerMin !== "" && (!Number.isInteger(thinnerMin) || !Number.isInteger(thinnerMax) || thinnerMin < 0 || thinnerMax < 0 || thinnerMin > 100 || thinnerMax > 100 || thinnerMin > thinnerMax)){
   alert("標準希釈率は0〜100％で、下限が上限以下になるよう入力してください"); return null;
  }
- if(coverageValue !== "" && (!Number.isFinite(Number(coverageValue)) || Number(coverageValue) <= 0 || Number(coverageValue) > 1)){
-  alert("標準塗布量は0より大きく1以下で入力してください"); return null;
+ if((coverageMin === "") !== (coverageMax === "")){
+  alert("標準塗布量は下限・上限を両方入力してください"); return null;
+ }
+ if(coverageMin !== "" && (!Number.isFinite(coverageMin) || !Number.isFinite(coverageMax) || coverageMin <= 0 || coverageMax <= 0 || coverageMin > 1 || coverageMax > 1 || coverageMin > coverageMax)){
+  alert("標準塗布量は0より大きく1以下で、下限が上限以下になるよう入力してください"); return null;
  }
  let url = materialUrl.value.trim();
  if(url && !/^https?:\/\//i.test(url)){ alert("公式資料URLは https:// から入力してください"); return null; }
@@ -1526,7 +1565,8 @@ function materialFormData(){
   id: editingMaterialId || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
   maker, name, liquid:normalizeMaterialLiquid(materialLiquid.value), ratio:ratioValue,
   thinnerName:(materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim(), thinnerMin, thinnerMax,
-  coverage:coverageValue === "" ? "" : Number(coverageValue).toFixed(2),
+  coverage:coverageMin !== "" && coverageMin === coverageMax ? coverageMin.toFixed(2) : "",
+  coverageMin:coverageMin === "" ? "" : coverageMin.toFixed(2), coverageMax:coverageMax === "" ? "" : coverageMax.toFixed(2),
   potLife:materialLiquid.value === "1液" ? "" : choiceValue(materialPotLifeChoice, materialPotLifeOther), url, checked:materialChecked.value, memo:materialMemo.value.trim()
  };
 }
@@ -1567,9 +1607,18 @@ function editMaterial(itemId){
  materialThinnerMin.value = item.thinnerMin ?? item.thinner ?? "";
  materialThinnerMax.value = item.thinnerMax ?? item.thinner ?? "";
  updateMaterialThinnerUI();
- restoreChoice(materialCoverageChoice, materialCoverageOther, item.coverage ?? "");
+ const coverageRange = materialCoverageRange(item);
+ const coverageMin = coverageRange ? coverageRange.min.toFixed(2) : "";
+ const coverageMax = coverageRange ? coverageRange.max.toFixed(2) : "";
+ const hasCoverageMin = Array.from(materialCoverageChoice.options).some(option => option.value === coverageMin);
+ const hasCoverageMax = Array.from(materialCoverageMax.options).some(option => option.value === coverageMax);
+ materialCoverageChoice.value = hasCoverageMin && hasCoverageMax ? coverageMin : (coverageMin ? "その他" : "");
+ materialCoverageOther.hidden = materialCoverageChoice.value !== "その他";
+ materialCoverageOther.value = materialCoverageChoice.value === "その他" ? (coverageRange ? materialCoverageText(item) : "") : "";
+ materialCoverageMax.value = materialCoverageChoice.value === "その他" ? "" : coverageMax;
  restoreChoice(materialPotLifeChoice, materialPotLifeOther, materialLiquid.value === "1液" ? "" : (item.potLife || ""));
  materialUrl.value = item.url || "";
+ updateMaterialUrlLink();
  materialChecked.value = item.checked || "";
  materialMemo.value = item.memo || "";
  materialModal.querySelector(".modal-body").scrollTop = 0;
@@ -1594,7 +1643,7 @@ function renderMaterialList(){
   title.textContent = materialDisplayName(item);
   const detail = document.createElement("div");
   detail.className = "material-item-detail";
-  detail.textContent = `${normalizeMaterialLiquid(item.liquid) || ""}　配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}${materialThinnerText(item) ? `　標準希釈率：${materialThinnerText(item)}％` : ""}${item.coverage !== "" ? `　塗布量：${item.coverage}kg/㎡/回` : ""}`;
+  detail.textContent = `${normalizeMaterialLiquid(item.liquid) || ""}　配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}${materialThinnerText(item) ? `　標準希釈率：${materialThinnerText(item)}％` : ""}${materialCoverageText(item) ? `　塗布量：${materialCoverageText(item)}kg/㎡/回` : ""}`;
   const actions = document.createElement("div");
   actions.className = "material-item-actions";
   const edit = document.createElement("button");
@@ -1617,7 +1666,8 @@ function applyMaterialToForm(item){
   customRatioMain.value = parts[0] || "";
   customRatioHard.value = parts[1] || "";
  }
- if(item.coverage !== "" && Array.from(coverage.options).some(option => option.value === Number(item.coverage).toFixed(2))) coverage.value = Number(item.coverage).toFixed(2);
+ const coverageRange = materialCoverageRange(item);
+ if(coverageRange && coverageRange.min === coverageRange.max && Array.from(coverage.options).some(option => option.value === coverageRange.min.toFixed(2))) coverage.value = coverageRange.min.toFixed(2);
  updateCustomRatioUI();
  updateThinnerUI();
  clearResult();
@@ -1639,6 +1689,19 @@ materialMakerChoice.addEventListener("change", () => {
 });
 
 makerSiteLink.addEventListener("click", setCheckedToday);
+materialUrl.addEventListener("input", updateMaterialUrlLink);
+materialUrlLink.addEventListener("click", setCheckedToday);
+
+materialCoverageChoice.addEventListener("change", () => {
+ const isOther = materialCoverageChoice.value === "その他";
+ materialCoverageOther.hidden = !isOther;
+ if(isOther){
+  materialCoverageMax.value = "";
+  materialCoverageOther.focus();
+ }else{
+  materialCoverageOther.value = "";
+ }
+});
 
 materialProductChoice.addEventListener("change", () => {
  const isOther = materialProductChoice.value === "その他";
@@ -2116,6 +2179,7 @@ document.addEventListener("keydown", event => {
  }
 });
 
+populateCoverageMaxOptions();
 initializeAppInfo();
 renderMaterialSelect();
 updateThinnerUI();
