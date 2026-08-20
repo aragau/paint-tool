@@ -846,9 +846,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.24";
+const APP_VERSION = "Ver.1.25";
 const APP_DATE = "2026/08/20";
-const APP_TIME = "22:06";
+const APP_TIME = "22:34";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1368,10 +1368,13 @@ function restoreChoice(choice, other, value){
 
 function updateMakerSiteLink(){
  const maker = materialMakerChoice.value;
- const url = MAKER_SITE_URLS[maker];
+ const product = choiceValue(materialProductChoice, materialProductOther);
+ const url = maker && product
+  ? `https://www.google.com/search?q=${encodeURIComponent(`${maker} ${product} 公式`)}`
+  : MAKER_SITE_URLS[maker];
  makerSiteLink.hidden = !url;
  makerSiteLink.href = url || "#";
- makerSiteLink.textContent = url ? `${maker}製品を探す` : "メーカー製品を探す";
+ makerSiteLink.textContent = maker && product ? "選択中の製品を検索" : (url ? `${maker}製品を探す` : "メーカー製品を探す");
 }
 
 function updateMaterialUrlLink(){
@@ -1720,6 +1723,8 @@ materialMakerChoice.addEventListener("change", () => {
  updateMakerSiteLink();
 });
 
+materialProductOther.addEventListener("input", updateMakerSiteLink);
+
 makerSiteLink.addEventListener("click", setCheckedToday);
 materialUrl.addEventListener("input", updateMaterialUrlLink);
 materialUrlLink.addEventListener("click", setCheckedToday);
@@ -1741,6 +1746,7 @@ materialProductChoice.addEventListener("change", () => {
  if(!isOther) materialProductOther.value = "";
  if(isOther) materialProductOther.focus();
  updateMaterialThinnerUI();
+ updateMakerSiteLink();
 });
 
 materialRatioChoice.addEventListener("change", () => {
