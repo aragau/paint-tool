@@ -673,6 +673,7 @@ button:active{
  <div class="mode-switch">
   <button type="button" class="active" id="normalModeBtn">通常の配合</button>
   <button type="button" id="areaModeBtn">面積から計算</button>
+  <button type="button" id="totalModeBtn">完成量から計算</button>
  </div>
  <div class="area-guide" id="normalGuide">主剤重量から硬化剤・希釈剤を計算します。</div>
 </div>
@@ -691,6 +692,11 @@ button:active{
  <select id="paintArea"></select>
  <label style="margin-top:12px;">塗布量（kg/㎡/回）</label>
  <select id="coverage"></select>
+</div>
+
+<div class="box area-only" id="totalBox">
+ <label>作りたい完成量（kg）</label>
+ <select id="targetTotal"></select>
 </div>
 
 <div class="modal" id="materialModal" onclick="closeMaterialModal(event)">
@@ -840,9 +846,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.22";
+const APP_VERSION = "Ver.1.24";
 const APP_DATE = "2026/08/20";
-const APP_TIME = "20:50";
+const APP_TIME = "22:06";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -949,6 +955,9 @@ const coverage = document.getElementById("coverage");
 const baseBox = document.getElementById("baseBox");
 const normalModeBtn = document.getElementById("normalModeBtn");
 const areaModeBtn = document.getElementById("areaModeBtn");
+const totalModeBtn = document.getElementById("totalModeBtn");
+const totalBox = document.getElementById("totalBox");
+const targetTotal = document.getElementById("targetTotal");
 const normalGuide = document.getElementById("normalGuide");
 let calculationMode = "normal";
 const safetyAlerts = new Map();
@@ -964,15 +973,20 @@ function updateNeededTotal(){}
 function setMode(mode){
  calculationMode = mode;
  const isArea = mode === "area";
+ const isTotal = mode === "total";
  areaBox.classList.toggle("open", isArea);
- baseBox.style.display = isArea ? "none" : "block";
+ totalBox.classList.toggle("open", isTotal);
+ baseBox.style.display = (isArea || isTotal) ? "none" : "block";
  normalGuide.style.display = "block";
  actualBox.style.display = "none";
  if(showActualBtn) showActualBtn.style.display = "inline";
- normalModeBtn.classList.toggle("active", !isArea);
+ normalModeBtn.classList.toggle("active", !isArea && !isTotal);
  areaModeBtn.classList.toggle("active", isArea);
+ totalModeBtn.classList.toggle("active", isTotal);
  normalGuide.textContent = isArea
   ? "塗装面積と塗布量から、塗料量を計算します。"
+  : isTotal
+  ? "作りたい完成量から、主剤・硬化剤・希釈剤を逆算します。"
   : "主剤重量から硬化剤・希釈剤を計算します。";
  clearResult();
  updateNeededTotal();
@@ -980,6 +994,7 @@ function setMode(mode){
 
 normalModeBtn.addEventListener("click", () => setMode("normal"));
 areaModeBtn.addEventListener("click", () => setMode("area"));
+totalModeBtn.addEventListener("click", () => setMode("total"));
 
 function setSafetyAlert(key, message){
  if(message){
@@ -1174,6 +1189,12 @@ for(let i = 0.5; i <= 20; i += 0.5){
  add(base, i.toFixed(1), i.toFixed(1));
 }
 
+add(targetTotal, "", "");
+for(let i = 0.1; i <= 20; i += 0.1){
+ const value = (Math.round(i * 10) / 10).toFixed(1);
+ add(targetTotal, `${value}kg`, value);
+}
+
 add(thinner, "", "");
 for(let i = 0; i <= 30; i++){
  add(thinner, String(i), String(i));
@@ -1242,6 +1263,7 @@ base.addEventListener("change", () => {
 });
 paintArea.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(coverage.parentNode, "start"); });
 coverage.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(ratioBox, "start"); });
+targetTotal.addEventListener("change", () => { clearResult(); smoothScrollTo(ratioBox, "start"); });
 actual.addEventListener("change", clearResult);
 thinner.addEventListener("change", () => {
  updateThinnerUI();
@@ -1755,6 +1777,8 @@ function renderLatestBox(data){
 
  const mainLabel = data.mode === "area"
   ? `面積：${data.paintArea}㎡　塗布量：${data.coverage}kg/㎡/回<br>今回必要量：${data.finishedTotal}kg`
+  : data.mode === "total"
+  ? `作りたい完成量：${data.finishedTotal}kg`
   : data.usedActual && data.actualValue
   ? `実測主剤重量：${data.actualValue}kg`
   : `主剤重量：${data.base}kg`;
@@ -1792,7 +1816,7 @@ function saveData(ratioInfo){
   mode: calculationMode,
   paintArea: calculationMode === "area" ? paintArea.value : "",
   coverage: calculationMode === "area" ? coverage.value : "",
-  finishedTotal: calculationMode === "area" ? (Number(paintArea.value) * Number(coverage.value)).toFixed(2) : ""
+  finishedTotal: calculationMode === "area" ? (Number(paintArea.value) * Number(coverage.value)).toFixed(2) : calculationMode === "total" ? targetTotal.value : ""
  };
 
  const arr = getHistory();
@@ -1804,7 +1828,7 @@ function saveData(ratioInfo){
 }
 
 function applyDataToForm(item, restoreMode = true){
- setMode(restoreMode && item.mode === "area" ? "area" : "normal");
+ setMode(restoreMode && item.mode === "area" ? "area" : restoreMode && item.mode === "total" ? "total" : "normal");
  ratio.value = item.ratio || "";
 
  if(item.ratio === "custom"){
@@ -1824,6 +1848,7 @@ function applyDataToForm(item, restoreMode = true){
   coverage.value = item.coverage || "";
   updateNeededTotal();
  }
+ if(item.mode === "total") targetTotal.value = item.finishedTotal || "";
  updateThinnerUI();
  materialSelect.value = Array.from(materialSelect.options).some(option => option.value === item.materialId) ? item.materialId : "";
  renderMaterialSummary(getMaterials().find(entry => entry.id === materialSelect.value) || null);
@@ -1855,8 +1880,8 @@ function loadData(){
 }
 
 function calc(){
- if(ratio.value === "" || thinner.value === "" || (calculationMode === "normal" && base.value === "")){
-  alert(calculationMode === "area" ? "配合比・希釈率を選択してください" : "配合比・主剤重量・希釈率を選択してください");
+ if(ratio.value === "" || thinner.value === "" || (calculationMode === "normal" && base.value === "") || (calculationMode === "total" && targetTotal.value === "")){
+  alert(calculationMode === "area" ? "配合比・希釈率を選択してください" : calculationMode === "total" ? "作りたい完成量・配合比・希釈率を選択してください" : "配合比・主剤重量・希釈率を選択してください");
   return;
  }
 
@@ -1866,12 +1891,12 @@ function calc(){
   return;
  }
 
- const finishedTotal = Number(paintArea.value) * Number(coverage.value);
- if(calculationMode === "area" && (!Number.isFinite(finishedTotal) || finishedTotal <= 0)){
-  alert("塗装面積と塗布量を入力してください");
+ const finishedTotal = calculationMode === "area" ? Number(paintArea.value) * Number(coverage.value) : calculationMode === "total" ? Number(targetTotal.value) : 0;
+ if((calculationMode === "area" || calculationMode === "total") && (!Number.isFinite(finishedTotal) || finishedTotal <= 0)){
+  alert(calculationMode === "area" ? "塗装面積と塗布量を入力してください" : "作りたい完成量を入力してください");
   return;
  }
- const main = calculationMode === "area"
+ const main = (calculationMode === "area" || calculationMode === "total")
   ? finishedTotal / (1 + Number(thinner.value) / 100) * ratioInfo.mainPart / (ratioInfo.mainPart + ratioInfo.hardPart)
   : actualBox.style.display === "block" && actual.value !== ""
   ? Number(actual.value)
@@ -2195,7 +2220,7 @@ renderMaterialSelect();
 updateThinnerUI();
 setMode("normal");
 loadData();
-updateSafetyInformation();
+setWeatherStatus("安全情報は「天気情報を更新」を押して確認します。");
 </script>
 
 </body>
