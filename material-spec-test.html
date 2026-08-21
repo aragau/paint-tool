@@ -623,6 +623,7 @@ button:active{
 .material-form .two-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .material-form .form-note{font-size:13px;line-height:1.45;color:#5b6472;}
 .material-save{background:#16a34a;}
+.material-save.saved{background:#15803d;}
 .material-cancel{background:#6b7280;}
 .material-save-notice{margin-top:10px;padding:11px 12px;border:2px solid #4caf50;border-radius:10px;background:#e8f5e9;color:#166534;font-size:15px;font-weight:bold;line-height:1.45;}
 .material-list{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
@@ -755,7 +756,7 @@ button:active{
     <label>公式資料URL<input id="materialUrl" type="url" maxlength="500" placeholder="https://..."><a id="materialUrlLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>入力した公式資料を開く</a></label>
     <label>公式確認日<input id="materialChecked" type="date"></label>
     <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
-    <div class="modal-tools"><button class="material-save" type="button" onclick="saveMaterial()">材料仕様を保存</button><button class="material-cancel" type="button" onclick="resetMaterialForm()">入力を取り消す</button></div>
+    <div class="modal-tools"><button class="material-save" id="materialSaveButton" type="button" onclick="saveMaterial()">材料仕様を保存</button><button class="material-cancel" type="button" onclick="resetMaterialForm()">入力を取り消す</button></div>
     <div class="material-save-notice" id="materialSaveNotice" hidden role="status"></div>
    </div>
    <div class="material-list" id="materialList"></div>
@@ -847,9 +848,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.29";
+const APP_VERSION = "Ver.1.30";
 const APP_DATE = "2026/08/21";
-const APP_TIME = "21:25";
+const APP_TIME = "21:40";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -949,7 +950,9 @@ const materialUrlLink = document.getElementById("materialUrlLink");
 const materialChecked = document.getElementById("materialChecked");
 const materialMemo = document.getElementById("materialMemo");
 const materialSaveNotice = document.getElementById("materialSaveNotice");
+const materialSaveButton = document.getElementById("materialSaveButton");
 let editingMaterialId = null;
+let materialSaveTimer = null;
 const areaBox = document.getElementById("areaBox");
 const paintArea = document.getElementById("paintArea");
 const coverage = document.getElementById("coverage");
@@ -1623,6 +1626,14 @@ function saveMaterial(){
  clearMaterialForm(true);
  materialSaveNotice.textContent = `「${materialDisplayName(item)}」を保存しました。登録済み材料に追加済みです。`;
  materialSaveNotice.hidden = false;
+ if(materialSaveTimer) clearTimeout(materialSaveTimer);
+ materialSaveButton.textContent = "保存しました ✓";
+ materialSaveButton.classList.add("saved");
+ materialSaveTimer = setTimeout(() => {
+  materialSaveButton.textContent = "材料仕様を保存";
+  materialSaveButton.classList.remove("saved");
+  materialSaveTimer = null;
+ }, 3000);
 }
 
 function editMaterial(itemId){
