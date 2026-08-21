@@ -850,9 +850,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.33";
+const APP_VERSION = "Ver.1.34";
 const APP_DATE = "2026/08/21";
-const APP_TIME = "21:55";
+const APP_TIME = "21:58";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1586,10 +1586,10 @@ function showMaterialSaveError(message, focusTarget = null){
  document.querySelectorAll(".material-form .input-error").forEach(element => element.classList.remove("input-error"));
  if(focusTarget){
   focusTarget.classList.add("input-error");
-  requestAnimationFrame(() => {
+  setTimeout(() => {
    focusTarget.scrollIntoView({ behavior:"smooth", block:"center" });
    focusTarget.focus({ preventScroll:true });
-  });
+  }, 1500);
  }else{
   requestAnimationFrame(() => materialSaveNotice.scrollIntoView({ behavior:"smooth", block:"center" }));
  }
