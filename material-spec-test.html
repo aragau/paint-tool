@@ -846,9 +846,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.26";
-const APP_DATE = "2026/08/20";
-const APP_TIME = "22:42";
+const APP_VERSION = "Ver.1.27";
+const APP_DATE = "2026/08/21";
+const APP_TIME = "21:00";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1470,12 +1470,19 @@ function renderMaterialSummary(item){
   materialThinnerText(item) ? `標準希釈率：${materialThinnerText(item)}％` : "",
   materialCoverageText(item) ? `標準塗布量：${materialCoverageText(item)}kg/㎡/回` : "",
   normalizeMaterialLiquid(item.liquid) !== "1液" && item.potLife ? `ポットライフ：${item.potLife}` : "",
-  item.checked ? `公式確認日：${item.checked}` : ""
+ item.checked ? `公式確認日：${item.checked}` : ""
  ].filter(Boolean);
  lines.forEach((line, index) => {
   if(index) materialSummary.appendChild(document.createElement("br"));
   materialSummary.appendChild(document.createTextNode(line));
  });
+ const thinnerMin = item.thinnerMin ?? item.thinner ?? "";
+ const thinnerMax = item.thinnerMax ?? item.thinner ?? "";
+ const coverageRange = materialCoverageRange(item);
+ if((thinnerMin !== "" && thinnerMax !== "" && Number(thinnerMin) !== Number(thinnerMax)) || (coverageRange && coverageRange.min !== coverageRange.max)){
+  materialSummary.appendChild(document.createElement("br"));
+  materialSummary.appendChild(document.createTextNode("※範囲で登録した数値は、計算欄には下限値を自動設定します。"));
+ }
  if(item.url){
   materialSummary.appendChild(document.createElement("br"));
   const link = document.createElement("a");
@@ -1690,7 +1697,8 @@ function renderMaterialList(){
 }
 
 function applyMaterialToForm(item){
- const ratioValue = normalizeMaterialRatio(item.ratio);
+ const isOneLiquid = normalizeMaterialLiquid(item.liquid) === "1液";
+ const ratioValue = isOneLiquid ? "10:0" : normalizeMaterialRatio(item.ratio);
  if(Array.from(ratio.options).some(option => option.value === ratioValue)){
   ratio.value = ratioValue;
   customRatioMain.value = "";
@@ -1701,8 +1709,17 @@ function applyMaterialToForm(item){
   customRatioMain.value = parts[0] || "";
   customRatioHard.value = parts[1] || "";
  }
+ const thinnerMin = item.thinnerMin ?? item.thinner ?? "";
+ const thinnerMax = item.thinnerMax ?? item.thinner ?? "";
+ if(thinnerMin !== ""){
+  const standardThinner = String(thinnerMin);
+  if(Array.from(thinner.options).some(option => option.value === standardThinner)) thinner.value = standardThinner;
+ }
  const coverageRange = materialCoverageRange(item);
- if(coverageRange && coverageRange.min === coverageRange.max && Array.from(coverage.options).some(option => option.value === coverageRange.min.toFixed(2))) coverage.value = coverageRange.min.toFixed(2);
+ if(coverageRange){
+  const standardCoverage = coverageRange.min.toFixed(2);
+  if(Array.from(coverage.options).some(option => option.value === standardCoverage)) coverage.value = standardCoverage;
+ }
  updateCustomRatioUI();
  updateThinnerUI();
  clearResult();
