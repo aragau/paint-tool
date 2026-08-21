@@ -848,9 +848,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.30";
+const APP_VERSION = "Ver.1.31";
 const APP_DATE = "2026/08/21";
-const APP_TIME = "21:40";
+const APP_TIME = "21:43";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1626,6 +1626,7 @@ function saveMaterial(){
  clearMaterialForm(true);
  materialSaveNotice.textContent = `「${materialDisplayName(item)}」を保存しました。登録済み材料に追加済みです。`;
  materialSaveNotice.hidden = false;
+ requestAnimationFrame(() => materialSaveNotice.scrollIntoView({ behavior:"smooth", block:"center" }));
  if(materialSaveTimer) clearTimeout(materialSaveTimer);
  materialSaveButton.textContent = "保存しました ✓";
  materialSaveButton.classList.add("saved");
