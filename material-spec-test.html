@@ -725,6 +725,7 @@ button:active{
      <select id="materialProductChoice"><option value="">メーカーを先に選択してください</option></select>
      <input id="materialProductOther" type="text" maxlength="100" placeholder="製品名を入力" hidden>
     </label>
+    <a id="makerSiteLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>製品を検索</a>
     <div class="two-columns">
      <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="1液">1液</option><option value="2液">2液</option></select></label>
      <label id="materialRatioField">配合比
@@ -751,7 +752,7 @@ button:active{
      <select id="materialPotLifeChoice"><option value="">選択してください</option><option value="23℃で30分">23℃で30分</option><option value="23℃で1時間">23℃で1時間</option><option value="23℃で2時間">23℃で2時間</option><option value="23℃で3時間">23℃で3時間</option><option value="23℃で4時間">23℃で4時間</option><option value="23℃で5時間">23℃で5時間</option><option value="23℃で6時間">23℃で6時間</option><option value="23℃で7時間">23℃で7時間</option><option value="23℃で8時間">23℃で8時間</option><option value="23℃で12時間">23℃で12時間</option><option value="23℃で24時間">23℃で24時間</option><option value="その他">その他（手入力）</option></select>
      <input id="materialPotLifeOther" type="text" maxlength="80" placeholder="例：20℃で5時間" hidden>
     </label>
-    <label><span class="field-label-row">公式資料URL<a id="makerSiteLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>メーカー製品を探す</a></span><input id="materialUrl" type="url" maxlength="500" placeholder="https://..."><a id="materialUrlLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>入力した公式資料を開く</a></label>
+    <label>公式資料URL<input id="materialUrl" type="url" maxlength="500" placeholder="https://..."><a id="materialUrlLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>入力した公式資料を開く</a></label>
     <label>公式確認日<input id="materialChecked" type="date"></label>
     <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
     <div class="modal-tools"><button class="material-save" type="button" onclick="saveMaterial()">材料仕様を保存</button><button class="material-cancel" type="button" onclick="resetMaterialForm()">入力を取り消す</button></div>
@@ -846,9 +847,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.28";
+const APP_VERSION = "Ver.1.29";
 const APP_DATE = "2026/08/21";
-const APP_TIME = "21:04";
+const APP_TIME = "21:25";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
