@@ -627,6 +627,7 @@ button:active{
 .material-cancel{background:#6b7280;}
 .material-save-notice{margin-top:10px;padding:11px 12px;border:2px solid #4caf50;border-radius:10px;background:#e8f5e9;color:#166534;font-size:15px;font-weight:bold;line-height:1.45;}
 .material-save-notice.error{border-color:#e4a09a;background:#fff5f3;color:#b42318;}
+.material-form select.input-error,.material-form input.input-error{border:2px solid #d92d20;}
 .material-list{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
 .material-item{padding:12px;border-radius:10px;background:#eaf3ff;}
 .material-item-title{font-size:17px;font-weight:bold;color:#1f2937;}
@@ -849,9 +850,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.32";
+const APP_VERSION = "Ver.1.33";
 const APP_DATE = "2026/08/21";
-const APP_TIME = "21:50";
+const APP_TIME = "21:55";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1578,11 +1579,20 @@ function closeMaterialModal(event){
  clearMaterialForm();
 }
 
-function showMaterialSaveError(message){
+function showMaterialSaveError(message, focusTarget = null){
  materialSaveNotice.textContent = `保存できません。${message}`;
  materialSaveNotice.classList.add("error");
  materialSaveNotice.hidden = false;
- requestAnimationFrame(() => materialSaveNotice.scrollIntoView({ behavior:"smooth", block:"center" }));
+ document.querySelectorAll(".material-form .input-error").forEach(element => element.classList.remove("input-error"));
+ if(focusTarget){
+  focusTarget.classList.add("input-error");
+  requestAnimationFrame(() => {
+   focusTarget.scrollIntoView({ behavior:"smooth", block:"center" });
+   focusTarget.focus({ preventScroll:true });
+  });
+ }else{
+  requestAnimationFrame(() => materialSaveNotice.scrollIntoView({ behavior:"smooth", block:"center" }));
+ }
 }
 
 function materialFormData(){
@@ -1596,11 +1606,13 @@ function materialFormData(){
  const coverageMin = materialCoverageChoice.value === "その他" ? coverageParts[0] : (materialCoverageChoice.value === "" ? "" : Number(materialCoverageChoice.value));
  const coverageMax = materialCoverageChoice.value === "その他" ? (coverageParts.length === 2 ? coverageParts[1] : coverageParts[0]) : (materialCoverageMax.value === "" ? "" : Number(materialCoverageMax.value));
  const missing = [];
- if(!maker) missing.push("メーカー");
- if(!name) missing.push("製品名");
- if(!materialLiquid.value) missing.push("液数");
- if(materialLiquid.value === "2液" && !ratioValue) missing.push("配合比");
- if(missing.length){ showMaterialSaveError(`未入力：${missing.join("、")}`); return null; }
+ let firstMissing = null;
+ const addMissing = (label, element) => { missing.push(label); if(!firstMissing) firstMissing = element; };
+ if(!maker) addMissing("メーカー", materialMakerChoice.value === "その他" ? materialMakerOther : materialMakerChoice);
+ if(!name) addMissing("製品名", materialProductChoice.value === "その他" ? materialProductOther : materialProductChoice);
+ if(!materialLiquid.value) addMissing("液数", materialLiquid);
+ if(materialLiquid.value === "2液" && !ratioValue) addMissing("配合比", materialRatioChoice);
+ if(missing.length){ showMaterialSaveError(`未入力：${missing.join("、")}`, firstMissing); return null; }
  if((thinnerMin === "") !== (thinnerMax === "")){
   alert("標準希釈率は下限・上限を両方入力してください"); return null;
  }
@@ -1637,6 +1649,7 @@ function saveMaterial(){
  clearMaterialForm(true);
  materialSaveNotice.textContent = `「${materialDisplayName(item)}」を保存しました。登録済み材料に追加済みです。`;
  materialSaveNotice.classList.remove("error");
+ document.querySelectorAll(".material-form .input-error").forEach(element => element.classList.remove("input-error"));
  materialSaveNotice.hidden = false;
  requestAnimationFrame(() => materialSaveNotice.scrollIntoView({ behavior:"smooth", block:"center" }));
  if(materialSaveTimer) clearTimeout(materialSaveTimer);
