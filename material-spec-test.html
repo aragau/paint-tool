@@ -850,9 +850,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.34";
+const APP_VERSION = "Ver.1.36";
 const APP_DATE = "2026/08/21";
-const APP_TIME = "21:58";
+const APP_TIME = "22:10";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1599,6 +1599,8 @@ function materialFormData(){
  const maker = materialMakerChoice.value === "その他" ? materialMakerOther.value.trim() : materialMakerChoice.value;
  const name = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
  const ratioValue = materialLiquid.value === "1液" ? "10:0" : normalizeMaterialRatio(materialRatioChoice.value === "その他" ? materialRatioOther.value : materialRatioChoice.value);
+ const thinnerName = (materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim();
+ const potLife = materialLiquid.value === "1液" ? "" : choiceValue(materialPotLifeChoice, materialPotLifeOther);
  const thinnerMin = materialThinnerMin.value === "" ? "" : Number(materialThinnerMin.value);
  const thinnerMax = materialThinnerMax.value === "" ? "" : Number(materialThinnerMax.value);
  const coverageOther = materialCoverageOther.value.trim().replace(/[～〜]/g, "-");
@@ -1611,7 +1613,15 @@ function materialFormData(){
  if(!maker) addMissing("メーカー", materialMakerChoice.value === "その他" ? materialMakerOther : materialMakerChoice);
  if(!name) addMissing("製品名", materialProductChoice.value === "その他" ? materialProductOther : materialProductChoice);
  if(!materialLiquid.value) addMissing("液数", materialLiquid);
- if(materialLiquid.value === "2液" && !ratioValue) addMissing("配合比", materialRatioChoice);
+ if(materialLiquid.value === "2液" && !ratioValue) addMissing("配合比", materialRatioChoice.value === "その他" ? materialRatioOther : materialRatioChoice);
+ if(!materialThinnerField.hidden && !thinnerName) addMissing("希釈剤名", materialThinnerChoice.value === "その他" ? materialThinnerOther : materialThinnerChoice);
+ if(!materialThinnerRateField.hidden && thinnerMin === "") addMissing("標準希釈率（下限）", materialThinnerMin);
+ if(!materialThinnerRateField.hidden && thinnerMax === "") addMissing("標準希釈率（上限）", materialThinnerMax);
+ if(coverageMin === "") addMissing("標準塗布量（下限）", materialCoverageChoice.value === "その他" ? materialCoverageOther : materialCoverageChoice);
+ if(coverageMax === "") addMissing("標準塗布量（上限）", materialCoverageChoice.value === "その他" ? materialCoverageOther : materialCoverageMax);
+ if(materialLiquid.value === "2液" && !potLife) addMissing("ポットライフ", materialPotLifeChoice.value === "その他" ? materialPotLifeOther : materialPotLifeChoice);
+ if(!materialUrl.value.trim()) addMissing("公式資料URL", materialUrl);
+ if(!materialChecked.value) addMissing("公式確認日", materialChecked);
  if(missing.length){ showMaterialSaveError(`未入力：${missing.join("、")}`, firstMissing); return null; }
  if((thinnerMin === "") !== (thinnerMax === "")){
   alert("標準希釈率は下限・上限を両方入力してください"); return null;
@@ -1630,10 +1640,10 @@ function materialFormData(){
  return {
   id: editingMaterialId || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
   maker, name, liquid:normalizeMaterialLiquid(materialLiquid.value), ratio:ratioValue,
-  thinnerName:(materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim(), thinnerMin, thinnerMax,
+  thinnerName, thinnerMin, thinnerMax,
   coverage:coverageMin !== "" && coverageMin === coverageMax ? coverageMin.toFixed(2) : "",
   coverageMin:coverageMin === "" ? "" : coverageMin.toFixed(2), coverageMax:coverageMax === "" ? "" : coverageMax.toFixed(2),
-  potLife:materialLiquid.value === "1液" ? "" : choiceValue(materialPotLifeChoice, materialPotLifeOther), url, checked:materialChecked.value, memo:materialMemo.value.trim()
+  potLife, url, checked:materialChecked.value, memo:materialMemo.value.trim()
  };
 }
 
