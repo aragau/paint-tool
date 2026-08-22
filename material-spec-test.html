@@ -751,10 +751,6 @@ button:active{
       <input id="materialCoverageOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：0.16～0.18" hidden>
      </label>
     </div>
-    <label id="materialPotLifeField">ポットライフ
-     <select id="materialPotLifeChoice"><option value="">選択してください</option><option value="23℃で30分">23℃で30分</option><option value="23℃で1時間">23℃で1時間</option><option value="23℃で2時間">23℃で2時間</option><option value="23℃で3時間">23℃で3時間</option><option value="23℃で4時間">23℃で4時間</option><option value="23℃で5時間">23℃で5時間</option><option value="23℃で6時間">23℃で6時間</option><option value="23℃で7時間">23℃で7時間</option><option value="23℃で8時間">23℃で8時間</option><option value="23℃で12時間">23℃で12時間</option><option value="23℃で24時間">23℃で24時間</option><option value="その他">その他（手入力）</option></select>
-     <input id="materialPotLifeOther" type="text" maxlength="80" placeholder="例：20℃で5時間" hidden>
-    </label>
     <label>公式資料URL<input id="materialUrl" type="url" maxlength="500" placeholder="https://..."><a id="materialUrlLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>入力した公式資料を開く</a></label>
     <label>公式確認日<input id="materialChecked" type="date"></label>
     <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
@@ -850,9 +846,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.37";
+const APP_VERSION = "Ver.1.38";
 const APP_DATE = "2026/08/22";
-const APP_TIME = "21:13";
+const APP_TIME = "21:20";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -943,9 +939,6 @@ const materialThinnerMax = document.getElementById("materialThinnerMax");
 const materialCoverageChoice = document.getElementById("materialCoverageChoice");
 const materialCoverageMax = document.getElementById("materialCoverageMax");
 const materialCoverageOther = document.getElementById("materialCoverageOther");
-const materialPotLifeField = document.getElementById("materialPotLifeField");
-const materialPotLifeChoice = document.getElementById("materialPotLifeChoice");
-const materialPotLifeOther = document.getElementById("materialPotLifeOther");
 const makerSiteLink = document.getElementById("makerSiteLink");
 const materialUrl = document.getElementById("materialUrl");
 const materialUrlLink = document.getElementById("materialUrlLink");
@@ -1289,7 +1282,7 @@ function updateThinnerUI(){
  note.textContent = "";
  if(thinner.value === "") return;
 
- if(value <= 13){
+ if(value <= 15){
   // 標準範囲
  }else if(value <= 20){
   thinner.style.color = "#cc7a00";
@@ -1422,14 +1415,10 @@ function setCheckedToday(){
 function updateMaterialLiquidUI(){
  const isOneLiquid = materialLiquid.value === "1液";
  materialRatioField.hidden = isOneLiquid;
- materialPotLifeField.hidden = isOneLiquid;
  if(isOneLiquid){
   materialRatioChoice.value = "";
   materialRatioOther.value = "";
   materialRatioOther.hidden = true;
-  materialPotLifeChoice.value = "";
-  materialPotLifeOther.value = "";
-  materialPotLifeOther.hidden = true;
  }
  updateMaterialThinnerUI();
 }
@@ -1474,7 +1463,6 @@ function renderMaterialSummary(item){
   item.thinnerName ? `希釈剤：${item.thinnerName}` : "",
   materialThinnerText(item) ? `標準希釈率：${materialThinnerText(item)}％` : "",
   materialCoverageText(item) ? `標準塗布量：${materialCoverageText(item)}kg/㎡/回` : "",
-  normalizeMaterialLiquid(item.liquid) !== "1液" && item.potLife ? `ポットライフ：${item.potLife}` : "",
  item.checked ? `公式確認日：${item.checked}` : ""
  ].filter(Boolean);
  lines.forEach((line, index) => {
@@ -1537,9 +1525,6 @@ function clearMaterialForm(keepSaveNotice = false){
  materialCoverageMax.value = "";
  materialCoverageOther.value = "";
  materialCoverageOther.hidden = true;
- materialPotLifeChoice.value = "";
- materialPotLifeOther.value = "";
- materialPotLifeOther.hidden = true;
  materialUrl.value = "";
  updateMaterialUrlLink();
  materialChecked.value = "";
@@ -1599,7 +1584,6 @@ function materialFormData(){
  const name = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
  const ratioValue = materialLiquid.value === "1液" ? "10:0" : normalizeMaterialRatio(materialRatioChoice.value === "その他" ? materialRatioOther.value : materialRatioChoice.value);
  const thinnerName = (materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim();
- const potLife = materialLiquid.value === "1液" ? "" : choiceValue(materialPotLifeChoice, materialPotLifeOther);
  const thinnerMin = materialThinnerMin.value === "" ? "" : Number(materialThinnerMin.value);
  const thinnerMax = materialThinnerMax.value === "" ? "" : Number(materialThinnerMax.value);
  const coverageOther = materialCoverageOther.value.trim().replace(/[～〜]/g, "-");
@@ -1618,7 +1602,6 @@ function materialFormData(){
  if(!materialThinnerRateField.hidden && thinnerMax === "") addMissing("標準希釈率（上限）", materialThinnerMax);
  if(coverageMin === "") addMissing("標準塗布量（下限）", materialCoverageChoice.value === "その他" ? materialCoverageOther : materialCoverageChoice);
  if(coverageMax === "") addMissing("標準塗布量（上限）", materialCoverageChoice.value === "その他" ? materialCoverageOther : materialCoverageMax);
- if(materialLiquid.value === "2液" && !potLife) addMissing("ポットライフ", materialPotLifeChoice.value === "その他" ? materialPotLifeOther : materialPotLifeChoice);
  if(!materialUrl.value.trim()) addMissing("公式資料URL", materialUrl);
  if(!materialChecked.value) addMissing("公式確認日", materialChecked);
  if(missing.length){ showMaterialSaveError(`未入力：${missing.join("、")}`, firstMissing); return null; }
@@ -1642,7 +1625,7 @@ function materialFormData(){
   thinnerName, thinnerMin, thinnerMax,
   coverage:coverageMin !== "" && coverageMin === coverageMax ? coverageMin.toFixed(2) : "",
   coverageMin:coverageMin === "" ? "" : coverageMin.toFixed(2), coverageMax:coverageMax === "" ? "" : coverageMax.toFixed(2),
-  potLife, url, checked:materialChecked.value, memo:materialMemo.value.trim()
+  url, checked:materialChecked.value, memo:materialMemo.value.trim()
  };
 }
 
@@ -1705,7 +1688,6 @@ function editMaterial(itemId){
  materialCoverageOther.hidden = materialCoverageChoice.value !== "その他";
  materialCoverageOther.value = materialCoverageChoice.value === "その他" ? (coverageRange ? materialCoverageText(item) : "") : "";
  materialCoverageMax.value = materialCoverageChoice.value === "その他" ? "" : coverageMax;
- restoreChoice(materialPotLifeChoice, materialPotLifeOther, materialLiquid.value === "1液" ? "" : (item.potLife || ""));
  materialUrl.value = item.url || "";
  updateMaterialUrlLink();
  materialChecked.value = item.checked || "";
@@ -1844,7 +1826,6 @@ function bindOtherChoice(choice, other){
 }
 
 bindOtherChoice(materialCoverageChoice, materialCoverageOther);
-bindOtherChoice(materialPotLifeChoice, materialPotLifeOther);
 
 function renderLatestBox(data){
  if(!data){
