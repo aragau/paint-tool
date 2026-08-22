@@ -850,9 +850,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.36";
-const APP_DATE = "2026/08/21";
-const APP_TIME = "22:10";
+const APP_VERSION = "Ver.1.37";
+const APP_DATE = "2026/08/22";
+const APP_TIME = "21:13";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1064,8 +1064,7 @@ async function updateWeatherAlerts(position){
   const probability = Math.max(0, ...withinOneHour.map(item => item.probability));
   const precipitation = Math.max(0, ...withinOneHour.map(item => item.precipitation));
   if(probability >= WEATHER_PROBABILITY_THRESHOLD || precipitation > 0){
-   const detail = probability > 0 ? `（降水確率 ${probability}%）` : "";
-   setSafetyAlert("rain", `⚠ 今後1時間以内に降雨の予報があります${detail}`);
+   setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります");
   }else{
    setSafetyAlert("rain", "");
   }
