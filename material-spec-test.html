@@ -622,6 +622,9 @@ button:active{
 .rate-range input{margin-top:0;min-width:0;}
 .material-form .two-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .material-form .form-note{font-size:13px;line-height:1.45;color:#5b6472;}
+.material-component-group{padding:11px;border:1px solid #b7c5d7;border-radius:10px;background:#f4f8fc;}
+.material-component-title{font-size:15px;font-weight:bold;color:#334155;margin-bottom:4px;}
+.material-form select:disabled,.material-form input:disabled{background:#eef2f7;color:#5b6472;}
 .material-save{background:#16a34a;}
 .material-save.saved{background:#15803d;}
 .material-cancel{background:#6b7280;}
@@ -729,20 +732,21 @@ button:active{
      <input id="materialProductOther" type="text" maxlength="100" placeholder="製品名を入力" hidden>
     </label>
     <a id="makerSiteLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>製品を検索</a>
-    <div class="two-columns">
-     <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="1液">1液</option><option value="2液">2液</option></select></label>
-     <label id="materialRatioField">配合比
-      <select id="materialRatioChoice">
-       <option value="">選択してください</option><option value="1:1">1：1</option><option value="2:1">2：1</option><option value="3:1">3：1</option><option value="4:1">4：1</option><option value="5:1">5：1</option><option value="6:1">6：1</option><option value="7:1">7：1</option><option value="8:1">8：1</option><option value="9:1">9：1</option><option value="10:1">10：1</option><option value="11:1">11：1</option><option value="12:1">12：1</option><option value="13:1">13：1</option><option value="14:1">14：1</option><option value="その他">その他（手入力）</option>
-      </select>
-      <input id="materialRatioOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1" hidden>
-     </label>
+    <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="1液">1液</option><option value="2液">2液</option></select></label>
+    <div class="material-component-group" id="materialWeightField">
+     <div class="material-component-title">セット内容（公式資料にkg表記がある場合）</div>
+     <div class="two-columns">
+      <label>主剤（kg）<select id="materialBaseWeight"><option value="">選択してください</option><option value="0.1">0.1</option><option value="0.2">0.2</option><option value="0.3">0.3</option><option value="0.4">0.4</option><option value="0.5">0.5</option><option value="0.6">0.6</option><option value="0.8">0.8</option><option value="1">1</option><option value="1.2">1.2</option><option value="1.5">1.5</option><option value="2">2</option><option value="2.5">2.5</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option><option value="12">12</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="その他">その他（手入力）</option></select><input id="materialBaseWeightOther" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="例：12" hidden></label>
+      <label>硬化剤（kg）<select id="materialHardenerWeight"><option value="">選択してください</option><option value="0.1">0.1</option><option value="0.2">0.2</option><option value="0.3">0.3</option><option value="0.4">0.4</option><option value="0.5">0.5</option><option value="0.6">0.6</option><option value="0.8">0.8</option><option value="1">1</option><option value="1.2">1.2</option><option value="1.5">1.5</option><option value="2">2</option><option value="2.5">2.5</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option><option value="12">12</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="その他">その他（手入力）</option></select><input id="materialHardenerWeightOther" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="例：2" hidden></label>
+     </div>
+     <div class="form-note" id="materialWeightNote">kg表記がなければ、下の配合比を直接選びます。</div>
     </div>
-    <div class="two-columns" id="materialWeightField">
-     <label>セット内容・主剤（kg）<input id="materialBaseWeight" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="例：15"></label>
-     <label>セット内容・硬化剤（kg）<input id="materialHardenerWeight" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="例：2"></label>
-    </div>
-    <div class="form-note" id="materialWeightNote">主剤・硬化剤を両方入力すると、配合比を自動計算します。</div>
+    <label id="materialRatioField">計算に使用する配合比
+     <select id="materialRatioChoice">
+      <option value="">選択してください</option><option value="1:1">1：1</option><option value="2:1">2：1</option><option value="3:1">3：1</option><option value="4:1">4：1</option><option value="5:1">5：1</option><option value="6:1">6：1</option><option value="7:1">7：1</option><option value="8:1">8：1</option><option value="9:1">9：1</option><option value="10:1">10：1</option><option value="11:1">11：1</option><option value="12:1">12：1</option><option value="13:1">13：1</option><option value="14:1">14：1</option><option value="その他">その他（手入力）</option>
+     </select>
+     <input id="materialRatioOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1" hidden>
+    </label>
     <label id="materialThinnerField">希釈剤名
      <select id="materialThinnerChoice"><option value="">選択してください</option><option value="なし">希釈なし</option><option value="塗料用シンナーA">塗料用シンナーA</option><option value="水">水</option><option value="その他">その他（手入力）</option></select>
      <input id="materialThinnerOther" type="text" maxlength="80" placeholder="例：ウレタンシンナー" hidden>
@@ -851,9 +855,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.40";
+const APP_VERSION = "Ver.1.41";
 const APP_DATE = "2026/08/22";
-const APP_TIME = "21:32";
+const APP_TIME = "21:41";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -937,7 +941,9 @@ const materialRatioChoice = document.getElementById("materialRatioChoice");
 const materialRatioOther = document.getElementById("materialRatioOther");
 const materialWeightField = document.getElementById("materialWeightField");
 const materialBaseWeight = document.getElementById("materialBaseWeight");
+const materialBaseWeightOther = document.getElementById("materialBaseWeightOther");
 const materialHardenerWeight = document.getElementById("materialHardenerWeight");
+const materialHardenerWeightOther = document.getElementById("materialHardenerWeightOther");
 const materialWeightNote = document.getElementById("materialWeightNote");
 const materialThinnerChoice = document.getElementById("materialThinnerChoice");
 const materialThinnerOther = document.getElementById("materialThinnerOther");
@@ -1373,6 +1379,18 @@ function restoreChoice(choice, other, value){
  other.value = choice.value === "その他" ? (value || "") : "";
 }
 
+function weightChoiceValue(choice, other){
+ return choice.value === "その他" ? other.value.trim() : choice.value;
+}
+
+function restoreWeightChoice(choice, other, value){
+ const text = String(value ?? "");
+ const isListed = Array.from(choice.options).some(option => option.value === text);
+ choice.value = isListed ? text : (text ? "その他" : "");
+ other.hidden = choice.value !== "その他";
+ other.value = choice.value === "その他" ? text : "";
+}
+
 function updateMakerSiteLink(){
  const maker = materialMakerChoice.value;
  const product = choiceValue(materialProductChoice, materialProductOther);
@@ -1425,27 +1443,36 @@ function updateMaterialLiquidUI(){
  const isOneLiquid = materialLiquid.value === "1液";
  materialRatioField.hidden = isOneLiquid;
  materialWeightField.hidden = isOneLiquid;
- materialWeightNote.hidden = isOneLiquid;
  if(isOneLiquid){
   materialRatioChoice.value = "";
   materialRatioOther.value = "";
   materialRatioOther.hidden = true;
   materialBaseWeight.value = "";
+  materialBaseWeightOther.value = "";
+  materialBaseWeightOther.hidden = true;
   materialHardenerWeight.value = "";
+  materialHardenerWeightOther.value = "";
+  materialHardenerWeightOther.hidden = true;
  }
  updateMaterialRatioFromWeights();
  updateMaterialThinnerUI();
 }
 
 function updateMaterialRatioFromWeights(){
- const baseWeight = materialBaseWeight.value === "" ? "" : Number(materialBaseWeight.value);
- const hardenerWeight = materialHardenerWeight.value === "" ? "" : Number(materialHardenerWeight.value);
+ const baseValue = weightChoiceValue(materialBaseWeight, materialBaseWeightOther);
+ const hardenerValue = weightChoiceValue(materialHardenerWeight, materialHardenerWeightOther);
+ const baseWeight = baseValue === "" ? "" : Number(baseValue);
+ const hardenerWeight = hardenerValue === "" ? "" : Number(hardenerValue);
  if(baseWeight === "" && hardenerWeight === ""){
-  materialWeightNote.textContent = "主剤・硬化剤を両方入力すると、配合比を自動計算します。";
+  materialRatioChoice.disabled = false;
+  materialRatioOther.disabled = false;
+  materialWeightNote.textContent = "kg表記がなければ、下の配合比を直接選びます。";
   return;
  }
  if(!Number.isFinite(baseWeight) || !Number.isFinite(hardenerWeight) || baseWeight <= 0 || hardenerWeight <= 0){
-  materialWeightNote.textContent = "主剤・硬化剤を両方、0より大きい数値で入力してください。";
+  materialRatioChoice.disabled = false;
+  materialRatioOther.disabled = false;
+  materialWeightNote.textContent = "主剤・硬化剤を両方選ぶと、配合比を自動計算します。";
   return;
  }
  const ratioValue = `${formatRatioNumber(Number((baseWeight / hardenerWeight).toFixed(4)))}:1`;
@@ -1453,6 +1480,8 @@ function updateMaterialRatioFromWeights(){
  materialRatioChoice.value = isListed ? ratioValue : "その他";
  materialRatioOther.hidden = isListed;
  materialRatioOther.value = isListed ? "" : ratioValue;
+ materialRatioChoice.disabled = true;
+ materialRatioOther.disabled = true;
  materialWeightNote.textContent = `主剤 ${formatRatioNumber(baseWeight)}kg＋硬化剤 ${formatRatioNumber(hardenerWeight)}kg → 配合比 ${ratioValue}`;
 }
 
@@ -1567,7 +1596,11 @@ function clearMaterialForm(keepSaveNotice = false){
  materialCoverageOther.value = "";
  materialCoverageOther.hidden = true;
  materialBaseWeight.value = "";
+ materialBaseWeightOther.value = "";
+ materialBaseWeightOther.hidden = true;
  materialHardenerWeight.value = "";
+ materialHardenerWeightOther.value = "";
+ materialHardenerWeightOther.hidden = true;
  updateMaterialRatioFromWeights();
  materialUrl.value = "";
  updateMaterialUrlLink();
@@ -1626,8 +1659,10 @@ function showMaterialSaveError(message, focusTarget = null){
 function materialFormData(){
  const maker = materialMakerChoice.value === "その他" ? materialMakerOther.value.trim() : materialMakerChoice.value;
  const name = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
- const baseWeight = materialBaseWeight.value === "" ? "" : Number(materialBaseWeight.value);
- const hardenerWeight = materialHardenerWeight.value === "" ? "" : Number(materialHardenerWeight.value);
+ const baseValue = weightChoiceValue(materialBaseWeight, materialBaseWeightOther);
+ const hardenerValue = weightChoiceValue(materialHardenerWeight, materialHardenerWeightOther);
+ const baseWeight = baseValue === "" ? "" : Number(baseValue);
+ const hardenerWeight = hardenerValue === "" ? "" : Number(hardenerValue);
  const hasWeightInput = baseWeight !== "" || hardenerWeight !== "";
  const weightRatio = !hasWeightInput || !Number.isFinite(baseWeight) || !Number.isFinite(hardenerWeight) || baseWeight <= 0 || hardenerWeight <= 0 ? "" : `${formatRatioNumber(Number((baseWeight / hardenerWeight).toFixed(4)))}:1`;
  const ratioValue = materialLiquid.value === "1液" ? "10:0" : (weightRatio || normalizeMaterialRatio(materialRatioChoice.value === "その他" ? materialRatioOther.value : materialRatioChoice.value));
@@ -1740,8 +1775,8 @@ function editMaterial(itemId){
  materialCoverageOther.hidden = materialCoverageChoice.value !== "その他";
  materialCoverageOther.value = materialCoverageChoice.value === "その他" ? (coverageRange ? materialCoverageText(item) : "") : "";
  materialCoverageMax.value = materialCoverageChoice.value === "その他" ? "" : coverageMax;
- materialBaseWeight.value = item.baseWeight || "";
- materialHardenerWeight.value = item.hardenerWeight || "";
+ restoreWeightChoice(materialBaseWeight, materialBaseWeightOther, item.baseWeight || "");
+ restoreWeightChoice(materialHardenerWeight, materialHardenerWeightOther, item.hardenerWeight || "");
  updateMaterialRatioFromWeights();
  materialUrl.value = item.url || "";
  updateMaterialUrlLink();
@@ -1865,8 +1900,20 @@ materialRatioChoice.addEventListener("change", () => {
 });
 
 materialLiquid.addEventListener("change", updateMaterialLiquidUI);
-materialBaseWeight.addEventListener("input", updateMaterialRatioFromWeights);
-materialHardenerWeight.addEventListener("input", updateMaterialRatioFromWeights);
+materialBaseWeight.addEventListener("change", () => {
+ materialBaseWeightOther.hidden = materialBaseWeight.value !== "その他";
+ if(materialBaseWeight.value !== "その他") materialBaseWeightOther.value = "";
+ if(materialBaseWeight.value === "その他") materialBaseWeightOther.focus();
+ updateMaterialRatioFromWeights();
+});
+materialHardenerWeight.addEventListener("change", () => {
+ materialHardenerWeightOther.hidden = materialHardenerWeight.value !== "その他";
+ if(materialHardenerWeight.value !== "その他") materialHardenerWeightOther.value = "";
+ if(materialHardenerWeight.value === "その他") materialHardenerWeightOther.focus();
+ updateMaterialRatioFromWeights();
+});
+materialBaseWeightOther.addEventListener("input", updateMaterialRatioFromWeights);
+materialHardenerWeightOther.addEventListener("input", updateMaterialRatioFromWeights);
 
 materialThinnerChoice.addEventListener("change", () => {
  updateMaterialThinnerUI();
