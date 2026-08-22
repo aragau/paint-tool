@@ -855,9 +855,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.41";
+const APP_VERSION = "Ver.1.42";
 const APP_DATE = "2026/08/22";
-const APP_TIME = "21:41";
+const APP_TIME = "21:48";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1127,8 +1127,8 @@ function add(select, text, value = text){
 }
 
 for(let i = 0; i <= 100; i++){
- add(materialThinnerMin, `${i}％`, String(i));
- add(materialThinnerMax, `${i}％`, String(i));
+ add(materialThinnerMin, i === 0 ? "無希釈" : `${i}％`, String(i));
+ add(materialThinnerMax, i === 0 ? "無希釈" : `${i}％`, String(i));
 }
 
 function formatRatioNumber(value){
@@ -1210,7 +1210,7 @@ for(let i = 0.1; i <= 20; i += 0.1){
 
 add(thinner, "", "");
 for(let i = 0; i <= 30; i++){
- add(thinner, String(i), String(i));
+ add(thinner, i === 0 ? "無希釈" : `${i}％`, String(i));
 }
 
 add(paintArea, "", "");
@@ -1507,7 +1507,9 @@ function materialDisplayName(item){
 function materialThinnerText(item){
  const min = item.thinnerMin ?? item.thinner ?? "";
  const max = item.thinnerMax ?? item.thinner ?? "";
- return min === "" || max === "" ? "" : `${min}～${max}`;
+ if(min === "" || max === "") return "";
+ if(Number(min) === 0 && Number(max) === 0) return "無希釈";
+ return `${min}～${max}％`;
 }
 
 function materialWeightText(item){
@@ -1531,7 +1533,7 @@ function renderMaterialSummary(item){
   `配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}`,
   materialWeightText(item) ? `セット内容：${materialWeightText(item)}` : "",
   item.thinnerName ? `希釈剤：${item.thinnerName}` : "",
-  materialThinnerText(item) ? `標準希釈率：${materialThinnerText(item)}％` : "",
+  materialThinnerText(item) ? `標準希釈率：${materialThinnerText(item)}` : "",
   materialCoverageText(item) ? `標準塗布量：${materialCoverageText(item)}kg/㎡/回` : "",
  item.checked ? `公式確認日：${item.checked}` : ""
  ].filter(Boolean);
@@ -1804,7 +1806,7 @@ function renderMaterialList(){
   title.textContent = materialDisplayName(item);
   const detail = document.createElement("div");
   detail.className = "material-item-detail";
-  detail.textContent = `${normalizeMaterialLiquid(item.liquid) || ""}　配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}${materialWeightText(item) ? `　セット内容：${materialWeightText(item)}` : ""}${materialThinnerText(item) ? `　標準希釈率：${materialThinnerText(item)}％` : ""}${materialCoverageText(item) ? `　塗布量：${materialCoverageText(item)}kg/㎡/回` : ""}`;
+  detail.textContent = `${normalizeMaterialLiquid(item.liquid) || ""}　配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}${materialWeightText(item) ? `　セット内容：${materialWeightText(item)}` : ""}${materialThinnerText(item) ? `　標準希釈率：${materialThinnerText(item)}` : ""}${materialCoverageText(item) ? `　塗布量：${materialCoverageText(item)}kg/㎡/回` : ""}`;
   const actions = document.createElement("div");
   actions.className = "material-item-actions";
   const edit = document.createElement("button");
