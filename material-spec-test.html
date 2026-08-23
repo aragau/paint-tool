@@ -395,6 +395,15 @@ button:active{
  font-weight:normal;
 }
 
+.history-screen{
+ margin-top:12px;
+}
+.history-screen-title{
+ margin:0 0 10px;
+ font-size:22px;
+ color:#1f2937;
+}
+
 @media (max-width: 420px){
  .history-actions{
   width:64px;
@@ -603,6 +612,7 @@ button:active{
  <div class="area-guide" id="normalGuide">主剤重量から硬化剤・希釈剤を計算します。</div>
 </div>
 
+<div id="calculatorContent">
 <div class="box">
  <label>登録済み材料</label>
  <div class="material-actions">
@@ -741,23 +751,17 @@ button:active{
 <div id="result" class="result" tabindex="-1"></div>
 
 <div class="footer" id="footerInfo"></div>
-
-<div class="modal" id="historyModal" onclick="closeHistoryModal(event)">
- <div class="modal-panel" onclick="event.stopPropagation()">
-  <div class="modal-header">
-   <div class="modal-title">履歴</div>
-   <button class="modal-close" onclick="closeHistoryModal()">閉じる</button>
-  </div>
-  <div class="modal-body">
-   <div class="history-guide">
-    <div class="note">タップすると、その内容を復元します。</div>
-    <div class="history-count" id="historyCount"></div>
-   </div>
-   <div class="history-list" id="historyList"></div>
-   <button class="modal-clearall" onclick="clearAllHistory()">履歴をすべて削除</button>
-  </div>
- </div>
 </div>
+
+<section class="box history-screen" id="historyPanel" hidden>
+ <h2 class="history-screen-title">履歴</h2>
+ <div class="history-guide">
+  <div class="note">タップすると、その内容を復元します。</div>
+  <div class="history-count" id="historyCount"></div>
+ </div>
+ <div class="history-list" id="historyList"></div>
+ <button class="modal-clearall" onclick="clearAllHistory()">履歴をすべて削除</button>
+</section>
 
 <div class="voice-overlay" id="voiceOverlay" aria-modal="true" role="dialog" aria-label="音声入力">
  <div class="voice-panel">
@@ -774,9 +778,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.45";
+const APP_VERSION = "Ver.1.46";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:07";
+const APP_TIME = "22:08";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -840,7 +844,6 @@ const actualBox = document.getElementById("actualBox");
 const showActualBtn = document.getElementById("showActualBtn");
 const thinner = document.getElementById("thinner");
 const result = document.getElementById("result");
-const historyModal = document.getElementById("historyModal");
 const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
 const materialSelect = document.getElementById("materialSelect");
@@ -886,9 +889,12 @@ const baseBox = document.getElementById("baseBox");
 const normalModeBtn = document.getElementById("normalModeBtn");
 const areaModeBtn = document.getElementById("areaModeBtn");
 const totalModeBtn = document.getElementById("totalModeBtn");
+const historyModeBtn = document.getElementById("historyModeBtn");
 const totalBox = document.getElementById("totalBox");
 const targetTotal = document.getElementById("targetTotal");
 const normalGuide = document.getElementById("normalGuide");
+const calculatorContent = document.getElementById("calculatorContent");
+const historyPanel = document.getElementById("historyPanel");
 let calculationMode = "normal";
 const safetyAlerts = new Map();
 
@@ -904,6 +910,20 @@ function setMode(mode){
  calculationMode = mode;
  const isArea = mode === "area";
  const isTotal = mode === "total";
+ const isHistory = mode === "history";
+ calculatorContent.hidden = isHistory;
+ historyPanel.hidden = !isHistory;
+ normalGuide.style.display = isHistory ? "none" : "block";
+ historyModeBtn.classList.toggle("active", isHistory);
+ if(isHistory){
+  areaBox.classList.remove("open");
+  totalBox.classList.remove("open");
+  normalModeBtn.classList.remove("active");
+  areaModeBtn.classList.remove("active");
+  totalModeBtn.classList.remove("active");
+  renderHistoryList();
+  return;
+ }
  areaBox.classList.toggle("open", isArea);
  totalBox.classList.toggle("open", isTotal);
  baseBox.style.display = (isArea || isTotal) ? "none" : "block";
@@ -1977,15 +1997,11 @@ function scrollToAppTop(){
 }
 
 function openHistoryModal(){
- renderHistoryList();
- historyModal.classList.add("open");
- document.body.style.overflow = "hidden";
+ setMode("history");
 }
 
-function closeHistoryModal(event){
- if(event && event.target !== historyModal) return;
- historyModal.classList.remove("open");
- document.body.style.overflow = "";
+function closeHistoryModal(){
+ if(calculationMode === "history") setMode("normal");
 }
 
 function restoreHistoryItem(itemId){
@@ -1995,7 +2011,6 @@ function restoreHistoryItem(itemId){
 
  applyDataToForm(item);
  clearResult();
- closeHistoryModal();
  renderLatestBox(item);
  setLastData(item);
  setTimeout(() => smoothScrollTo(ratioBox, "start"), 50);
@@ -2023,7 +2038,6 @@ function clearAllHistory(){
  localStorage.removeItem(STORAGE_LAST);
  renderLatestBox(null);
  renderHistoryList();
- closeHistoryModal();
 }
 
 function renderHistoryList(){
@@ -2240,9 +2254,6 @@ function backVoiceStep(){
 function restartVoiceInput(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceStepIndex = 0; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
 
 document.addEventListener("keydown", event => {
- if(event.key === "Escape" && historyModal.classList.contains("open")){
-  closeHistoryModal();
- }
  if(event.key === "Escape" && materialModal.classList.contains("open")){
   closeMaterialModal();
  }
