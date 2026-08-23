@@ -543,8 +543,9 @@ button:active{
 .area-only{display:none;}
 .area-only.open{display:block;}
 .area-guide{
- display:flex;
- justify-content:space-between;
+ display:block;
+ position:relative;
+ padding-right:145px;
  align-items:center;
  gap:8px;
  margin-top:10px;
@@ -556,7 +557,7 @@ button:active{
  line-height:1.5;
 }
 .area-guide #normalGuideText{flex:1;}
-.area-guide .material-entry{margin-left:auto !important;padding:0;background:transparent;color:#2d6cdf;font-size:15px;text-decoration:underline;white-space:nowrap;text-align:right;}
+.area-guide .material-entry{position:absolute;right:12px;top:50%;transform:translateY(-50%);margin:0;padding:0;background:transparent;color:#2d6cdf;font-size:15px;text-decoration:underline;white-space:nowrap;}
 
 .material-actions{display:flex;gap:10px;align-items:center;}
 .material-actions button{width:auto;margin:0;white-space:nowrap;padding:12px 14px;font-size:16px;background:#16a34a;}
@@ -788,9 +789,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.60";
+const APP_VERSION = "Ver.1.61";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:48";
+const APP_TIME = "22:51";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
