@@ -549,6 +549,8 @@ button:active{
 .material-actions{display:flex;gap:10px;align-items:center;}
 .material-actions button{width:auto;margin:0;white-space:nowrap;padding:12px 14px;font-size:16px;background:#16a34a;}
 .material-actions select{margin:0;min-width:0;flex:1;font-size:17px;padding:12px;}
+.material-entry-row{margin-top:10px;text-align:right;}
+.material-entry{width:auto;margin:0;padding:9px 12px;background:#7898bc;font-size:15px;}
 .material-summary{margin-top:10px;padding:10px 12px;border:1px solid #b7c5d7;border-radius:10px;background:#f4f8fc;color:#334155;font-size:14px;line-height:1.5;}
 .material-summary.empty{color:#5b6472;}
 .material-form{display:grid;gap:10px;margin-top:12px;}
@@ -613,7 +615,11 @@ button:active{
 </div>
 
 <div id="calculatorContent">
-<div class="box">
+<div class="material-entry-row">
+ <button type="button" class="material-entry" id="materialEntryButton" onclick="handleMaterialEntry()">材料を登録</button>
+</div>
+
+<div class="box" id="materialChooser" hidden>
  <label>登録済み材料</label>
  <div class="material-actions">
   <select id="materialSelect" aria-label="登録済み材料"><option value="">材料を選択</option></select>
@@ -778,9 +784,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.46";
+const APP_VERSION = "Ver.1.47";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:08";
+const APP_TIME = "22:14";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -847,6 +853,8 @@ const result = document.getElementById("result");
 const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
 const materialSelect = document.getElementById("materialSelect");
+const materialEntryButton = document.getElementById("materialEntryButton");
+const materialChooser = document.getElementById("materialChooser");
 const materialSummary = document.getElementById("materialSummary");
 const materialModal = document.getElementById("materialModal");
 const materialList = document.getElementById("materialList");
@@ -1479,6 +1487,22 @@ function renderMaterialSelect(selectedId = materialSelect.value){
   .forEach(item => add(materialSelect, materialDisplayName(item), item.id));
  materialSelect.value = materials.some(item => item.id === selectedId) ? selectedId : "";
  renderMaterialSummary(materials.find(item => item.id === materialSelect.value) || null);
+ refreshMaterialEntry();
+}
+
+function refreshMaterialEntry(){
+ const hasMaterials = getMaterials().length > 0;
+ materialEntryButton.textContent = hasMaterials ? "材料を使う（任意）" : "材料を登録";
+ if(!hasMaterials) materialChooser.hidden = true;
+}
+
+function handleMaterialEntry(){
+ if(getMaterials().length === 0){
+  openMaterialModal();
+  return;
+ }
+ materialChooser.hidden = !materialChooser.hidden;
+ if(!materialChooser.hidden) materialSelect.focus();
 }
 
 function clearMaterialForm(keepSaveNotice = false){
