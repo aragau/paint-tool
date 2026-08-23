@@ -543,6 +543,9 @@ button:active{
 .area-only{display:none;}
 .area-only.open{display:block;}
 .area-guide{
+ display:flex;
+ align-items:center;
+ gap:8px;
  margin-top:10px;
  padding:10px 12px;
  background:#e8f5e9;
@@ -617,14 +620,10 @@ button:active{
   <button type="button" id="totalModeBtn">総量</button>
   <button type="button" id="historyModeBtn" onclick="openHistoryModal()">履歴</button>
  </div>
- <div class="area-guide" id="normalGuide">主剤重量から硬化剤・希釈剤を計算します。</div>
+ <div class="area-guide" id="normalGuide"><span id="normalGuideText">主剤重量から硬化剤・希釈剤を計算します。</span><button type="button" class="material-entry" id="materialEntryButton" onclick="handleMaterialEntry()">材料を登録</button></div>
 </div>
 
 <div id="calculatorContent">
-<div class="material-entry-row">
- <button type="button" class="material-entry" id="materialEntryButton" onclick="handleMaterialEntry()">材料を登録</button>
-</div>
-
 <div class="box" id="materialChooser" hidden>
  <label>登録済み材料</label>
  <div class="material-actions">
@@ -786,9 +785,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.56";
+const APP_VERSION = "Ver.1.57";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:37";
+const APP_TIME = "22:42";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -902,6 +901,7 @@ const historyModeBtn = document.getElementById("historyModeBtn");
 const totalBox = document.getElementById("totalBox");
 const targetTotal = document.getElementById("targetTotal");
 const normalGuide = document.getElementById("normalGuide");
+const normalGuideText = document.getElementById("normalGuideText");
 const calculatorContent = document.getElementById("calculatorContent");
 const historyPanel = document.getElementById("historyPanel");
 let calculationMode = "normal";
@@ -930,10 +930,12 @@ function setMode(mode){
   normalModeBtn.classList.remove("active");
   areaModeBtn.classList.remove("active");
  totalModeBtn.classList.remove("active");
-  normalGuide.textContent = "";
+  normalGuideText.textContent = "";
+  materialEntryButton.hidden = true;
   renderHistoryList();
-  return;
- }
+ return;
+}
+ materialEntryButton.hidden = false;
  areaBox.classList.toggle("open", isArea);
  totalBox.classList.toggle("open", isTotal);
  baseBox.style.display = (isArea || isTotal) ? "none" : "block";
@@ -943,10 +945,10 @@ function setMode(mode){
  normalModeBtn.classList.toggle("active", !isArea && !isTotal);
  areaModeBtn.classList.toggle("active", isArea);
  totalModeBtn.classList.toggle("active", isTotal);
- normalGuide.textContent = isArea
+ normalGuideText.textContent = isArea
   ? "塗装面積と塗布量から、塗料量を計算します。"
   : isTotal
-  ? "作りたい完成量から、主剤・硬化剤・希釈剤を逆算します。"
+  ? "完成量から配合を逆算します。"
   : "主剤重量から硬化剤・希釈剤を計算します。";
  clearResult();
  updateNeededTotal();
@@ -1877,7 +1879,7 @@ function renderLatestBox(data){
 
 function renderHistoryCount(count){
  if(calculationMode === "history"){
-  normalGuide.textContent = `履歴は最新${HISTORY_MAX}件まで保存されます。（現在${count}/${HISTORY_MAX}件）`;
+  normalGuideText.textContent = `履歴は最新${HISTORY_MAX}件まで保存されます。（現在${count}/${HISTORY_MAX}件）`;
  }
 }
 
