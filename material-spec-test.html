@@ -215,9 +215,9 @@ button:active{
  position:relative;
 }
 
-.calc-actions{display:flex;gap:10px;margin-top:8px;}
-.calc-actions .calc-button{flex:1;margin-top:0;}
-.calc-scroll-top{width:54px;margin:0;padding:0;background:#7898bc;font-size:28px;line-height:1;}
+.calc-actions{display:flex;gap:0;margin-top:8px;background:#2d6cdf;border-radius:8px;}
+.calc-actions .calc-button{flex:1;margin:0;border-radius:8px 0 0 8px;}
+.calc-scroll-top{width:54px;margin:6px;padding:0;background:transparent;border:2px solid rgba(255,255,255,.88);border-radius:8px;color:#fff;font-size:28px;line-height:1;}
 
 .result-scroll-top{
  position:absolute;
@@ -786,9 +786,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.53";
+const APP_VERSION = "Ver.1.54";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:30";
+const APP_TIME = "22:32";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
