@@ -789,9 +789,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.61";
+const APP_VERSION = "Ver.1.62";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:51";
+const APP_TIME = "22:54";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -801,6 +801,7 @@ const PREFECTURE_NAMES = {
 const STORAGE_HISTORY = "materialSpecTestHistory";
 const STORAGE_LAST = "materialSpecTestLastData";
 const STORAGE_MATERIALS = "materialSpecTestMaterials";
+const MATERIAL_MAX = 30;
 const MATERIAL_PRODUCT_OPTIONS = {
  "日本ペイント": [
   "パーフェクトトップSi", "ファインパーフェクトトップSi", "ケンエースG-II", "水性ケンエース",
@@ -1277,7 +1278,7 @@ function getMaterials(){
 }
 
 function setMaterials(items){
- localStorage.setItem(STORAGE_MATERIALS, JSON.stringify(items));
+ localStorage.setItem(STORAGE_MATERIALS, JSON.stringify(items.slice(-MATERIAL_MAX)));
 }
 
 function normalizeMaterialRatio(value){
