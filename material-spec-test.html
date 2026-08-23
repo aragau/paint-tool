@@ -100,37 +100,6 @@ h1{
  font-size:16px;
 }
 
-.history-inline{
- display:flex;
- flex-direction:column;
- gap:10px;
- margin-top:12px;
- padding:10px 12px;
-}
-
-.history-inline-top{
- display:flex;
- align-items:center;
- justify-content:space-between;
- gap:10px;
-}
-
-.history-inline-label{
- flex:1 1 auto;
- min-width:0;
- font-weight:bold;
- font-size:15px;
- color:#1f2937;
- white-space:nowrap;
-}
-
-.history-inline-value{
- font-size:14px;
- line-height:1.45;
- color:#111827;
- word-break:break-word;
-}
-
 label{
  display:block;
  font-weight:bold;
@@ -184,6 +153,18 @@ button:active{
  display:grid;
  grid-template-columns:1fr auto 1fr;
  align-items:center;
+}
+.header-history{
+ grid-column:1;
+ width:auto;
+ margin:0;
+ padding:8px 12px;
+ justify-self:start;
+ background:transparent;
+ border:1px solid rgba(255,255,255,.78);
+ border-radius:8px;
+ color:#fff;
+ font-size:16px;
 }
 .header-title{grid-column:2;}
 .voice-start{
@@ -290,17 +271,6 @@ button:active{
  margin-top:22px;
  padding:10px 0 0;
  letter-spacing:0.04em;
-}
-
-.history-btn{
- margin-top:0;
- background:#16a34a;
- width:auto;
- min-width:72px;
- padding:10px 12px;
- font-size:16px;
- white-space:nowrap;
- flex:0 0 auto;
 }
 
 .history-list{
@@ -438,11 +408,7 @@ button:active{
 }
 
 @media (max-width: 420px){
- .history-btn{
-  min-width:58px;
-  padding:9px 8px;
-  font-size:14px;
- }
+ .header-history{padding:7px 10px;font-size:15px;}
  .history-actions{
   width:64px;
   flex-basis:64px;
@@ -634,19 +600,12 @@ button:active{
 <h1 id="appTitle">塗料配合計算　材料仕様試作版</h1>
 
 <div class="header">
+ <button class="header-history" type="button" onclick="openHistoryModal()">履歴</button>
  <span class="header-title">配合設定</span>
  <button class="voice-start" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path><path d="M8 21h8"></path></svg></button>
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
-
-<div class="box info history-inline">
- <div class="history-inline-top">
-  <div class="history-inline-label">前回使用</div>
-  <button class="history-btn" onclick="openHistoryModal()">履歴</button>
- </div>
- <div class="history-inline-value" id="history">前回データなし</div>
-</div>
 
 <div class="box">
  <div class="mode-switch">
@@ -828,9 +787,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.43";
+const APP_VERSION = "Ver.1.44";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "21:30";
+const APP_TIME = "21:42";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -894,7 +853,6 @@ const actualBox = document.getElementById("actualBox");
 const showActualBtn = document.getElementById("showActualBtn");
 const thinner = document.getElementById("thinner");
 const result = document.getElementById("result");
-const historyBox = document.getElementById("history");
 const historyModal = document.getElementById("historyModal");
 const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
@@ -1881,26 +1839,7 @@ function bindOtherChoice(choice, other){
 bindOtherChoice(materialCoverageChoice, materialCoverageOther);
 
 function renderLatestBox(data){
- if(!data){
-  historyBox.innerHTML = "前回データなし";
-  return;
- }
-
- const mainLabel = data.mode === "area"
-  ? `面積：${data.paintArea}㎡　塗布量：${data.coverage}kg/㎡/回<br>今回必要量：${data.finishedTotal}kg`
-  : data.mode === "total"
-  ? `作りたい完成量：${data.finishedTotal}kg`
-  : data.usedActual && data.actualValue
-  ? `実測主剤重量：${data.actualValue}kg`
-  : `主剤重量：${data.base}kg`;
-
- historyBox.innerHTML =
-  "前回使用：<br>" +
-  `${data.date || ""}<br><br>` +
-  (data.materialLabel ? `材料：${data.materialLabel}<br>` : "") +
-  `配合比：${getItemRatioLabel(data)}<br>` +
-  `${mainLabel}<br>` +
-  `希釈率：${data.thinner}％`;
+ // 前回使用の要約はメイン画面に表示せず、ヘッダーの「履歴」から確認します。
 }
 
 function renderHistoryCount(count){
