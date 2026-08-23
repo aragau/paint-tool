@@ -786,9 +786,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.55";
+const APP_VERSION = "Ver.1.56";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:34";
+const APP_TIME = "22:37";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1494,7 +1494,7 @@ function renderMaterialSelect(selectedId = materialSelect.value){
 
 function refreshMaterialEntry(){
  const hasMaterials = getMaterials().length > 0;
- materialEntryButton.textContent = hasMaterials ? "材料を使う（任意）" : "材料を登録";
+ materialEntryButton.textContent = hasMaterials ? "登録済み材料" : "材料を登録";
  if(!hasMaterials) materialChooser.hidden = true;
 }
 
