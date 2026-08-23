@@ -60,31 +60,6 @@ h1{
  white-space:pre-line;
 }
 
-.weather-status{
- margin-top:8px;
- color:#5b6472;
- font-size:13px;
- line-height:1.45;
- text-align:center;
-}
-.weather-status.error{
- color:#b42318;
-}
-
-.weather-refresh{
- display:block;
- width:auto;
- margin:7px auto 0;
- padding:7px 12px;
- background:#7898bc;
- font-size:13px;
- border-radius:8px;
-}
-.weather-refresh:disabled{
- opacity:.65;
- cursor:default;
-}
-
 .wbgt-info{
  margin-top:8px;
  padding:10px 12px;
@@ -664,8 +639,6 @@ button:active{
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
-<div class="weather-status" id="weatherStatus" hidden></div>
-<button class="weather-refresh" id="weatherRefreshBtn" type="button">安全情報を更新</button>
 
 <div class="box info history-inline">
  <div class="history-inline-top">
@@ -855,9 +828,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.42";
-const APP_DATE = "2026/08/22";
-const APP_TIME = "21:48";
+const APP_VERSION = "Ver.1.43";
+const APP_DATE = "2026/08/23";
+const APP_TIME = "21:30";
 const HISTORY_MAX = 10;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -910,8 +883,6 @@ const MAKER_SITE_URLS = {
 const appTitle = document.getElementById("appTitle");
 const footerInfo = document.getElementById("footerInfo");
 const weatherAlert = document.getElementById("weatherAlert");
-const weatherStatus = document.getElementById("weatherStatus");
-const weatherRefreshBtn = document.getElementById("weatherRefreshBtn");
 const ratioBox = document.getElementById("ratioBox");
 const ratio = document.getElementById("ratio");
 const customRatioBox = document.getElementById("customRatioBox");
@@ -1020,28 +991,11 @@ function setSafetyAlert(key, message){
  weatherAlert.hidden = safetyAlerts.size === 0;
 }
 
-function setWeatherStatus(message, isError = false){
- weatherStatus.textContent = message;
- weatherStatus.classList.toggle("error", isError);
- weatherStatus.hidden = !message;
-}
-
-function setWeatherRefreshLoading(isLoading){
- weatherRefreshBtn.disabled = isLoading;
- weatherRefreshBtn.textContent = isLoading ? "天気情報を更新中…" : "天気情報を更新";
-}
-
 function updateSafetyInformation(){
  if(!navigator.geolocation){
-  setWeatherStatus("このブラウザでは位置情報を取得できません。", true);
   return;
  }
- setWeatherStatus("安全情報を確認中です。");
- setWeatherRefreshLoading(true);
- navigator.geolocation.getCurrentPosition(updateWeatherAlerts, () => {
-  setWeatherStatus("位置情報を取得できないため、安全情報を更新できません。", true);
-  setWeatherRefreshLoading(false);
- }, { enableHighAccuracy:false, timeout:10000, maximumAge:300000 });
+ navigator.geolocation.getCurrentPosition(updateWeatherAlerts, () => {}, { enableHighAccuracy:false, timeout:10000, maximumAge:300000 });
 }
 
 async function updateWeatherAlerts(position){
@@ -1077,12 +1031,7 @@ async function updateWeatherAlerts(position){
    setSafetyAlert("rain", "");
   }
   await updateHeatstrokeAlert(latitude, longitude);
-  setWeatherStatus("");
- }catch(error){
-  setWeatherStatus("安全情報を取得できませんでした。", true);
- }finally{
-  setWeatherRefreshLoading(false);
- }
+ }catch(error){}
 }
 
 async function updateHeatstrokeAlert(latitude, longitude){
@@ -1116,8 +1065,6 @@ async function updateHeatstrokeAlert(latitude, longitude){
   setSafetyAlert("heat", "");
  }
 }
-
-weatherRefreshBtn.addEventListener("click", updateSafetyInformation);
 
 function add(select, text, value = text){
  const op = document.createElement("option");
@@ -2384,7 +2331,7 @@ renderMaterialSelect();
 updateThinnerUI();
 setMode("normal");
 loadData();
-setWeatherStatus("安全情報は「天気情報を更新」を押して確認します。");
+updateSafetyInformation();
 </script>
 
 </body>
