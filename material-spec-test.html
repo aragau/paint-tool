@@ -762,9 +762,6 @@ button:active{
 </div>
 
 <section class="box history-screen" id="historyPanel" hidden>
- <div class="history-guide">
-  <div class="history-count" id="historyCount"></div>
- </div>
  <div class="history-list" id="historyList"></div>
  <button class="modal-clearall" onclick="clearAllHistory()">履歴をすべて削除</button>
 </section>
@@ -784,9 +781,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.51";
+const APP_VERSION = "Ver.1.52";
 const APP_DATE = "2026/08/23";
-const APP_TIME = "22:24";
+const APP_TIME = "22:27";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -851,7 +848,6 @@ const showActualBtn = document.getElementById("showActualBtn");
 const thinner = document.getElementById("thinner");
 const result = document.getElementById("result");
 const historyList = document.getElementById("historyList");
-const historyCount = document.getElementById("historyCount");
 const materialSelect = document.getElementById("materialSelect");
 const materialEntryButton = document.getElementById("materialEntryButton");
 const materialChooser = document.getElementById("materialChooser");
@@ -921,14 +917,15 @@ function setMode(mode){
  const isHistory = mode === "history";
  calculatorContent.hidden = isHistory;
  historyPanel.hidden = !isHistory;
- normalGuide.style.display = isHistory ? "none" : "block";
+ normalGuide.style.display = "block";
  historyModeBtn.classList.toggle("active", isHistory);
  if(isHistory){
   areaBox.classList.remove("open");
   totalBox.classList.remove("open");
   normalModeBtn.classList.remove("active");
   areaModeBtn.classList.remove("active");
-  totalModeBtn.classList.remove("active");
+ totalModeBtn.classList.remove("active");
+  normalGuide.textContent = "";
   renderHistoryList();
   return;
  }
@@ -1874,7 +1871,9 @@ function renderLatestBox(data){
 }
 
 function renderHistoryCount(count){
- historyCount.textContent = `履歴は最新${HISTORY_MAX}件まで保存されます。（現在${count}/${HISTORY_MAX}件）`;
+ if(calculationMode === "history"){
+  normalGuide.textContent = `履歴は最新${HISTORY_MAX}件まで保存されます。（現在${count}/${HISTORY_MAX}件）`;
+ }
 }
 
 function saveData(ratioInfo){
