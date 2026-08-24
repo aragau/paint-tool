@@ -793,9 +793,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.60";
+const APP_VERSION = "Ver.1.61";
 const APP_DATE = "2026/08/24";
-const APP_TIME = "23:02";
+const APP_TIME = "23:05";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -966,25 +966,25 @@ normalModeBtn.addEventListener("click", () => setMode("normal"));
 areaModeBtn.addEventListener("click", () => setMode("area"));
 totalModeBtn.addEventListener("click", () => setMode("total"));
 
-function setSafetyAlert(key, message){
+function setSafetyAlert(key, message, sourceUrl = ""){
  if(message){
-  safetyAlerts.set(key, message);
+  safetyAlerts.set(key, { message, sourceUrl });
  }else{
   safetyAlerts.delete(key);
  }
  weatherAlert.replaceChildren();
- Array.from(safetyAlerts.entries()).forEach(([alertKey, alertMessage], index) => {
+ Array.from(safetyAlerts.entries()).forEach(([, alertInfo], index) => {
   if(index > 0) weatherAlert.appendChild(document.createElement("br"));
-  if(alertKey === "heat"){
+  if(alertInfo.sourceUrl){
    const link = document.createElement("a");
-   link.href = "https://www.wbgt.env.go.jp/alert.php";
+   link.href = alertInfo.sourceUrl;
    link.target = "_blank";
    link.rel = "noopener noreferrer";
-   link.textContent = alertMessage;
-   link.title = "環境省「熱中症警戒アラート等の発表状況」を開く";
+   link.textContent = alertInfo.message;
+   link.title = "情報元を開く";
    weatherAlert.appendChild(link);
   }else{
-   weatherAlert.appendChild(document.createTextNode(alertMessage));
+   weatherAlert.appendChild(document.createTextNode(alertInfo.message));
   }
  });
  weatherAlert.hidden = safetyAlerts.size === 0;
@@ -1025,7 +1025,7 @@ async function updateWeatherAlerts(position){
   const probability = Math.max(0, ...withinOneHour.map(item => item.probability));
   const precipitation = Math.max(0, ...withinOneHour.map(item => item.precipitation));
   if(probability >= WEATHER_PROBABILITY_THRESHOLD || precipitation > 0){
-   setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります");
+   setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります", url.toString());
   }else{
    setSafetyAlert("rain", "");
   }
@@ -1054,9 +1054,9 @@ async function updateHeatstrokeAlert(latitude, longitude){
   const specialAlert = cells[2] === "●";
   const heatAlert = cells[3] === "●";
   if(specialAlert){
-   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症特別警戒アラートが発表されています`);
+   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症特別警戒アラートが発表されています`, "https://www.wbgt.env.go.jp/alert.php");
   }else if(heatAlert){
-   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症警戒アラートが発表されています`);
+   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症警戒アラートが発表されています`, "https://www.wbgt.env.go.jp/alert.php");
   }else{
    setSafetyAlert("heat", "");
   }
