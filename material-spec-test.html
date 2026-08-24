@@ -59,6 +59,11 @@ h1{
  line-height:1.45;
  white-space:pre-line;
 }
+.weather-alert a{
+ color:inherit;
+ text-decoration:underline;
+ text-underline-offset:2px;
+}
 
 .wbgt-info{
  margin-top:8px;
@@ -543,9 +548,8 @@ button:active{
 .area-only{display:none;}
 .area-only.open{display:block;}
 .area-guide{
- display:block;
- position:relative;
- padding-right:145px;
+ display:flex;
+ justify-content:space-between;
  align-items:center;
  gap:8px;
  margin-top:10px;
@@ -557,7 +561,7 @@ button:active{
  line-height:1.5;
 }
 .area-guide #normalGuideText{flex:1;}
-.area-guide .material-entry{position:absolute;right:12px;top:50%;transform:translateY(-50%);margin:0;padding:0;background:transparent;color:#2d6cdf;font-size:15px;text-decoration:underline;white-space:nowrap;}
+.area-guide .material-entry{margin:0;padding:0;background:transparent;color:#2d6cdf;font-size:15px;text-decoration:underline;white-space:nowrap;text-align:right;}
 
 .material-actions{display:flex;gap:10px;align-items:center;}
 .material-actions button{width:auto;margin:0;white-space:nowrap;padding:12px 14px;font-size:16px;background:#16a34a;}
@@ -789,10 +793,10 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.64";
-const APP_DATE = "2026/08/23";
-const APP_TIME = "22:58";
-const HISTORY_MAX = 50;
+const APP_VERSION = "Ver.1.60";
+const APP_DATE = "2026/08/24";
+const APP_TIME = "23:02";
+const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
 const PREFECTURE_NAMES = {
@@ -801,7 +805,6 @@ const PREFECTURE_NAMES = {
 const STORAGE_HISTORY = "materialSpecTestHistory";
 const STORAGE_LAST = "materialSpecTestLastData";
 const STORAGE_MATERIALS = "materialSpecTestMaterials";
-const MATERIAL_MAX = 50;
 const MATERIAL_PRODUCT_OPTIONS = {
  "日本ペイント": [
   "パーフェクトトップSi", "ファインパーフェクトトップSi", "ケンエースG-II", "水性ケンエース",
@@ -969,7 +972,21 @@ function setSafetyAlert(key, message){
  }else{
   safetyAlerts.delete(key);
  }
- weatherAlert.textContent = Array.from(safetyAlerts.values()).join("\n");
+ weatherAlert.replaceChildren();
+ Array.from(safetyAlerts.entries()).forEach(([alertKey, alertMessage], index) => {
+  if(index > 0) weatherAlert.appendChild(document.createElement("br"));
+  if(alertKey === "heat"){
+   const link = document.createElement("a");
+   link.href = "https://www.wbgt.env.go.jp/alert.php";
+   link.target = "_blank";
+   link.rel = "noopener noreferrer";
+   link.textContent = alertMessage;
+   link.title = "環境省「熱中症警戒アラート等の発表状況」を開く";
+   weatherAlert.appendChild(link);
+  }else{
+   weatherAlert.appendChild(document.createTextNode(alertMessage));
+  }
+ });
  weatherAlert.hidden = safetyAlerts.size === 0;
 }
 
@@ -1278,7 +1295,7 @@ function getMaterials(){
 }
 
 function setMaterials(items){
- localStorage.setItem(STORAGE_MATERIALS, JSON.stringify(items.slice(-MATERIAL_MAX)));
+ localStorage.setItem(STORAGE_MATERIALS, JSON.stringify(items));
 }
 
 function normalizeMaterialRatio(value){
