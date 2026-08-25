@@ -796,9 +796,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.64";
+const APP_VERSION = "Ver.1.65";
 const APP_DATE = "2026/08/25";
-const APP_TIME = "21:50";
+const APP_TIME = "21:52";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1905,7 +1905,7 @@ function renderLatestBox(data){
 
 function renderHistoryCount(count){
  if(calculationMode === "history"){
-  normalGuideText.textContent = `履歴は最新${HISTORY_MAX}件まで保存されます。（現在${count}/${HISTORY_MAX}件）`;
+  normalGuideText.innerHTML = `履歴は最新${HISTORY_MAX}件まで保存されます。<br>（現在${count}/${HISTORY_MAX}件）`;
  }
 }
 
