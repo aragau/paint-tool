@@ -562,6 +562,9 @@ button:active{
 }
 .area-guide #normalGuideText{flex:1;}
 .area-guide .material-entry{margin:0;padding:0;background:transparent;color:#2d6cdf;font-size:15px;text-decoration:underline;white-space:nowrap;text-align:right;}
+.area-guide.total-guide{flex-wrap:wrap;}
+.area-guide.total-guide #normalGuideText{flex:1 1 100%;}
+.area-guide.total-guide .material-entry{margin-left:auto;}
 
 .material-actions{display:flex;gap:10px;align-items:center;}
 .material-actions button{width:auto;margin:0;white-space:nowrap;padding:12px 14px;font-size:16px;background:#16a34a;}
@@ -793,9 +796,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.62";
+const APP_VERSION = "Ver.1.63";
 const APP_DATE = "2026/08/25";
-const APP_TIME = "21:24";
+const APP_TIME = "21:28";
 const HISTORY_MAX = 30;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -928,6 +931,7 @@ function setMode(mode){
  const isArea = mode === "area";
  const isTotal = mode === "total";
  const isHistory = mode === "history";
+ normalGuide.classList.toggle("total-guide", isTotal);
  calculatorContent.hidden = isHistory;
  historyPanel.hidden = !isHistory;
  normalGuide.style.display = "block";
@@ -956,7 +960,7 @@ function setMode(mode){
  normalGuideText.textContent = isArea
   ? "塗装面積と塗布量から、塗料量を計算します。"
   : isTotal
-  ? "完成量から配合を逆算します。"
+  ? "完成量から主剤・硬化剤・希釈剤を計算します。"
   : "主剤重量から硬化剤・希釈剤を計算します。";
  clearResult();
  updateNeededTotal();
