@@ -558,6 +558,7 @@ button:active{
  line-height:1.5;
 }
 .area-guide #normalGuideText{display:block;}
+.area-guide .history-guide-count{display:block;text-align:right;}
 .area-guide .material-entry-row{margin-top:2px;text-align:right;}
 .area-guide .material-entry{margin:0;padding:0;background:transparent;color:#2d6cdf;font-size:15px;text-decoration:underline;white-space:nowrap;text-align:right;}
 
@@ -791,9 +792,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.68";
+const APP_VERSION = "Ver.1.69";
 const APP_DATE = "2026/08/25";
-const APP_TIME = "21:58";
+const APP_TIME = "22:00";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1899,7 +1900,7 @@ function renderLatestBox(data){
 
 function renderHistoryCount(count){
  if(calculationMode === "history"){
-  normalGuideText.innerHTML = `履歴は最新${HISTORY_MAX}件まで保存されます。<br>（現在${count}/${HISTORY_MAX}件）`;
+  normalGuideText.innerHTML = `履歴は最新${HISTORY_MAX}件まで保存されます。<span class="history-guide-count">（現在${count}/${HISTORY_MAX}件）</span>`;
  }
 }
 
