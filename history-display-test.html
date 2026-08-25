@@ -821,9 +821,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　履歴表示テスト";
-const APP_VERSION = "Ver.1.70-test";
+const APP_VERSION = "Ver.1.71-test";
 const APP_DATE = "2026/08/25";
-const APP_TIME = "22:06";
+const APP_TIME = "22:10";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -2171,7 +2171,7 @@ function renderHistoryList(){
  Array.from(monthGroups.values()).forEach((group, groupIndex) => {
   const monthBox = document.createElement("details");
   monthBox.className = "history-month";
-  monthBox.open = groupIndex === 0;
+  monthBox.open = false;
   monthBox.innerHTML = `<summary><span>${group.label}</span><span class="history-month-count">${group.items.length}件</span></summary>`;
   const monthItems = document.createElement("div");
   monthItems.className = "history-month-items";
