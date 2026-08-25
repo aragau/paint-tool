@@ -277,6 +277,35 @@ button:active{
  margin-top:12px;
 }
 
+.history-month{
+ background:#f4f8fc;
+ border:1px solid #b7c5d7;
+ border-radius:10px;
+ overflow:hidden;
+}
+
+.history-month summary{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ padding:12px;
+ background:#e8f5e9;
+ color:#1f2937;
+ font-size:17px;
+ font-weight:bold;
+ cursor:pointer;
+ list-style:none;
+ -webkit-tap-highlight-color:transparent;
+}
+
+.history-month summary::-webkit-details-marker{display:none;}
+.history-month summary::after{content:"＋";font-size:22px;line-height:1;color:#2d6cdf;}
+.history-month[open] summary::after{content:"－";}
+.history-month-count{margin-left:auto;font-size:14px;font-weight:normal;color:#475569;}
+.history-month-items{padding:0 10px 10px;}
+.history-month-items .history-item{margin-top:10px;}
+
 .history-item{
  background:#eaf3ff;
  border:none;
@@ -792,9 +821,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.69";
+const APP_VERSION = "Ver.1.70";
 const APP_DATE = "2026/08/25";
-const APP_TIME = "22:00";
+const APP_TIME = "22:03";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -2101,7 +2130,26 @@ function renderHistoryList(){
   return;
  }
 
+ const monthGroups = new Map();
  arr.forEach(item => {
+  const matchedDate = String(item.date || "").match(/(\d{4})\D+(\d{1,2})/);
+  const year = matchedDate ? Number(matchedDate[1]) : 0;
+  const month = matchedDate ? Number(matchedDate[2]) : 0;
+  const key = matchedDate ? `${year}-${String(month).padStart(2, "0")}` : "other";
+  const label = matchedDate ? `${year}年${month}月` : "日付不明";
+  if(!monthGroups.has(key)) monthGroups.set(key, { label, items:[] });
+  monthGroups.get(key).items.push(item);
+ });
+
+ Array.from(monthGroups.values()).forEach((group, groupIndex) => {
+  const monthBox = document.createElement("details");
+  monthBox.className = "history-month";
+  monthBox.open = groupIndex === 0;
+  monthBox.innerHTML = `<summary><span>${group.label}</span><span class="history-month-count">${group.items.length}件</span></summary>`;
+  const monthItems = document.createElement("div");
+  monthItems.className = "history-month-items";
+
+  group.items.forEach(item => {
   const div = document.createElement("div");
   div.className = "history-item";
 
@@ -2126,7 +2174,10 @@ function renderHistoryList(){
     <button class="history-delete" data-delete="${item.id}">削除</button>
    </div>
   `;
-  historyList.appendChild(div);
+   monthItems.appendChild(div);
+  });
+  monthBox.appendChild(monthItems);
+  historyList.appendChild(monthBox);
  });
 
  historyList.querySelectorAll("[data-restore]").forEach(button => {
