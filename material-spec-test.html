@@ -269,6 +269,7 @@ button:active{
  padding:10px 0 0;
  letter-spacing:0.04em;
 }
+.footer a{color:#2d6cdf;overflow-wrap:anywhere;}
 
 .history-list{
  display:flex;
@@ -821,9 +822,10 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.73";
+const APP_VERSION = "Ver.1.74";
 const APP_DATE = "2026/08/27";
-const APP_TIME = "21:31";
+const APP_TIME = "22:03";
+const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -946,7 +948,7 @@ const safetyAlerts = new Map();
 function initializeAppInfo(){
  document.title = APP_NAME;
  appTitle.textContent = APP_NAME;
- footerInfo.innerHTML = `Produced by N.H.S.　material-spec-test ${APP_VERSION}<br>${APP_DATE} ${APP_TIME}`;
+ footerInfo.innerHTML = `Produced by N.H.S.　material-spec-test ${APP_VERSION}<br>${APP_DATE} ${APP_TIME}<br>公開URL：<a href="${APP_PUBLIC_URL}" target="_blank" rel="noopener noreferrer">${APP_PUBLIC_URL}</a>`;
 }
 
 function updateNeededTotal(){}
@@ -2238,10 +2240,11 @@ function getVoiceSteps(){
  const stepNumbers = ["①", "②", "③", "④"];
  const add = (key, label, example = "") => steps.push({ key, label:`${stepNumbers[steps.length]} ${label}`, example });
  const thinnerRange = selectedMaterial ? materialThinnerText(selectedMaterial) : "";
+ const coverageRange = selectedMaterial ? materialCoverageText(selectedMaterial) : "";
 
  if(calculationMode === "area"){
   add("paintArea", "塗装面積", "例：30㎡");
-  add("coverage", "塗布量", "例：0.15kg/㎡/回");
+  add("coverage", `塗布量${coverageRange ? `（メーカー仕様：${coverageRange}kg/㎡/回）` : ""}`, coverageRange ? "" : "例：0.15kg/㎡/回");
  }else if(calculationMode === "total"){
   add("targetTotal", "作りたい完成量", "例：3kg");
  }else{
