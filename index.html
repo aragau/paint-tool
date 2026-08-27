@@ -821,9 +821,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.71";
-const APP_DATE = "2026/08/25";
-const APP_TIME = "22:10";
+const APP_VERSION = "Ver.1.73";
+const APP_DATE = "2026/08/27";
+const APP_TIME = "21:31";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1271,6 +1271,20 @@ function updateThinnerUI(){
  note.textContent = "";
  if(thinner.value === "") return;
 
+ const selectedMaterial = getSelectedMaterial();
+ const thinnerMin = selectedMaterial ? (selectedMaterial.thinnerMin ?? selectedMaterial.thinner ?? "") : "";
+ const thinnerMax = selectedMaterial ? (selectedMaterial.thinnerMax ?? selectedMaterial.thinner ?? "") : "";
+ if(thinnerMin !== "" && thinnerMax !== ""){
+  const min = Number(thinnerMin);
+  const max = Number(thinnerMax);
+  if(value < min || value > max){
+   thinner.style.color = "#cc7a00";
+   note.style.color = "#cc7a00";
+   note.textContent = "※メーカー推奨値を確認してください。";
+  }
+  return;
+ }
+
  if(value <= 15){
   // 標準範囲
  }else if(value <= 20){
@@ -1484,6 +1498,10 @@ function materialThinnerText(item){
  if(min === "" || max === "") return "";
  if(Number(min) === 0 && Number(max) === 0) return "無希釈";
  return `${min}～${max}％`;
+}
+
+function getSelectedMaterial(){
+ return getMaterials().find(item => item.id === materialSelect.value) || null;
 }
 
 function materialWeightText(item){
@@ -2214,18 +2232,24 @@ let voiceRetryTimer = null;
 let voiceSteps = [];
 
 function getVoiceSteps(){
- return calculationMode === "area"
-  ? [
-    { key:"paintArea", label:"① 塗装面積", example:"例：30㎡" },
-    { key:"coverage", label:"② 塗布量", example:"例：0.15kg/㎡/回" },
-    { key:"ratio", label:"③ 配合比", example:"例：9：1" },
-    { key:"thinner", label:"④ 希釈率", example:"例：10％" }
-   ]
-  : [
-    { key:"ratio", label:"① 配合比", example:"例：9：1" },
-    { key:"base", label:"② 主剤重量", example:"例：3kg" },
-    { key:"thinner", label:"③ 希釈率", example:"例：10％" }
-   ];
+ const selectedMaterial = getSelectedMaterial();
+ const hasStoredRatio = Boolean(selectedMaterial && (normalizeMaterialLiquid(selectedMaterial.liquid) === "1液" || normalizeMaterialRatio(selectedMaterial.ratio)));
+ const steps = [];
+ const stepNumbers = ["①", "②", "③", "④"];
+ const add = (key, label, example = "") => steps.push({ key, label:`${stepNumbers[steps.length]} ${label}`, example });
+ const thinnerRange = selectedMaterial ? materialThinnerText(selectedMaterial) : "";
+
+ if(calculationMode === "area"){
+  add("paintArea", "塗装面積", "例：30㎡");
+  add("coverage", "塗布量", "例：0.15kg/㎡/回");
+ }else if(calculationMode === "total"){
+  add("targetTotal", "作りたい完成量", "例：3kg");
+ }else{
+  add("base", "主剤重量", "例：3kg");
+ }
+ if(!hasStoredRatio) add("ratio", "配合比", "例：9：1");
+ add("thinner", `希釈率${thinnerRange ? `（メーカー仕様：${thinnerRange}）` : ""}`);
+ return steps;
 }
 
 function normalizeVoiceText(text){
@@ -2250,6 +2274,7 @@ function parseVoiceValue(text){
  if(!match) return null;
  const number = Number(match[0]);
  if(step.key === "base") return number >= .5 && number <= 20 && Math.abs(number * 2 - Math.round(number * 2)) < .001 ? number.toFixed(1) : null;
+ if(step.key === "targetTotal") return number >= .1 && number <= 20 && Math.abs(number * 10 - Math.round(number * 10)) < .001 ? number.toFixed(1) : null;
  if(step.key === "paintArea") return Number.isInteger(number) && number >= 1 && number <= 500 && Array.from(paintArea.options).some(option => option.value === String(number)) ? String(number) : null;
  if(step.key === "coverage"){
   const value = number.toFixed(2);
@@ -2262,7 +2287,7 @@ function voiceDisplayValue(step, value){
  if(step.key === "ratio") return value.replace(":", "：");
  if(step.key === "paintArea") return `${value}㎡`;
  if(step.key === "coverage") return `${value}kg/㎡/回`;
- if(step.key === "base") return `${value}kg`;
+ if(step.key === "base" || step.key === "targetTotal") return `${value}kg`;
  return `${value}％`;
 }
 
@@ -2275,7 +2300,7 @@ function renderVoiceStep(){
  voiceStatus.textContent = "マイクに向かって話してください";
 }
 
-function getVoiceSelect(key){ return ({ ratio, base, thinner, paintArea, coverage })[key]; }
+function getVoiceSelect(key){ return ({ ratio, base, thinner, paintArea, coverage, targetTotal })[key]; }
 function clearVoiceRetry(){ if(voiceRetryTimer) clearTimeout(voiceRetryTimer); voiceRetryTimer = null; }
 function showVoiceFailure(message){
  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
@@ -2285,6 +2310,24 @@ function showVoiceFailure(message){
 function retryVoiceStep(message){
  clearVoiceRetry(); showVoiceFailure(message);
  voiceRetryTimer = window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 1200);
+}
+function playVoiceTone(type){
+ const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+ if(!AudioContextClass) return;
+ try{
+  const context = new AudioContextClass();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = type === "warning" ? 380 : 780;
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(type === "warning" ? 0.10 : 0.075, context.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + (type === "warning" ? 0.20 : 0.11));
+  oscillator.connect(gain).connect(context.destination);
+  oscillator.start();
+  oscillator.stop(context.currentTime + (type === "warning" ? 0.21 : 0.12));
+  oscillator.onended = () => context.close();
+ }catch(error){}
 }
 function createVoiceRecognition(){
  if(!SpeechRecognitionClass) return null;
@@ -2328,13 +2371,19 @@ function handleVoiceResult(text){
  updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
  if(item){ item.classList.remove("active"); item.classList.add("done"); item.querySelector(".voice-item-state").textContent = "完了 ✓"; item.querySelector(".voice-item-value").textContent = voiceDisplayValue(step, value); }
+ playVoiceTone("confirm");
  voiceStatus.textContent = `はい、${voiceDisplayValue(step, value)}ですね`;
  if(voiceRecognition && voiceIsListening) try{ voiceRecognition.abort(); }catch(error){}
  voiceIsListening = false; advanceVoiceStep();
 }
 function openVoiceInput(){
  if(!SpeechRecognitionClass){ alert("このブラウザは音声入力に対応していません"); return; }
- closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = 0; voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden"; voiceGuide.textContent = calculationMode === "area" ? "面積から計算する内容を順番に声で入力します" : "順番に声で入力します"; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening();
+ closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = 0; voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden";
+ const selectedMaterial = getSelectedMaterial();
+ const ratioGuide = selectedMaterial && (normalizeMaterialLiquid(selectedMaterial.liquid) === "1液" || normalizeMaterialRatio(selectedMaterial.ratio))
+  ? `登録済み材料「${materialDisplayName(selectedMaterial)}」の配合比を反映しています。`
+  : "";
+ voiceGuide.textContent = `${calculationMode === "area" ? "面積から計算する内容を順番に声で入力します。" : "順番に声で入力します。"}${ratioGuide}`; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening();
 }
 function closeVoiceInput(){ clearVoiceRetry(); stopVoiceRecognition(); voiceOverlay.classList.remove("open"); document.body.style.overflow = ""; }
 function backVoiceStep(){
