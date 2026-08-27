@@ -822,9 +822,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.74";
+const APP_VERSION = "Ver.1.75";
 const APP_DATE = "2026/08/27";
-const APP_TIME = "22:03";
+const APP_TIME = "22:10";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -2235,12 +2235,19 @@ let voiceSteps = [];
 
 function getVoiceSteps(){
  const selectedMaterial = getSelectedMaterial();
- const hasStoredRatio = Boolean(selectedMaterial && (normalizeMaterialLiquid(selectedMaterial.liquid) === "1液" || normalizeMaterialRatio(selectedMaterial.ratio)));
+ const storedRatio = selectedMaterial ? normalizeMaterialRatio(selectedMaterial.ratio) : "";
+ const isOneLiquid = Boolean(selectedMaterial && normalizeMaterialLiquid(selectedMaterial.liquid) === "1液");
+ const hasStoredRatio = Boolean(selectedMaterial && (isOneLiquid || storedRatio));
  const steps = [];
  const stepNumbers = ["①", "②", "③", "④"];
- const add = (key, label, example = "") => steps.push({ key, label:`${stepNumbers[steps.length]} ${label}`, example });
+ const add = (key, label, example = "") => steps.push({ key, label:`${stepNumbers[steps.filter(step => !step.static).length]} ${label}`, example });
  const thinnerRange = selectedMaterial ? materialThinnerText(selectedMaterial) : "";
  const coverageRange = selectedMaterial ? materialCoverageText(selectedMaterial) : "";
+ const hasNoThinner = Boolean(selectedMaterial && (selectedMaterial.thinnerName === "なし" || thinnerRange === "無希釈"));
+
+ if(selectedMaterial && !isOneLiquid && storedRatio){
+  steps.push({ key:"storedRatio", label:"配合比（登録済み）", value:storedRatio.replace(":", "："), static:true });
+ }
 
  if(calculationMode === "area"){
   add("paintArea", "塗装面積", "例：30㎡");
@@ -2251,7 +2258,7 @@ function getVoiceSteps(){
   add("base", "主剤重量", "例：3kg");
  }
  if(!hasStoredRatio) add("ratio", "配合比", "例：9：1");
- add("thinner", `希釈率${thinnerRange ? `（メーカー仕様：${thinnerRange}）` : ""}`);
+ if(!hasNoThinner) add("thinner", `希釈率${thinnerRange ? `（メーカー仕様：${thinnerRange}）` : ""}`);
  return steps;
 }
 
@@ -2296,11 +2303,18 @@ function voiceDisplayValue(step, value){
 
 function renderVoiceStep(){
  voiceList.innerHTML = voiceSteps.map((step, index) => {
-  const state = index < voiceStepIndex ? "完了 ✓" : index === voiceStepIndex ? '聞き取り中<span class="voice-listening-dots" aria-hidden="true"><i></i><i></i><i></i></span>' : "未入力";
-  const value = index < voiceStepIndex ? voiceDisplayValue(step, getVoiceSelect(step.key).value) : step.example;
-  return `<div class="voice-item ${index === voiceStepIndex ? "active" : ""} ${index < voiceStepIndex ? "done" : ""}" data-voice-item="${index}"><div class="voice-item-top"><div class="voice-item-label">${step.label}</div><div class="voice-item-state">${state}</div></div><div class="voice-item-value">${value}</div></div>`;
+  const isStatic = Boolean(step.static);
+  const state = isStatic ? "登録済み ✓" : index < voiceStepIndex ? "完了 ✓" : index === voiceStepIndex ? '聞き取り中<span class="voice-listening-dots" aria-hidden="true"><i></i><i></i><i></i></span>' : "未入力";
+  const value = isStatic ? step.value : index < voiceStepIndex ? voiceDisplayValue(step, getVoiceSelect(step.key).value) : step.example;
+  return `<div class="voice-item ${!isStatic && index === voiceStepIndex ? "active" : ""} ${isStatic || index < voiceStepIndex ? "done" : ""}" data-voice-item="${index}"><div class="voice-item-top"><div class="voice-item-label">${step.label}</div><div class="voice-item-state">${state}</div></div><div class="voice-item-value">${value}</div></div>`;
  }).join("");
  voiceStatus.textContent = "マイクに向かって話してください";
+}
+
+function getFirstVoiceInputIndex(){ return voiceSteps.findIndex(step => !step.static); }
+function getPreviousVoiceInputIndex(index){
+ for(let i = index - 1; i >= 0; i -= 1) if(!voiceSteps[i].static) return i;
+ return -1;
 }
 
 function getVoiceSelect(key){ return ({ ratio, base, thinner, paintArea, coverage, targetTotal })[key]; }
@@ -2381,7 +2395,7 @@ function handleVoiceResult(text){
 }
 function openVoiceInput(){
  if(!SpeechRecognitionClass){ alert("このブラウザは音声入力に対応していません"); return; }
- closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = 0; voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden";
+ closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = getFirstVoiceInputIndex(); voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden";
  const selectedMaterial = getSelectedMaterial();
  const ratioGuide = selectedMaterial && (normalizeMaterialLiquid(selectedMaterial.liquid) === "1液" || normalizeMaterialRatio(selectedMaterial.ratio))
   ? `登録済み材料「${materialDisplayName(selectedMaterial)}」の配合比を反映しています。`
@@ -2391,10 +2405,11 @@ function openVoiceInput(){
 function closeVoiceInput(){ clearVoiceRetry(); stopVoiceRecognition(); voiceOverlay.classList.remove("open"); document.body.style.overflow = ""; }
 function backVoiceStep(){
  if(!voiceOverlay.classList.contains("open")) return;
- if(voiceStepIndex === 0){ voiceStatus.textContent = "最初の項目です"; return; }
+ const previousIndex = getPreviousVoiceInputIndex(voiceStepIndex);
+ if(previousIndex < 0){ voiceStatus.textContent = "最初の項目です"; return; }
  clearVoiceRetry();
  stopVoiceRecognition();
- voiceStepIndex -= 1;
+ voiceStepIndex = previousIndex;
  const step = voiceSteps[voiceStepIndex];
  getVoiceSelect(step.key).value = "";
  if(step.key === "ratio") updateCustomRatioUI();
@@ -2405,7 +2420,7 @@ function backVoiceStep(){
  renderVoiceStep();
  window.setTimeout(startVoiceListening, 120);
 }
-function restartVoiceInput(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceStepIndex = 0; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
+function restartVoiceInput(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceStepIndex = getFirstVoiceInputIndex(); voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
 
 document.addEventListener("keydown", event => {
  if(event.key === "Escape" && materialModal.classList.contains("open")){
