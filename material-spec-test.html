@@ -645,7 +645,7 @@ button:active{
 
 <div class="header">
  <span class="header-title">配合設定</span>
- <button class="voice-start" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path><path d="M8 21h8"></path></svg></button>
+ <button class="voice-start" id="voiceStartButton" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path><path d="M8 21h8"></path></svg></button>
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
@@ -822,9 +822,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.75";
+const APP_VERSION = "Ver.1.76";
 const APP_DATE = "2026/08/27";
-const APP_TIME = "22:10";
+const APP_TIME = "22:18";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -877,6 +877,7 @@ const MAKER_SITE_URLS = {
 // ===== 画面要素 =====
 const appTitle = document.getElementById("appTitle");
 const footerInfo = document.getElementById("footerInfo");
+const voiceStartButton = document.getElementById("voiceStartButton");
 const weatherAlert = document.getElementById("weatherAlert");
 const ratioBox = document.getElementById("ratioBox");
 const ratio = document.getElementById("ratio");
@@ -958,6 +959,7 @@ function setMode(mode){
  const isArea = mode === "area";
  const isTotal = mode === "total";
  const isHistory = mode === "history";
+ voiceStartButton.hidden = isHistory;
  calculatorContent.hidden = isHistory;
  historyPanel.hidden = !isHistory;
  normalGuide.style.display = "block";
@@ -2394,6 +2396,7 @@ function handleVoiceResult(text){
  voiceIsListening = false; advanceVoiceStep();
 }
 function openVoiceInput(){
+ if(calculationMode === "history") return;
  if(!SpeechRecognitionClass){ alert("このブラウザは音声入力に対応していません"); return; }
  closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = getFirstVoiceInputIndex(); voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden";
  const selectedMaterial = getSelectedMaterial();
