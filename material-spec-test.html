@@ -821,9 +821,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.72";
+const APP_VERSION = "Ver.1.73";
 const APP_DATE = "2026/08/27";
-const APP_TIME = "21:18";
+const APP_TIME = "21:31";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -2311,6 +2311,24 @@ function retryVoiceStep(message){
  clearVoiceRetry(); showVoiceFailure(message);
  voiceRetryTimer = window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 1200);
 }
+function playVoiceTone(type){
+ const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+ if(!AudioContextClass) return;
+ try{
+  const context = new AudioContextClass();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = type === "warning" ? 380 : 780;
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(type === "warning" ? 0.10 : 0.075, context.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + (type === "warning" ? 0.20 : 0.11));
+  oscillator.connect(gain).connect(context.destination);
+  oscillator.start();
+  oscillator.stop(context.currentTime + (type === "warning" ? 0.21 : 0.12));
+  oscillator.onended = () => context.close();
+ }catch(error){}
+}
 function createVoiceRecognition(){
  if(!SpeechRecognitionClass) return null;
  const recognition = new SpeechRecognitionClass();
@@ -2353,6 +2371,7 @@ function handleVoiceResult(text){
  updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
  if(item){ item.classList.remove("active"); item.classList.add("done"); item.querySelector(".voice-item-state").textContent = "完了 ✓"; item.querySelector(".voice-item-value").textContent = voiceDisplayValue(step, value); }
+ playVoiceTone("confirm");
  voiceStatus.textContent = `はい、${voiceDisplayValue(step, value)}ですね`;
  if(voiceRecognition && voiceIsListening) try{ voiceRecognition.abort(); }catch(error){}
  voiceIsListening = false; advanceVoiceStep();
