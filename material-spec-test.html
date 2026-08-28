@@ -2113,6 +2113,7 @@ function calc(){
  if(showActualBtn) showActualBtn.style.display = "inline";
 
  smoothScrollTo(result, "start");
+ window.setTimeout(() => smoothScrollTo(result, "start"), 180);
 }
 
 function scrollToAppTop(){
