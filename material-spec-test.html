@@ -820,9 +820,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.77";
-const APP_DATE = "2026/08/27";
-const APP_TIME = "22:29";
+const APP_VERSION = "Ver.1.78";
+const APP_DATE = "2026/08/28";
+const APP_TIME = "21:43";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1575,8 +1575,30 @@ function handleMaterialEntry(){
   openMaterialModal();
   return;
  }
+ const wasHidden = materialChooser.hidden;
  materialChooser.hidden = !materialChooser.hidden;
+ if(!wasHidden){
+  clearCalculationInputs();
+ }
  if(!materialChooser.hidden) materialSelect.focus();
+}
+
+function clearCalculationInputs(){
+ materialSelect.value = "";
+ renderMaterialSummary(null);
+ ratio.value = "";
+ customRatioMain.value = "";
+ customRatioHard.value = "";
+ base.value = "";
+ actual.value = "";
+ thinner.value = "";
+ paintArea.value = "";
+ coverage.value = "";
+ targetTotal.value = "";
+ updateCustomRatioUI();
+ hideActualField();
+ updateThinnerUI();
+ clearResult();
 }
 
 function clearMaterialForm(keepSaveNotice = false){
@@ -2165,7 +2187,9 @@ function renderHistoryList(){
  Array.from(monthGroups.values()).forEach((group, groupIndex) => {
   const monthBox = document.createElement("details");
   monthBox.className = "history-month";
-  monthBox.open = false;
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  monthBox.open = key === currentMonthKey;
   monthBox.innerHTML = `<summary><span>${group.label}</span><span class="history-month-count">${group.items.length}件</span></summary>`;
   const monthItems = document.createElement("div");
   monthItems.className = "history-month-items";
@@ -2284,8 +2308,8 @@ function parseVoiceValue(text){
  const match = normalized.match(/\d+(?:\.\d+)?/);
  if(!match) return null;
  const number = Number(match[0]);
- if(step.key === "base") return number >= .5 && number <= 20 && Math.abs(number * 2 - Math.round(number * 2)) < .001 ? number.toFixed(1) : null;
- if(step.key === "targetTotal") return number >= .1 && number <= 20 && Math.abs(number * 10 - Math.round(number * 10)) < .001 ? number.toFixed(1) : null;
+ if(step.key === "base") return number >= .01 && number <= 20 ? number.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") : null;
+ if(step.key === "targetTotal") return number >= .01 && number <= 20 ? number.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") : null;
  if(step.key === "paintArea") return Number.isInteger(number) && number >= 1 && number <= 500 && Array.from(paintArea.options).some(option => option.value === String(number)) ? String(number) : null;
  if(step.key === "coverage"){
   const value = number.toFixed(2);
@@ -2319,6 +2343,13 @@ function getPreviousVoiceInputIndex(index){
 }
 
 function getVoiceSelect(key){ return ({ ratio, base, thinner, paintArea, coverage, targetTotal })[key]; }
+function ensureVoiceOption(select, value){
+ if(!select || Array.from(select.options).some(option => option.value === String(value))) return;
+ const option = document.createElement("option");
+ option.value = String(value);
+ option.textContent = select === targetTotal ? `${value}kg` : `${value}kg`;
+ select.appendChild(option);
+}
 function clearVoiceRetry(){ if(voiceRetryTimer) clearTimeout(voiceRetryTimer); voiceRetryTimer = null; }
 function showVoiceFailure(message){
  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
@@ -2385,7 +2416,9 @@ function handleVoiceResult(text){
  const value = parseVoiceValue(text);
  if(value === null){ retryVoiceStep("確認できませんでした。もう一度聞き取ります…"); return; }
  const step = voiceSteps[voiceStepIndex];
- getVoiceSelect(step.key).value = value;
+ const voiceSelect = getVoiceSelect(step.key);
+ ensureVoiceOption(voiceSelect, value);
+ voiceSelect.value = value;
  updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
  if(item){ item.classList.remove("active"); item.classList.add("done"); item.querySelector(".voice-item-state").textContent = "完了 ✓"; item.querySelector(".voice-item-value").textContent = voiceDisplayValue(step, value); }
