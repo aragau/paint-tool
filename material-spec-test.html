@@ -1234,9 +1234,7 @@ function clearResult(){
 function smoothScrollTo(element, block = "start"){
  if(!element) return;
  window.requestAnimationFrame(() => {
-  const rect = element.getBoundingClientRect();
-  const top = Math.max(0, window.pageYOffset + rect.top - (block === "center" ? (window.innerHeight - rect.height) / 2 : 12));
-  window.scrollTo({ top, behavior: "smooth" });
+  element.scrollIntoView({ behavior: "smooth", block });
  });
 }
 
