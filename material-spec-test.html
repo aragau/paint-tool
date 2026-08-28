@@ -820,9 +820,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.79";
+const APP_VERSION = "Ver.1.80";
 const APP_DATE = "2026/08/28";
-const APP_TIME = "22:02";
+const APP_TIME = "22:20";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -2409,7 +2409,14 @@ function stopVoiceRecognition(){
 }
 function advanceVoiceStep(){
  if(voiceStepIndex < voiceSteps.length - 1){ voiceStepIndex += 1; window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 500); }
- else { window.setTimeout(() => { closeVoiceInput(); calc(); }, 250); }
+ else { window.setTimeout(completeVoiceCalculation, 250); }
+}
+function completeVoiceCalculation(){
+ closeVoiceInput();
+ calc();
+ window.setTimeout(() => {
+  if(result.innerHTML.trim()) result.scrollIntoView({ behavior:"smooth", block:"start" });
+ }, 120);
 }
 function handleVoiceResult(text){
  const normalized = normalizeVoiceText(text);
