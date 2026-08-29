@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>塗料配合計算</title>
+
+<style>
+*{box-sizing:border-box;}
+
+html{
+ scroll-behavior:smooth;
+}
+
+body{
+ font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+ margin:0;
+ padding:12px 12px 88px;
+ font-size:18px;
+ min-height:100vh;
+ background:
+  radial-gradient(140px 95px at 10% 12%, rgba(255,72,72,0.16) 0%, rgba(255,72,72,0.11) 18%, rgba(255,72,72,0.00) 62%),
+  radial-gradient(160px 120px at 88% 16%, rgba(255,159,28,0.14) 0%, rgba(255,159,28,0.09) 18%, rgba(255,159,28,0.00) 65%),
+  radial-gradient(170px 130px at 18% 42%, rgba(255,235,59,0.13) 0%, rgba(255,235,59,0.08) 18%, rgba(255,235,59,0.00) 66%),
+  radial-gradient(180px 140px at 82% 40%, rgba(76,175,80,0.12) 0%, rgba(76,175,80,0.08) 18%, rgba(76,175,80,0.00) 66%),
+  radial-gradient(170px 130px at 38% 76%, rgba(0,188,212,0.13) 0%, rgba(0,188,212,0.08) 18%, rgba(0,188,212,0.00) 66%),
+  radial-gradient(160px 120px at 92% 78%, rgba(63,81,181,0.12) 0%, rgba(63,81,181,0.08) 18%, rgba(63,81,181,0.00) 66%),
+  radial-gradient(140px 100px at 58% 22%, rgba(156,39,176,0.10) 0%, rgba(156,39,176,0.06) 18%, rgba(156,39,176,0.00) 68%),
+  radial-gradient(150px 110px at 68% 66%, rgba(255,105,180,0.10) 0%, rgba(255,105,180,0.06) 18%, rgba(255,105,180,0.00) 68%),
+  linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94));
+ background-attachment: fixed;
+}
+
+h1{
+ text-align:center;
+ font-size:26px;
+ margin: 8px 0 10px;
+}
+
+.header{
+ background:#2d6cdf;
+ color:white;
+ font-size:22px;
+ font-weight:bold;
+ text-align:center;
+ padding:14px;
+ border-radius:10px;
+}
+
+.weather-alert{
+ background:#fff1f0;
+ border:1px solid #eea9a2;
+ color:#b42318;
+ margin-top:12px;
+ padding:11px 12px;
+ border-radius:10px;
+ font-size:16px;
+ font-weight:bold;
+ line-height:1.45;
+ white-space:pre-line;
+}
+.weather-alert a{
+ color:inherit;
+ text-decoration:underline;
+ text-underline-offset:2px;
+}
+
+.wbgt-info{
+ margin-top:8px;
+ padding:10px 12px;
+ border:1px solid #b7c5d7;
+ border-radius:10px;
+ background:#f4f8fc;
+ color:#334155;
+ font-size:14px;
+ line-height:1.5;
+}
+.wbgt-info.warning{
+ border-color:#d83a34;
+ background:#fff1f0;
+ color:#c62828;
+ font-weight:bold;
+}
+.wbgt-info.error{
+ border-color:#e4a09a;
+ background:#fff5f3;
+ color:#b42318;
+}
+
+.box{
+ background:#eaf3ff;
+ margin-top:12px;
+ padding:12px;
+ border-radius:10px;
+}
+
+.alert{
+ background:#fff3e0;
+ border:2px solid #ff9800;
+}
+
+.info{
+ background:#e8f5e9;
+ border:2px solid #4caf50;
+ font-size:16px;
+}
+
+label{
+ display:block;
+ font-weight:bold;
+ font-size:20px;
+}
+
+[hidden]{
+ display:none !important;
+}
+
+.field-label-row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+}
+
+.maker-site-link{
+ font-size:14px;
+ font-weight:normal;
+ white-space:nowrap;
+}
+
+.note{
+ color:#cc6600;
+ font-size:15px;
+ line-height:1.4;
+}
+
+select,input,button{
+ width:100%;
+ margin-top:8px;
+ padding:14px;
+ font-size:22px;
+ border-radius:8px;
+}
+
+button{
+ background:#2d6cdf;
+ color:white;
+ border:none;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+button:active{
+ transform: translateY(1px);
+}
+
+.header{
+ display:grid;
+ grid-template-columns:1fr auto 1fr;
+ align-items:center;
+}
+.header-title{grid-column:2;}
+.voice-start{
+ grid-column:3;
+ width:46px;
+ height:46px;
+ margin:0;
+ padding:0;
+ justify-self:end;
+ display:grid;
+ place-items:center;
+ background:#fff;
+ border:2px solid rgba(255,255,255,.72);
+ border-radius:50%;
+ box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+.voice-start:active{transform:scale(.96);}
+.voice-start svg{width:25px;height:25px;stroke:#2d6cdf;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.voice-overlay{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.52);}
+.voice-overlay.open{display:flex;}
+.voice-panel{width:min(100%,520px);background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(248,251,255,.97));border-radius:18px;overflow:hidden;box-shadow:0 18px 55px rgba(15,23,42,.35);}
+.voice-panel-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:#2d6cdf;color:#fff;font-size:21px;font-weight:bold;}
+.voice-close{width:auto;margin:0;padding:8px 12px;background:#6b7280;font-size:15px;}
+.voice-body{padding:16px 14px 14px;}
+.voice-guide{text-align:center;color:#4b5563;font-size:15px;margin:0 0 12px;}
+.voice-list{display:flex;flex-direction:column;gap:10px;}
+.voice-item{padding:12px;border:2px solid #bed4ee;border-radius:12px;background:#eaf3ff;}
+.voice-item.active{border-color:#2d6cdf;background:#f7fbff;box-shadow:0 0 0 3px rgba(45,108,223,.12);}
+.voice-item.done{border-color:#4caf50;background:#e8f5e9;}
+.voice-item.error{border-color:#d97706;background:#fff7ed;}
+.voice-item-top{display:flex;justify-content:space-between;gap:10px;align-items:center;}
+.voice-item-label{font-size:18px;font-weight:bold;color:#1f2937;}
+.voice-item-state{font-size:14px;color:#4b5563;font-weight:bold;white-space:nowrap;}
+.voice-item-value{min-height:28px;margin-top:6px;color:#52606f;font-size:20px;font-weight:bold;}
+.voice-listening-dots{display:inline-flex;gap:3px;margin-left:5px;vertical-align:middle;}
+.voice-listening-dots i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.25;animation:voice-dot-pulse 1.05s infinite ease-in-out;}
+.voice-listening-dots i:nth-child(2){animation-delay:.16s;}.voice-listening-dots i:nth-child(3){animation-delay:.32s;}
+@keyframes voice-dot-pulse{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
+.voice-status{min-height:22px;margin-top:12px;text-align:center;color:#4b5563;font-size:15px;}
+.voice-tools{display:flex;gap:10px;margin-top:12px;}.voice-tools button{margin:0;font-size:18px;padding:12px 8px;}.voice-repeat{background:#f59e0b;}.voice-restart{background:#64748b;}
+
+.btn-sub{
+ background:#ff9800;
+ font-size:18px;
+ margin-top:12px;
+ padding:10px;
+}
+
+.btn-gray{
+ background:#6b7280;
+ font-size:18px;
+}
+
+.result{
+ background:#f5f5f5;
+ margin-top:18px;
+ padding:15px 15px 72px;
+ border-radius:10px;
+ min-height:30px;
+ position:relative;
+}
+
+.calc-actions{margin-top:8px;}
+.calc-actions .calc-button{margin:0;}
+
+.result-scroll-top{
+ position:absolute;
+ right:14px;
+ bottom:13px;
+ width:46px;
+ height:46px;
+ margin:0;
+ padding:0;
+ border-radius:50%;
+ background:#2d6cdf;
+ color:#fff;
+ font-size:28px;
+ line-height:1;
+ box-shadow:0 2px 7px rgba(0,0,0,.20);
+}
+
+.step{
+ text-align:center;
+ margin-bottom:18px;
+}
+
+.value{
+ color:#d96c2f;
+ font-size:36px;
+ font-weight:bold;
+}
+
+#actualBox {
+ display: none;
+}
+.thin-note{
+ margin-top:8px;
+ font-size:15px;
+ font-weight:bold;
+}
+
+.footer{
+ text-align:center;
+ color:#666;
+ font-size:15px;
+ line-height:1.5;
+ margin-top:22px;
+ padding:10px 0 0;
+ letter-spacing:0.04em;
+}
+.footer a{color:#2d6cdf;overflow-wrap:anywhere;}
+
+.history-list{
+ display:flex;
+ flex-direction:column;
+ gap:10px;
+ margin-top:12px;
+}
+
+.history-month{
+ background:#f4f8fc;
+ border:1px solid #b7c5d7;
+ border-radius:10px;
+ overflow:hidden;
+}
+
+.history-month summary{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ padding:12px;
+ background:#e8f5e9;
+ color:#1f2937;
+ font-size:17px;
+ font-weight:bold;
+ cursor:pointer;
+ list-style:none;
+ -webkit-tap-highlight-color:transparent;
+}
+
+.history-month summary::-webkit-details-marker{display:none;}
+.history-month summary::after{content:"＋";font-size:22px;line-height:1;color:#2d6cdf;}
+.history-month[open] summary::after{content:"－";}
+.history-month-count{margin-left:auto;font-size:14px;font-weight:normal;color:#475569;}
+.history-month-items{padding:0 10px 10px;}
+.history-month-items .history-item{margin-top:10px;}
+
+.history-item{
+ background:#eaf3ff;
+ border:none;
+ border-radius:10px;
+ padding:12px;
+ display:flex;
+ align-items:stretch;
+ gap:10px;
+}
+
+.history-main{
+ flex:1;
+ min-width:0;
+ cursor:pointer;
+ -webkit-tap-highlight-color: transparent;
+}
+
+.history-date{
+ font-size:15px;
+ color:#555;
+ margin-bottom:6px;
+}
+
+.history-text{
+ font-size:16px;
+ line-height:1.55;
+ color:#222;
+ word-break:break-word;
+}
+
+.history-actions{
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+ width:76px;
+ flex:0 0 76px;
+}
+
+.history-actions button{
+ width:100%;
+ margin-top:0;
+ padding:8px 6px;
+ font-size:13px;
+ border-radius:10px;
+ min-height:38px;
+}
+
+.history-restore{
+ background:#7898bc;
+}
+
+.history-delete{
+ background:#c58f84;
+}
+
+
+.custom-ratio-box{
+ display:none;
+ margin-top:12px;
+ padding:12px;
+ background:rgba(255,255,255,0.72);
+ border:1px solid #bfd4ef;
+ border-radius:10px;
+}
+
+.custom-ratio-box.open{
+ display:block;
+}
+
+.custom-ratio-title{
+ font-size:16px;
+ font-weight:bold;
+ color:#1f2937;
+ margin-bottom:8px;
+}
+
+.custom-ratio-row{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+ align-items:end;
+ gap:10px;
+}
+
+.custom-ratio-field label{
+ font-size:14px;
+ margin-bottom:4px;
+}
+
+.custom-ratio-field input{
+ width:100%;
+ margin-top:0;
+ padding:12px 10px;
+ font-size:20px;
+ border:1px solid #9bb7d7;
+ background:#fff;
+}
+
+.custom-ratio-colon{
+ font-size:28px;
+ font-weight:bold;
+ line-height:48px;
+ color:#374151;
+}
+
+.custom-ratio-note{
+ margin-top:8px;
+ color:#555;
+ font-size:13px;
+ line-height:1.45;
+}
+
+.history-guide{
+ margin-top:10px;
+ padding:10px 12px;
+ background:#e8f5e9;
+ border:2px solid #4caf50;
+ border-radius:10px;
+ font-size:15px;
+ line-height:1.5;
+}
+
+.history-count{
+ margin-top:0;
+ color:#1f2937;
+ font-size:15px;
+ line-height:1.5;
+ font-weight:normal;
+}
+
+.history-screen{
+ margin-top:12px;
+}
+.history-screen-title{
+ margin:0 0 10px;
+ font-size:22px;
+ color:#1f2937;
+}
+
+@media (max-width: 420px){
+ .history-actions{
+  width:64px;
+  flex-basis:64px;
+ }
+ .history-actions button{
+  font-size:12px;
+  padding:7px 4px;
+ }
+}
+
+.modal{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,0.45);
+ display:none;
+ align-items:flex-end;
+ justify-content:center;
+ z-index:999;
+ padding:12px;
+ box-sizing:border-box;
+ overflow:hidden;
+}
+
+.modal.open{
+ display:flex;
+}
+
+.modal-panel{
+ width:min(100%, 720px);
+ max-width:720px;
+ max-height:calc(100dvh - 24px);
+ padding:12px;
+ box-sizing:border-box;
+ overflow:hidden;
+ border-radius:18px 18px 12px 12px;
+ overflow:hidden;
+ box-shadow:0 10px 35px rgba(0,0,0,0.22);
+ display:flex;
+ flex-direction:column;
+ background:
+  radial-gradient(140px 95px at 10% 12%, rgba(255,72,72,0.16) 0%, rgba(255,72,72,0.11) 18%, rgba(255,72,72,0.00) 62%),
+  radial-gradient(160px 120px at 88% 16%, rgba(255,159,28,0.14) 0%, rgba(255,159,28,0.09) 18%, rgba(255,159,28,0.00) 65%),
+  radial-gradient(170px 130px at 18% 42%, rgba(255,235,59,0.13) 0%, rgba(255,235,59,0.08) 18%, rgba(255,235,59,0.00) 66%),
+  radial-gradient(180px 140px at 82% 40%, rgba(76,175,80,0.12) 0%, rgba(76,175,80,0.08) 18%, rgba(76,175,80,0.00) 66%),
+  radial-gradient(170px 130px at 38% 76%, rgba(0,188,212,0.13) 0%, rgba(0,188,212,0.08) 18%, rgba(0,188,212,0.00) 66%),
+  radial-gradient(160px 120px at 92% 78%, rgba(63,81,181,0.12) 0%, rgba(63,81,181,0.08) 18%, rgba(63,81,181,0.00) 66%),
+  radial-gradient(140px 100px at 58% 22%, rgba(156,39,176,0.10) 0%, rgba(156,39,176,0.06) 18%, rgba(156,39,176,0.00) 68%),
+  radial-gradient(150px 110px at 68% 66%, rgba(255,105,180,0.10) 0%, rgba(255,105,180,0.06) 18%, rgba(255,105,180,0.00) 68%),
+  linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94));
+}
+
+.modal-panel,.modal-header,.modal-body,.material-form,.material-form label,.material-form .two-columns{
+ min-width:0;
+ max-width:100%;
+}
+
+.modal-header{
+ background:#7898bc;
+ color:white;
+ padding:14px;
+ border:none;
+ border-radius:10px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+}
+
+.modal-title{min-width:0;overflow-wrap:anywhere;}
+
+.modal-title{
+ font-size:22px;
+ font-weight:bold;
+}
+
+.modal-close{
+ width:auto;
+ margin:0;
+ padding:10px 12px;
+ font-size:16px;
+ color:#1d4ed8;
+ background:white;
+ border:1px solid #dbeafe;
+ border-radius:10px;
+}
+
+.modal-body{
+ padding:0 2px 2px;
+ overflow:auto;
+ min-width:0;
+ overflow-x:hidden;
+}
+
+.modal-tools{
+ display:flex;
+ gap:10px;
+ margin-top:12px;
+}
+
+.modal-tools button{
+ margin-top:0;
+ padding:12px 10px;
+ font-size:16px;
+ border-radius:10px;
+}
+
+.modal-clearall{
+ background:#c58f84;
+}
+
+.modal-empty{
+ padding:18px 10px;
+ color:#666;
+ text-align:center;
+ font-size:16px;
+}
+
+.mode-switch{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:6px;
+}
+.mode-switch button{
+ margin-top:0;
+ background:#7898bc;
+ font-size:16px;
+ padding:12px 4px;
+}
+.mode-switch button.active{background:#2d6cdf;}
+.area-only{display:none;}
+.area-only.open{display:block;}
+.area-guide{
+ display:block;
+ margin-top:10px;
+ padding:10px 12px;
+ background:#e8f5e9;
+ border:2px solid #4caf50;
+ border-radius:10px;
+ font-size:15px;
+ line-height:1.5;
+}
+.area-guide #normalGuideText{display:block;}
+.area-guide .history-guide-count{display:block;text-align:right;}
+.area-guide .material-entry-row{margin-top:2px;text-align:right;}
+.area-guide .material-entry{margin:0;padding:0;background:transparent;color:#2d6cdf;font-size:15px;text-decoration:underline;white-space:nowrap;text-align:right;}
+
+.material-actions{display:flex;gap:10px;align-items:center;}
+.material-actions button{width:auto;margin:0;white-space:nowrap;padding:12px 14px;font-size:16px;background:#16a34a;}
+.material-actions select{margin:0;min-width:0;flex:1;font-size:17px;padding:12px;}
+.material-entry-row{margin-top:10px;text-align:right;}
+.material-entry{width:auto;margin:0;padding:9px 12px;background:#7898bc;font-size:15px;}
+.material-summary{margin-top:10px;padding:10px 12px;border:1px solid #b7c5d7;border-radius:10px;background:#f4f8fc;color:#334155;font-size:14px;line-height:1.5;}
+.material-summary.empty{color:#5b6472;}
+.material-form{display:grid;gap:10px;margin-top:12px;}
+.material-form label{font-size:15px;}
+.material-form input,.material-form select,.material-form textarea{margin-top:5px;width:100%;padding:11px;font-size:17px;border:1px solid #9bb7d7;border-radius:8px;background:#fff;font-family:inherit;}
+.material-form textarea{min-height:68px;resize:vertical;}
+.rate-range{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;margin-top:5px;}
+.rate-range input{margin-top:0;min-width:0;}
+.material-form .two-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.material-form .form-note{font-size:13px;line-height:1.45;color:#5b6472;}
+.material-component-group{padding:11px;border:1px solid #b7c5d7;border-radius:10px;background:#f4f8fc;}
+.material-component-title{font-size:15px;font-weight:bold;color:#334155;margin-bottom:4px;}
+.material-form select:disabled,.material-form input:disabled{background:#eef2f7;color:#5b6472;}
+.material-save{background:#16a34a;}
+.material-save.saved{background:#15803d;}
+.material-cancel{background:#6b7280;}
+.material-save-notice{margin-top:10px;padding:11px 12px;border:2px solid #4caf50;border-radius:10px;background:#e8f5e9;color:#166534;font-size:15px;font-weight:bold;line-height:1.45;}
+.material-save-notice.error{border-color:#e4a09a;background:#fff5f3;color:#b42318;}
+.material-form select.input-error,.material-form input.input-error{border:2px solid #d92d20;}
+.material-list{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+.material-item{padding:12px;border-radius:10px;background:#eaf3ff;}
+.material-item-title{font-size:17px;font-weight:bold;color:#1f2937;}
+.material-item-detail{margin-top:5px;font-size:14px;line-height:1.5;color:#334155;}
+.material-item-actions{display:flex;gap:8px;margin-top:10px;}
+.material-item-actions button{margin:0;padding:9px 11px;width:auto;font-size:14px;}
+.material-delete{background:#c58f84;}
+
+@media (max-width: 420px){
+ .modal{padding:8px;}
+ .modal-panel{max-height:calc(100dvh - 16px);padding:8px;}
+ .modal-header{padding:11px;gap:8px;}
+ .modal-title{font-size:19px;}
+ .modal-close{padding:8px 10px;font-size:14px;}
+ .material-form .two-columns{grid-template-columns:1fr;gap:10px;}
+ .material-form input,.material-form select,.material-form textarea{box-sizing:border-box;min-width:0;}
+ .modal-tools{flex-direction:column;}
+ .modal-tools button{width:100%;}
+}
+
+</style>
+</head>
+
+<body>
+
+<h1 id="appTitle">塗料配合計算　材料仕様試作版</h1>
+
+<div class="header">
+ <span class="header-title">配合設定</span>
+ <button class="voice-start" id="voiceStartButton" type="button" onclick="openVoiceInput()" aria-label="音声入力" title="音声入力"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path><path d="M8 21h8"></path></svg></button>
+</div>
+
+<div class="weather-alert" id="weatherAlert" hidden role="status"></div>
+
+<div class="box">
+ <div class="mode-switch">
+  <button type="button" class="active" id="normalModeBtn">通常</button>
+  <button type="button" id="areaModeBtn">面積</button>
+  <button type="button" id="totalModeBtn">総量</button>
+  <button type="button" id="historyModeBtn" onclick="openHistoryModal()">履歴</button>
+ </div>
+ <div class="area-guide" id="normalGuide"><span id="normalGuideText">主剤重量から硬化剤・希釈剤を計算します。</span><div class="material-entry-row"><button type="button" class="material-entry" id="materialEntryButton" onclick="handleMaterialEntry()">材料を登録</button></div></div>
+</div>
+
+<div id="calculatorContent">
+<div class="box" id="materialChooser" hidden>
+ <label>登録済み材料</label>
+ <div class="material-actions">
+  <select id="materialSelect" aria-label="登録済み材料"><option value="">材料を選択</option></select>
+  <button type="button" onclick="openMaterialModal()">材料登録</button>
+ </div>
+ <div class="material-summary empty" id="materialSummary">材料を選ぶと、登録済みの配合比・標準希釈率・塗布量を入力欄へ反映します。</div>
+</div>
+
+<div class="box area-only" id="areaBox">
+ <label>塗装面積（㎡）</label>
+ <select id="paintArea"></select>
+ <label style="margin-top:12px;">塗布量（kg/㎡/回）</label>
+ <select id="coverage"></select>
+</div>
+
+<div class="box area-only" id="totalBox">
+ <label>作りたい完成量（kg）</label>
+ <select id="targetTotal"></select>
+</div>
+
+<div class="modal" id="materialModal" onclick="closeMaterialModal(event)">
+ <div class="modal-panel" onclick="event.stopPropagation()">
+  <div class="modal-header">
+   <div class="modal-title">材料登録</div>
+   <button class="modal-close" onclick="closeMaterialModal()">閉じる</button>
+  </div>
+  <div class="modal-body">
+   <div class="material-form">
+    <div class="form-note">計算に使う仕様だけを端末内に保存します。未登録材料の数値は表示しません。</div>
+    <label>メーカー
+     <select id="materialMakerChoice">
+      <option value="">選択してください</option>
+      <option value="日本ペイント">日本ペイント</option>
+      <option value="関西ペイント">関西ペイント</option>
+      <option value="エスケー化研">エスケー化研</option>
+      <option value="菊水化学工業">菊水化学工業</option>
+      <option value="水谷ペイント">水谷ペイント</option>
+      <option value="ロックペイント">ロックペイント</option>
+      <option value="その他">その他（手入力）</option>
+     </select>
+     <input id="materialMakerOther" type="text" maxlength="80" placeholder="メーカー名を入力" hidden>
+    </label>
+    <label>製品名
+     <select id="materialProductChoice"><option value="">メーカーを先に選択してください</option></select>
+     <input id="materialProductOther" type="text" maxlength="100" placeholder="製品名を入力" hidden>
+    </label>
+    <a id="makerSiteLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>製品を検索</a>
+    <label>液数<select id="materialLiquid"><option value="">選択してください</option><option value="1液">1液</option><option value="2液">2液</option></select></label>
+    <div class="material-component-group" id="materialWeightField">
+     <div class="material-component-title">セット内容（公式資料にkg表記がある場合）</div>
+     <div class="two-columns">
+      <label>主剤（kg）<select id="materialBaseWeight"><option value="">選択してください</option><option value="0.1">0.1</option><option value="0.2">0.2</option><option value="0.3">0.3</option><option value="0.4">0.4</option><option value="0.5">0.5</option><option value="0.6">0.6</option><option value="0.8">0.8</option><option value="1">1</option><option value="1.2">1.2</option><option value="1.5">1.5</option><option value="2">2</option><option value="2.5">2.5</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option><option value="12">12</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="その他">その他（手入力）</option></select><input id="materialBaseWeightOther" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="例：12" hidden></label>
+      <label>硬化剤（kg）<select id="materialHardenerWeight"><option value="">選択してください</option><option value="0.1">0.1</option><option value="0.2">0.2</option><option value="0.3">0.3</option><option value="0.4">0.4</option><option value="0.5">0.5</option><option value="0.6">0.6</option><option value="0.8">0.8</option><option value="1">1</option><option value="1.2">1.2</option><option value="1.5">1.5</option><option value="2">2</option><option value="2.5">2.5</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option><option value="12">12</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="その他">その他（手入力）</option></select><input id="materialHardenerWeightOther" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="例：2" hidden></label>
+     </div>
+     <div class="form-note" id="materialWeightNote">kg表記がなければ、下の配合比を直接選びます。</div>
+    </div>
+    <label id="materialRatioField">計算に使用する配合比
+     <select id="materialRatioChoice">
+      <option value="">選択してください</option><option value="1:1">1：1</option><option value="2:1">2：1</option><option value="3:1">3：1</option><option value="4:1">4：1</option><option value="5:1">5：1</option><option value="6:1">6：1</option><option value="7:1">7：1</option><option value="8:1">8：1</option><option value="9:1">9：1</option><option value="10:1">10：1</option><option value="11:1">11：1</option><option value="12:1">12：1</option><option value="13:1">13：1</option><option value="14:1">14：1</option><option value="その他">その他（手入力）</option>
+     </select>
+     <input id="materialRatioOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：9:1" hidden>
+    </label>
+    <label id="materialThinnerField">希釈剤名
+     <select id="materialThinnerChoice"><option value="">選択してください</option><option value="なし">希釈なし</option><option value="塗料用シンナーA">塗料用シンナーA</option><option value="水">水</option><option value="その他">その他（手入力）</option></select>
+     <input id="materialThinnerOther" type="text" maxlength="80" placeholder="例：ウレタンシンナー" hidden>
+    </label>
+    <div class="two-columns">
+     <label id="materialThinnerRateField">標準希釈率（％）
+      <div class="rate-range"><select id="materialThinnerMin"><option value="">下限</option></select><span>～</span><select id="materialThinnerMax"><option value="">上限</option></select></div>
+     </label>
+     <label>標準塗布量（kg/㎡/回）
+      <div class="rate-range"><select id="materialCoverageChoice"><option value="">下限</option><option value="0.05">0.05</option><option value="0.06">0.06</option><option value="0.07">0.07</option><option value="0.08">0.08</option><option value="0.09">0.09</option><option value="0.10">0.10</option><option value="0.11">0.11</option><option value="0.12">0.12</option><option value="0.13">0.13</option><option value="0.14">0.14</option><option value="0.15">0.15</option><option value="0.16">0.16</option><option value="0.17">0.17</option><option value="0.18">0.18</option><option value="0.19">0.19</option><option value="0.20">0.20</option><option value="0.25">0.25</option><option value="0.30">0.30</option><option value="0.40">0.40</option><option value="0.50">0.50</option><option value="1.00">1.00</option><option value="その他">その他（手入力）</option></select><span>～</span><select id="materialCoverageMax"><option value="">上限</option></select></div>
+      <input id="materialCoverageOther" type="text" inputmode="decimal" maxlength="20" placeholder="例：0.16～0.18" hidden>
+     </label>
+    </div>
+    <label>公式資料URL<input id="materialUrl" type="url" maxlength="500" placeholder="https://..."><a id="materialUrlLink" class="maker-site-link" href="#" target="_blank" rel="noopener noreferrer" hidden>入力した公式資料を開く</a></label>
+    <label>公式確認日<input id="materialChecked" type="date"></label>
+    <label>メモ<textarea id="materialMemo" maxlength="500" placeholder="任意"></textarea></label>
+    <div class="modal-tools"><button class="material-save" id="materialSaveButton" type="button" onclick="saveMaterial()">材料を保存</button><button class="material-cancel" type="button" onclick="resetMaterialForm()">入力を取り消す</button></div>
+    <div class="material-save-notice" id="materialSaveNotice" hidden role="status"></div>
+   </div>
+   <div class="material-list" id="materialList"></div>
+  </div>
+ </div>
+</div>
+
+<div class="box" id="ratioBox">
+<label>配合比</label>
+<select id="ratio"></select>
+<div class="custom-ratio-box" id="customRatioBox">
+ <div class="custom-ratio-title">その他の配合比を入力</div>
+ <div class="custom-ratio-row">
+  <div class="custom-ratio-field">
+   <label for="customRatioMain">主剤</label>
+   <input id="customRatioMain" type="number" inputmode="decimal" min="0.01" step="0.1" placeholder="例：7.5">
+  </div>
+  <div class="custom-ratio-colon">：</div>
+  <div class="custom-ratio-field">
+   <label for="customRatioHard">硬化剤</label>
+   <input id="customRatioHard" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例：1">
+  </div>
+ </div>
+ <div class="custom-ratio-note">主剤と硬化剤の比率をそれぞれ入力してください。</div>
+</div>
+</div>
+
+<div class="box" id="baseBox">
+<label style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+<span>主剤重量（kg）</span>
+<span id="showActualBtn" onclick="showActualField()" style="font-size:14px;color:#0066cc;text-decoration:underline;cursor:pointer;font-weight:normal;">※多く入ったらこちらから修正</span>
+</label>
+<select id="base"></select>
+</div>
+
+<div class="box alert" id="actualBox">
+<label style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+<span>実測主剤重量（kg）</span>
+<button type="button" class="modal-close" onclick="hideActualField()">閉じる</button>
+</label>
+<div class="note">
+実際に入った数値を入力
+</div>
+<select id="actual"></select>
+</div>
+
+<div class="box">
+<label>希釈率（％）</label>
+<select id="thinner"></select>
+</div>
+
+<div class="calc-actions">
+ <button type="button" class="calc-button" onclick="calc()">▶ 配合計算</button>
+</div>
+
+<div id="result" class="result" tabindex="-1"></div>
+
+<div class="footer" id="footerInfo"></div>
+</div>
+
+<section class="box history-screen" id="historyPanel" hidden>
+ <div class="history-list" id="historyList"></div>
+ <button class="modal-clearall" onclick="clearAllHistory()">履歴をすべて削除</button>
+</section>
+
+<div class="voice-overlay" id="voiceOverlay" aria-modal="true" role="dialog" aria-label="音声入力">
+ <div class="voice-panel">
+  <div class="voice-panel-header"><span>🎤 音声入力</span><button type="button" class="voice-close" onclick="closeVoiceInput()">閉じる</button></div>
+  <div class="voice-body">
+   <div class="voice-guide" id="voiceGuide">順番に声で入力します</div>
+   <div class="voice-list" id="voiceList"></div>
+   <div class="voice-status" id="voiceStatus">マイクに向かって話してください</div>
+   <div class="voice-tools"><button type="button" class="voice-repeat" onclick="backVoiceStep()">戻る</button><button type="button" class="voice-restart" onclick="restartVoiceInput()">最初から</button></div>
+  </div>
+ </div>
+</div>
+
+<script>
+// ===== 開発者設定 =====
+const APP_NAME = "塗料配合計算　材料仕様試作版";
+const APP_VERSION = "Ver.1.87";
+const APP_DATE = "2026/08/29";
+const APP_TIME = "22:20";
+const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
+const HISTORY_MAX = 50;
+const WEATHER_FORECAST_HOURS = 1;
+const WEATHER_PROBABILITY_THRESHOLD = 80;
+const PREFECTURE_NAMES = {
+ "01":"北海道","02":"青森","03":"岩手","04":"宮城","05":"秋田","06":"山形","07":"福島","08":"茨城","09":"栃木","10":"群馬","11":"埼玉","12":"千葉","13":"東京","14":"神奈川","15":"新潟","16":"富山","17":"石川","18":"福井","19":"山梨","20":"長野","21":"岐阜","22":"静岡","23":"愛知","24":"三重","25":"滋賀","26":"京都","27":"大阪","28":"兵庫","29":"奈良","30":"和歌山","31":"鳥取","32":"島根","33":"岡山","34":"広島","35":"山口","36":"徳島","37":"香川","38":"愛媛","39":"高知","40":"福岡","41":"佐賀","42":"長崎","43":"熊本","44":"大分","45":"宮崎","46":"鹿児島","47":"沖縄"
+};
+const STORAGE_HISTORY = "materialSpecTestHistory";
+const STORAGE_LAST = "materialSpecTestLastData";
+const STORAGE_MATERIALS = "materialSpecTestMaterials";
+const MATERIAL_PRODUCT_OPTIONS = {
+ "日本ペイント": [
+  "パーフェクトトップSi", "ファインパーフェクトトップSi", "ケンエースG-II", "水性ケンエース",
+  "ハイポンファインプライマーII", "ファインパーフェクトベスト", "ファインパーフェクトルーフ",
+  "水性パーフェクトシーラー", "1液ファインパーフェクトシーラー", "ファイン浸透造膜シーラー"
+ ],
+ "関西ペイント": [
+  "アレスダイナミックTOP", "アレスダイナミックTOP遮熱", "アレスダイナミックTOPクリーン", "アレスダイナミックMUKI",
+  "アレスダイナミックTOPマイルド2液", "アレスダイナミックルーフ", "アレスダイナミックルーフMUKI",
+  "アレスダイナミックルーフアクア", "アレスダイナミックフィラー", "アレスダイナミックプライマー"
+ ],
+ "菊水化学工業": [
+  "水系ファインコートシリコン", "水系ファインコートフッ素BMB", "ロイヤルシリコン", "ロイヤル無機α",
+  "水系ファインコートシリコン遮熱", "ロイヤル無機α遮熱", "キクスイ SPパワールーフSi",
+  "水系バンノウプライマーエポ", "キクスイ浸透性プライマーE", "カチコテSP"
+ ],
+ "エスケー化研": [
+  "水性セラミシリコン", "エスケープレミアムシリコン", "クリーンマイルドシリコン", "水性弾性セラミシリコン",
+  "アートフレッシュ", "水性ヤネフレッシュシリコン", "一液プレミアムルーフシリコン",
+  "マイルドサビガード", "水性ミラクシーラーエコ", "水性ソフトサーフSG"
+ ],
+ "水谷ペイント": [
+  "ナノコンポジットW", "ナノコンポジットMUKI", "ナノウォール15", "ナノルーフ15", "ナノルーフ15遮熱+",
+  "パワーシリコンマイルドⅡ", "ルーフマイルドSiR", "水系パワーシーラーⅡ", "マイルド浸透シーラー", "エポック#2000NEO"
+ ],
+ "ロックペイント": [
+  "ユメロック", "ユメロックDX", "ハイパーユメロック", "サンフロンUV", "サンフロンUVエコ",
+  "ロック水性外壁", "ロック水性プロテクトルーフ", "ユメロックルーフ", "サビカットプラス", "ロックエポキシプライマー"
+ ]
+};
+const MAKER_SITE_URLS = {
+ "日本ペイント":"https://www.nipponpaint.co.jp/products/building/",
+ "関西ペイント":"https://www.kansai.co.jp/products/decorative/seihinkensaku/",
+ "エスケー化研":"https://www.sk-kaken.co.jp/product/",
+ "菊水化学工業":"https://www.kikusui-chem.co.jp/products/search/",
+ "水谷ペイント":"https://www.polyma.co.jp/products/",
+ "ロックペイント":"https://www.rockpaint.co.jp/architecture/"
+};
+
+// ===== 画面要素 =====
+const appTitle = document.getElementById("appTitle");
+const footerInfo = document.getElementById("footerInfo");
+const voiceStartButton = document.getElementById("voiceStartButton");
+const weatherAlert = document.getElementById("weatherAlert");
+const ratioBox = document.getElementById("ratioBox");
+const ratio = document.getElementById("ratio");
+const customRatioBox = document.getElementById("customRatioBox");
+const customRatioMain = document.getElementById("customRatioMain");
+const customRatioHard = document.getElementById("customRatioHard");
+const base = document.getElementById("base");
+const actual = document.getElementById("actual");
+const actualBox = document.getElementById("actualBox");
+const showActualBtn = document.getElementById("showActualBtn");
+const thinner = document.getElementById("thinner");
+const result = document.getElementById("result");
+const historyList = document.getElementById("historyList");
+const materialSelect = document.getElementById("materialSelect");
+const materialEntryButton = document.getElementById("materialEntryButton");
+const materialChooser = document.getElementById("materialChooser");
+const materialSummary = document.getElementById("materialSummary");
+const materialModal = document.getElementById("materialModal");
+const materialList = document.getElementById("materialList");
+const materialMakerChoice = document.getElementById("materialMakerChoice");
+const materialMakerOther = document.getElementById("materialMakerOther");
+const materialProductChoice = document.getElementById("materialProductChoice");
+const materialProductOther = document.getElementById("materialProductOther");
+const materialLiquid = document.getElementById("materialLiquid");
+const materialRatioField = document.getElementById("materialRatioField");
+const materialRatioChoice = document.getElementById("materialRatioChoice");
+const materialRatioOther = document.getElementById("materialRatioOther");
+const materialWeightField = document.getElementById("materialWeightField");
+const materialBaseWeight = document.getElementById("materialBaseWeight");
+const materialBaseWeightOther = document.getElementById("materialBaseWeightOther");
+const materialHardenerWeight = document.getElementById("materialHardenerWeight");
+const materialHardenerWeightOther = document.getElementById("materialHardenerWeightOther");
+const materialWeightNote = document.getElementById("materialWeightNote");
+const materialThinnerChoice = document.getElementById("materialThinnerChoice");
+const materialThinnerOther = document.getElementById("materialThinnerOther");
+const materialThinnerField = document.getElementById("materialThinnerField");
+const materialThinnerRateField = document.getElementById("materialThinnerRateField");
+const materialThinnerMin = document.getElementById("materialThinnerMin");
+const materialThinnerMax = document.getElementById("materialThinnerMax");
+const materialCoverageChoice = document.getElementById("materialCoverageChoice");
+const materialCoverageMax = document.getElementById("materialCoverageMax");
+const materialCoverageOther = document.getElementById("materialCoverageOther");
+const makerSiteLink = document.getElementById("makerSiteLink");
+const materialUrl = document.getElementById("materialUrl");
+const materialUrlLink = document.getElementById("materialUrlLink");
+const materialChecked = document.getElementById("materialChecked");
+const materialMemo = document.getElementById("materialMemo");
+const materialSaveNotice = document.getElementById("materialSaveNotice");
+const materialSaveButton = document.getElementById("materialSaveButton");
+let editingMaterialId = null;
+let materialSaveTimer = null;
+const areaBox = document.getElementById("areaBox");
+const paintArea = document.getElementById("paintArea");
+const coverage = document.getElementById("coverage");
+const baseBox = document.getElementById("baseBox");
+const normalModeBtn = document.getElementById("normalModeBtn");
+const areaModeBtn = document.getElementById("areaModeBtn");
+const totalModeBtn = document.getElementById("totalModeBtn");
+const historyModeBtn = document.getElementById("historyModeBtn");
+const totalBox = document.getElementById("totalBox");
+const targetTotal = document.getElementById("targetTotal");
+const normalGuide = document.getElementById("normalGuide");
+const normalGuideText = document.getElementById("normalGuideText");
+const calculatorContent = document.getElementById("calculatorContent");
+const historyPanel = document.getElementById("historyPanel");
+let calculationMode = "normal";
+const safetyAlerts = new Map();
+
+function initializeAppInfo(){
+ document.title = APP_NAME;
+ appTitle.textContent = APP_NAME;
+ footerInfo.innerHTML = `Produced by N.H.S.　material-spec-test ${APP_VERSION}<br>${APP_DATE} ${APP_TIME}<br>公開URL：<a href="${APP_PUBLIC_URL}" target="_blank" rel="noopener noreferrer">${APP_PUBLIC_URL}</a>`;
+}
+
+function updateNeededTotal(){}
+
+function setMode(mode){
+ calculationMode = mode;
+ const isArea = mode === "area";
+ const isTotal = mode === "total";
+ const isHistory = mode === "history";
+ voiceStartButton.hidden = isHistory;
+ calculatorContent.hidden = isHistory;
+ historyPanel.hidden = !isHistory;
+ normalGuide.style.display = "block";
+ historyModeBtn.classList.toggle("active", isHistory);
+ if(isHistory){
+  areaBox.classList.remove("open");
+  totalBox.classList.remove("open");
+  normalModeBtn.classList.remove("active");
+  areaModeBtn.classList.remove("active");
+ totalModeBtn.classList.remove("active");
+  normalGuideText.textContent = "";
+  materialEntryButton.hidden = true;
+  renderHistoryList();
+ return;
+}
+ materialEntryButton.hidden = false;
+ areaBox.classList.toggle("open", isArea);
+ totalBox.classList.toggle("open", isTotal);
+ baseBox.style.display = (isArea || isTotal) ? "none" : "block";
+ normalGuide.style.display = "block";
+ actualBox.style.display = "none";
+ if(showActualBtn) showActualBtn.style.display = "inline";
+ normalModeBtn.classList.toggle("active", !isArea && !isTotal);
+ areaModeBtn.classList.toggle("active", isArea);
+ totalModeBtn.classList.toggle("active", isTotal);
+ normalGuideText.textContent = isArea
+  ? "塗装面積と塗布量から、塗料量を計算します。"
+  : isTotal
+  ? "完成量から主剤・硬化剤・希釈剤を計算します。"
+  : "主剤重量から硬化剤・希釈剤を計算します。";
+ clearResult();
+ updateNeededTotal();
+}
+
+normalModeBtn.addEventListener("click", () => setMode("normal"));
+areaModeBtn.addEventListener("click", () => setMode("area"));
+totalModeBtn.addEventListener("click", () => setMode("total"));
+
+function setSafetyAlert(key, message, sourceUrl = ""){
+ if(message){
+  safetyAlerts.set(key, { message, sourceUrl });
+ }else{
+  safetyAlerts.delete(key);
+ }
+ weatherAlert.replaceChildren();
+ Array.from(safetyAlerts.entries()).forEach(([, alertInfo], index) => {
+  if(index > 0) weatherAlert.appendChild(document.createElement("br"));
+  if(alertInfo.sourceUrl){
+   const link = document.createElement("a");
+   link.href = alertInfo.sourceUrl;
+   link.target = "_blank";
+   link.rel = "noopener noreferrer";
+   link.textContent = alertInfo.message;
+   link.title = "情報元を開く";
+   weatherAlert.appendChild(link);
+  }else{
+   weatherAlert.appendChild(document.createTextNode(alertInfo.message));
+  }
+ });
+ weatherAlert.hidden = safetyAlerts.size === 0;
+}
+
+function updateSafetyInformation(){
+ if(!navigator.geolocation){
+  return;
+ }
+ navigator.geolocation.getCurrentPosition(updateWeatherAlerts, () => {}, { enableHighAccuracy:false, timeout:10000, maximumAge:300000 });
+}
+
+async function updateWeatherAlerts(position){
+ try{
+  const { latitude, longitude } = position.coords;
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.search = new URLSearchParams({
+   latitude: latitude.toFixed(4),
+   longitude: longitude.toFixed(4),
+   hourly: "precipitation_probability",
+   forecast_days: "1",
+   timezone: "auto"
+  });
+  const response = await fetch(url);
+  if(!response.ok) throw new Error("forecast request failed");
+  const data = await response.json();
+  const hourly = data.hourly;
+  if(!hourly?.time?.length) throw new Error("forecast data unavailable");
+
+  const now = new Date();
+  const endTime = new Date(now.getTime() + WEATHER_FORECAST_HOURS * 60 * 60 * 1000);
+  const maxProbability = hourly.time.reduce((maximum, time, index) => {
+   const forecastTime = new Date(time);
+   if(forecastTime >= now && forecastTime <= endTime){
+    return Math.max(maximum, Number(hourly.precipitation_probability[index]) || 0);
+   }
+   return maximum;
+  }, 0);
+  if(maxProbability >= WEATHER_PROBABILITY_THRESHOLD){
+   setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります", url.toString());
+  }else{
+   setSafetyAlert("rain", "");
+  }
+  await updateHeatstrokeAlert(latitude, longitude);
+ }catch(error){}
+}
+
+async function updateHeatstrokeAlert(latitude, longitude){
+ try{
+  const locationUrl = new URL("https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress");
+  locationUrl.search = new URLSearchParams({ lat: latitude.toFixed(6), lon: longitude.toFixed(6) });
+  const locationResponse = await fetch(locationUrl);
+  if(!locationResponse.ok) throw new Error("reverse geocode failed");
+  const locationData = await locationResponse.json();
+  const prefectureCode = String(locationData?.results?.muniCd || "").slice(0, 2);
+  const prefecture = PREFECTURE_NAMES[prefectureCode];
+  if(!prefecture) throw new Error("prefecture unavailable");
+
+  const sourceUrl = "https://r.jina.ai/http://https://www.wbgt.env.go.jp/alert.php";
+  const alertResponse = await fetch(sourceUrl);
+  if(!alertResponse.ok) throw new Error("heatstroke alert request failed");
+  const text = await alertResponse.text();
+  const row = text.split("\n").find(line => line.startsWith(`| ${prefecture} |`));
+  if(!row) throw new Error("prefecture row unavailable");
+  const cells = row.split("|").map(cell => cell.trim());
+  const specialAlert = cells[2] === "●";
+  const heatAlert = cells[3] === "●";
+  if(specialAlert){
+   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症特別警戒アラートが発表されています`, "https://www.wbgt.env.go.jp/sp/alert.php");
+  }else if(heatAlert){
+   setSafetyAlert("heat", `⚠ ${prefecture}に熱中症警戒アラートが発表されています`, "https://www.wbgt.env.go.jp/sp/alert.php");
+  }else{
+   setSafetyAlert("heat", "");
+  }
+ }catch(error){
+  setSafetyAlert("heat", "");
+ }
+}
+
+function add(select, text, value = text){
+ const op = document.createElement("option");
+ op.text = text;
+ op.value = value;
+ select.add(op);
+}
+
+for(let i = 0; i <= 100; i++){
+ add(materialThinnerMin, i === 0 ? "無希釈" : `${i}％`, String(i));
+ add(materialThinnerMax, i === 0 ? "無希釈" : `${i}％`, String(i));
+}
+
+function formatRatioNumber(value){
+ const number = Number(value);
+ return Number.isFinite(number) ? String(number) : "";
+}
+
+function getItemRatioLabel(item){
+ if(item && item.ratioLabel) return item.ratioLabel;
+ if(item && item.ratio === "custom"){
+  const mainValue = formatRatioNumber(item.customRatioMain);
+  const hardValue = formatRatioNumber(item.customRatioHard);
+  return mainValue !== "" && hardValue !== "" ? `${mainValue}:${hardValue}` : "その他（手入力）";
+ }
+ return item && item.ratio ? item.ratio : "";
+}
+
+function getCurrentRatioInfo(){
+ if(ratio.value === "custom"){
+  const mainValue = Number(customRatioMain.value);
+  const hardValue = Number(customRatioHard.value);
+
+  if(customRatioMain.value === "" || customRatioHard.value === ""){
+   return { error: "その他の配合比（主剤・硬化剤）を入力してください" };
+  }
+  if(!Number.isFinite(mainValue) || !Number.isFinite(hardValue) || mainValue <= 0 || hardValue < 0){
+   return { error: "配合比は、主剤を0より大きく、硬化剤を0以上で入力してください" };
+  }
+
+  return {
+   value: "custom",
+   label: `${formatRatioNumber(mainValue)}:${formatRatioNumber(hardValue)}`,
+   mainPart: mainValue,
+   hardPart: hardValue,
+   customRatioMain: formatRatioNumber(mainValue),
+   customRatioHard: formatRatioNumber(hardValue)
+  };
+ }
+
+ const parts = ratio.value.split(":").map(Number);
+ if(parts.length !== 2 || !Number.isFinite(parts[0]) || !Number.isFinite(parts[1]) || parts[0] <= 0 || parts[1] < 0){
+  return { error: "配合比を選択してください" };
+ }
+
+ return {
+  value: ratio.value,
+  label: ratio.value,
+  mainPart: parts[0],
+  hardPart: parts[1],
+  customRatioMain: "",
+  customRatioHard: ""
+ };
+}
+
+function updateCustomRatioUI(){
+ const isCustom = ratio.value === "custom";
+ customRatioBox.classList.toggle("open", isCustom);
+ if(!isCustom){
+  customRatioMain.value = "";
+  customRatioHard.value = "";
+ }
+}
+
+add(ratio, "", "");
+add(ratio, "10:0（一液）", "10:0");
+["9:1", "8:1", "7:1", "6:1", "5:1", "4:1", "3:1", "2:1", "1:1"].forEach(value => add(ratio, value, value));
+add(ratio, "その他（手入力）", "custom");
+
+add(base, "", "");
+for(let i = 0.5; i <= 20; i += 0.5){
+ add(base, i.toFixed(1), i.toFixed(1));
+}
+
+add(targetTotal, "", "");
+for(let i = 0.1; i <= 20; i += 0.1){
+ const value = (Math.round(i * 10) / 10).toFixed(1);
+ add(targetTotal, `${value}kg`, value);
+}
+
+add(thinner, "", "");
+for(let i = 0; i <= 30; i++){
+ add(thinner, i === 0 ? "無希釈" : `${i}％`, String(i));
+}
+
+add(paintArea, "", "");
+for(let i = 1; i <= 100; i++){
+ add(paintArea, `${i}㎡`, String(i));
+}
+for(let i = 105; i <= 500; i += 5){
+ add(paintArea, `${i}㎡`, String(i));
+}
+
+add(coverage, "", "");
+for(let i = 1; i <= 100; i++){
+ const value = (i / 100).toFixed(2);
+ add(coverage, `${value}kg/㎡/回`, value);
+}
+
+function updateActual(){
+ actual.innerHTML = "";
+ add(actual, "", "");
+
+ if(base.value === "") return;
+
+ const start = Number(base.value) + 0.1;
+ for(let i = start; i <= 20.5 + 1e-9; i += 0.1){
+  const value = (Math.round(i * 10) / 10).toFixed(1);
+  add(actual, `${value}kg`, value);
+ }
+}
+
+function showActualField(){
+ actualBox.style.display = "block";
+ if(showActualBtn) showActualBtn.style.display = "none";
+}
+
+function hideActualField(){
+ actual.value = "";
+ actualBox.style.display = "none";
+ if(showActualBtn) showActualBtn.style.display = "inline";
+}
+
+function clearResult(){
+ result.innerHTML = "";
+}
+
+function smoothScrollTo(element, block = "start"){
+ if(!element) return;
+ window.requestAnimationFrame(() => {
+  element.scrollIntoView({ behavior: "smooth", block });
+ });
+}
+
+ratio.addEventListener("change", () => {
+ updateCustomRatioUI();
+ clearResult();
+ smoothScrollTo(calculationMode === "area" ? thinner.parentNode : baseBox, "start");
+});
+customRatioMain.addEventListener("input", clearResult);
+customRatioHard.addEventListener("input", clearResult);
+base.addEventListener("change", () => {
+ updateActual();
+ clearResult();
+ smoothScrollTo(thinner.parentNode, "start");
+});
+paintArea.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(coverage.parentNode, "start"); });
+coverage.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(ratioBox, "start"); });
+targetTotal.addEventListener("change", () => { clearResult(); smoothScrollTo(ratioBox, "start"); });
+actual.addEventListener("change", clearResult);
+thinner.addEventListener("change", () => {
+ updateThinnerUI();
+ clearResult();
+});
+
+function updateThinnerUI(){
+ let note = document.getElementById("thinNote");
+ if(!note){
+  note = document.createElement("div");
+  note.id = "thinNote";
+  note.className = "thin-note";
+  thinner.parentNode.appendChild(note);
+ }
+
+ const value = Number(thinner.value);
+ thinner.style.color = "black";
+ note.textContent = "";
+ if(thinner.value === "") return;
+
+ const selectedMaterial = getSelectedMaterial();
+ const thinnerMin = selectedMaterial ? (selectedMaterial.thinnerMin ?? selectedMaterial.thinner ?? "") : "";
+ const thinnerMax = selectedMaterial ? (selectedMaterial.thinnerMax ?? selectedMaterial.thinner ?? "") : "";
+ if(thinnerMin !== "" && thinnerMax !== ""){
+  const min = Number(thinnerMin);
+  const max = Number(thinnerMax);
+  if(value < min || value > max){
+   thinner.style.color = "#cc7a00";
+   note.style.color = "#cc7a00";
+   note.textContent = "※メーカー推奨値を確認してください。";
+  }
+  return;
+ }
+
+ if(value <= 15){
+  // 標準範囲
+ }else if(value <= 20){
+  thinner.style.color = "#cc7a00";
+  note.style.color = "#cc7a00";
+  note.textContent = "※メーカー推奨値を確認してください。";
+ }else{
+  thinner.style.color = "red";
+  note.style.color = "red";
+  note.textContent = "⚠ 高希釈です。仕様をご確認ください。";
+ }
+}
+
+function getHistory(){
+ try{
+  const raw = localStorage.getItem(STORAGE_HISTORY);
+  const arr = raw ? JSON.parse(raw) : [];
+  return Array.isArray(arr) ? arr.slice(0, HISTORY_MAX) : [];
+ }catch(error){
+  return [];
+ }
+}
+
+function setHistory(arr){
+ localStorage.setItem(STORAGE_HISTORY, JSON.stringify(arr.slice(0, HISTORY_MAX)));
+}
+
+function getLastData(){
+ try{
+  const raw = localStorage.getItem(STORAGE_LAST);
+  return raw ? JSON.parse(raw) : null;
+ }catch(error){
+  return null;
+ }
+}
+
+function setLastData(data){
+ localStorage.setItem(STORAGE_LAST, JSON.stringify(data));
+}
+
+// ===== 材料仕様（この端末のブラウザ内に保存） =====
+function getMaterials(){
+ try{
+  const raw = localStorage.getItem(STORAGE_MATERIALS);
+  const items = raw ? JSON.parse(raw) : [];
+  return Array.isArray(items) ? items : [];
+ }catch(error){
+  return [];
+ }
+}
+
+function setMaterials(items){
+ localStorage.setItem(STORAGE_MATERIALS, JSON.stringify(items));
+}
+
+function normalizeMaterialRatio(value){
+ const text = String(value || "").trim().replace(/[：]/g, ":").replace(/\s/g, "");
+ const match = text.match(/^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/);
+ if(!match) return "";
+ const mainPart = Number(match[1]);
+ const hardPart = Number(match[2]);
+ if(!Number.isFinite(mainPart) || !Number.isFinite(hardPart) || mainPart <= 0 || hardPart < 0) return "";
+ return `${formatRatioNumber(mainPart)}:${formatRatioNumber(hardPart)}`;
+}
+
+function normalizeMaterialLiquid(value){
+ if(value === "一液") return "1液";
+ if(value === "二液") return "2液";
+ return value === "1液" || value === "2液" ? value : "";
+}
+
+function choiceValue(choice, other){
+ return choice.value === "その他" ? other.value.trim() : choice.value;
+}
+
+function restoreChoice(choice, other, value){
+ const isListed = Array.from(choice.options).some(option => option.value === value);
+ choice.value = isListed ? value : (value ? "その他" : "");
+ other.hidden = choice.value !== "その他";
+ other.value = choice.value === "その他" ? (value || "") : "";
+}
+
+function weightChoiceValue(choice, other){
+ return choice.value === "その他" ? other.value.trim() : choice.value;
+}
+
+function restoreWeightChoice(choice, other, value){
+ const text = String(value ?? "");
+ const isListed = Array.from(choice.options).some(option => option.value === text);
+ choice.value = isListed ? text : (text ? "その他" : "");
+ other.hidden = choice.value !== "その他";
+ other.value = choice.value === "その他" ? text : "";
+}
+
+function updateMakerSiteLink(){
+ const maker = materialMakerChoice.value;
+ const product = choiceValue(materialProductChoice, materialProductOther);
+ const url = maker && product
+  ? `https://www.google.com/search?q=${encodeURIComponent(`${maker} ${product} 公式`)}`
+  : MAKER_SITE_URLS[maker];
+ makerSiteLink.hidden = !url;
+ makerSiteLink.href = url || "#";
+ makerSiteLink.textContent = maker && product ? "選択中の製品を検索" : (url ? `${maker}製品を探す` : "メーカー製品を探す");
+}
+
+function updateMaterialUrlLink(){
+ const url = materialUrl.value.trim();
+ const isValid = /^https?:\/\//i.test(url);
+ materialUrlLink.hidden = !isValid;
+ materialUrlLink.href = isValid ? url : "#";
+}
+
+function populateCoverageMaxOptions(){
+ materialCoverageMax.innerHTML = '<option value="">上限</option>';
+ Array.from(materialCoverageChoice.options)
+  .filter(option => option.value && option.value !== "その他")
+  .forEach(option => add(materialCoverageMax, option.textContent, option.value));
+}
+
+function materialCoverageRange(item){
+ const legacy = item.coverage ?? "";
+ const min = item.coverageMin ?? legacy;
+ const max = item.coverageMax ?? legacy;
+ return min === "" || max === "" ? null : { min:Number(min), max:Number(max) };
+}
+
+function materialCoverageText(item){
+ const range = materialCoverageRange(item);
+ if(!range || !Number.isFinite(range.min) || !Number.isFinite(range.max)) return "";
+ const min = range.min.toFixed(2);
+ const max = range.max.toFixed(2);
+ return min === max ? min : `${min}～${max}`;
+}
+
+function setCheckedToday(){
+ const now = new Date();
+ const year = now.getFullYear();
+ const month = String(now.getMonth() + 1).padStart(2, "0");
+ const day = String(now.getDate()).padStart(2, "0");
+ materialChecked.value = `${year}-${month}-${day}`;
+}
+
+function updateMaterialLiquidUI(){
+ const isOneLiquid = materialLiquid.value === "1液";
+ materialRatioField.hidden = isOneLiquid;
+ materialWeightField.hidden = isOneLiquid;
+ if(isOneLiquid){
+  materialRatioChoice.value = "";
+  materialRatioOther.value = "";
+  materialRatioOther.hidden = true;
+  materialBaseWeight.value = "";
+  materialBaseWeightOther.value = "";
+  materialBaseWeightOther.hidden = true;
+  materialHardenerWeight.value = "";
+  materialHardenerWeightOther.value = "";
+  materialHardenerWeightOther.hidden = true;
+ }
+ updateMaterialRatioFromWeights();
+ updateMaterialThinnerUI();
+}
+
+function updateMaterialRatioFromWeights(){
+ const baseValue = weightChoiceValue(materialBaseWeight, materialBaseWeightOther);
+ const hardenerValue = weightChoiceValue(materialHardenerWeight, materialHardenerWeightOther);
+ const baseWeight = baseValue === "" ? "" : Number(baseValue);
+ const hardenerWeight = hardenerValue === "" ? "" : Number(hardenerValue);
+ if(baseWeight === "" && hardenerWeight === ""){
+  materialRatioChoice.disabled = false;
+  materialRatioOther.disabled = false;
+  materialWeightNote.textContent = "kg表記がなければ、下の配合比を直接選びます。";
+  return;
+ }
+ if(!Number.isFinite(baseWeight) || !Number.isFinite(hardenerWeight) || baseWeight <= 0 || hardenerWeight <= 0){
+  materialRatioChoice.disabled = false;
+  materialRatioOther.disabled = false;
+  materialWeightNote.textContent = "主剤・硬化剤を両方選ぶと、配合比を自動計算します。";
+  return;
+ }
+ const ratioValue = `${formatRatioNumber(Number((baseWeight / hardenerWeight).toFixed(4)))}:1`;
+ const isListed = Array.from(materialRatioChoice.options).some(option => option.value === ratioValue);
+ materialRatioChoice.value = isListed ? ratioValue : "その他";
+ materialRatioOther.hidden = isListed;
+ materialRatioOther.value = isListed ? "" : ratioValue;
+ materialRatioChoice.disabled = true;
+ materialRatioOther.disabled = true;
+ materialWeightNote.textContent = `主剤 ${formatRatioNumber(baseWeight)}kg＋硬化剤 ${formatRatioNumber(hardenerWeight)}kg → 配合比 ${ratioValue}`;
+}
+
+function updateMaterialThinnerUI(){
+ const productName = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
+ const isOneLiquidSealer = materialLiquid.value === "1液" && productName.includes("シーラー");
+ const noThinner = materialThinnerChoice.value === "なし";
+ materialThinnerOther.hidden = materialThinnerChoice.value !== "その他";
+ materialThinnerField.hidden = isOneLiquidSealer;
+ materialThinnerRateField.hidden = isOneLiquidSealer || noThinner;
+ if(isOneLiquidSealer){
+  materialThinnerChoice.value = "なし";
+  materialThinnerMin.value = "0";
+  materialThinnerMax.value = "0";
+  materialThinnerOther.value = "";
+ }
+}
+
+function materialDisplayName(item){
+ return [item.maker, item.name].filter(Boolean).join("　");
+}
+
+function materialThinnerText(item){
+ const min = item.thinnerMin ?? item.thinner ?? "";
+ const max = item.thinnerMax ?? item.thinner ?? "";
+ if(min === "" || max === "") return "";
+ if(Number(min) === 0 && Number(max) === 0) return "無希釈";
+ return `${min}～${max}％`;
+}
+
+function getSelectedMaterial(){
+ return getMaterials().find(item => item.id === materialSelect.value) || null;
+}
+
+function materialWeightText(item){
+ const baseWeight = Number(item.baseWeight);
+ const hardenerWeight = Number(item.hardenerWeight);
+ if(!Number.isFinite(baseWeight) || !Number.isFinite(hardenerWeight) || baseWeight <= 0 || hardenerWeight <= 0) return "";
+ return `主剤 ${formatRatioNumber(baseWeight)}kg＋硬化剤 ${formatRatioNumber(hardenerWeight)}kg`;
+}
+
+function renderMaterialSummary(item){
+ materialSummary.innerHTML = "";
+ if(!item){
+  materialSummary.classList.add("empty");
+  materialSummary.textContent = "材料を選ぶと、登録済みの配合比・標準希釈率・塗布量を入力欄へ反映します。";
+  return;
+ }
+ materialSummary.classList.remove("empty");
+ const lines = [
+  materialDisplayName(item),
+  item.use ? `用途：${item.use}` : "",
+  `配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}`,
+  materialWeightText(item) ? `セット内容：${materialWeightText(item)}` : "",
+  item.thinnerName ? `希釈剤：${item.thinnerName}` : "",
+  materialThinnerText(item) ? `標準希釈率：${materialThinnerText(item)}` : "",
+  materialCoverageText(item) ? `標準塗布量：${materialCoverageText(item)}kg/㎡/回` : "",
+ item.checked ? `公式確認日：${item.checked}` : ""
+ ].filter(Boolean);
+ lines.forEach((line, index) => {
+  if(index) materialSummary.appendChild(document.createElement("br"));
+  materialSummary.appendChild(document.createTextNode(line));
+ });
+ const thinnerMin = item.thinnerMin ?? item.thinner ?? "";
+ const thinnerMax = item.thinnerMax ?? item.thinner ?? "";
+ const coverageRange = materialCoverageRange(item);
+ if((thinnerMin !== "" && thinnerMax !== "" && Number(thinnerMin) !== Number(thinnerMax)) || (coverageRange && coverageRange.min !== coverageRange.max)){
+  materialSummary.appendChild(document.createElement("br"));
+  materialSummary.appendChild(document.createTextNode("※範囲で登録した数値は、計算欄には上限値を自動設定します。"));
+ }
+ if(item.url){
+  materialSummary.appendChild(document.createElement("br"));
+  const link = document.createElement("a");
+  link.href = item.url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "公式資料を開く";
+  materialSummary.appendChild(link);
+ }
+}
+
+function renderMaterialSelect(selectedId = materialSelect.value){
+ const materials = getMaterials();
+ materialSelect.innerHTML = "";
+ add(materialSelect, "材料を選択", "");
+ materials.sort((a, b) => materialDisplayName(a).localeCompare(materialDisplayName(b), "ja"))
+  .forEach(item => add(materialSelect, materialDisplayName(item), item.id));
+ materialSelect.value = materials.some(item => item.id === selectedId) ? selectedId : "";
+ renderMaterialSummary(materials.find(item => item.id === materialSelect.value) || null);
+ refreshMaterialEntry();
+}
+
+function refreshMaterialEntry(){
+ const hasMaterials = getMaterials().length > 0;
+ materialEntryButton.textContent = hasMaterials ? "登録済み材料" : "材料を登録";
+ if(!hasMaterials) materialChooser.hidden = true;
+}
+
+function handleMaterialEntry(){
+ if(getMaterials().length === 0){
+  openMaterialModal();
+  return;
+ }
+ const wasHidden = materialChooser.hidden;
+ materialChooser.hidden = !materialChooser.hidden;
+ if(!wasHidden){
+  clearCalculationInputs();
+ }
+ if(!materialChooser.hidden) materialSelect.focus();
+}
+
+function clearCalculationInputs(){
+ materialSelect.value = "";
+ renderMaterialSummary(null);
+ ratio.value = "";
+ customRatioMain.value = "";
+ customRatioHard.value = "";
+ base.value = "";
+ actual.value = "";
+ thinner.value = "";
+ paintArea.value = "";
+ coverage.value = "";
+ targetTotal.value = "";
+ updateCustomRatioUI();
+ hideActualField();
+ updateThinnerUI();
+ clearResult();
+}
+
+function clearMaterialForm(keepSaveNotice = false){
+ editingMaterialId = null;
+ if(!keepSaveNotice){
+  materialSaveNotice.hidden = true;
+  materialSaveNotice.textContent = "";
+ }
+ materialMakerChoice.value = "";
+ materialMakerOther.value = "";
+ materialMakerOther.hidden = true;
+ updateMakerSiteLink();
+ materialProductChoice.innerHTML = '<option value="">メーカーを先に選択してください</option>';
+ materialProductChoice.disabled = true;
+ materialProductOther.value = "";
+ materialProductOther.hidden = true;
+ materialLiquid.value = "";
+ materialRatioChoice.value = "";
+ materialRatioOther.value = "";
+ materialRatioOther.hidden = true;
+ updateMaterialLiquidUI();
+ materialThinnerChoice.value = "";
+ materialThinnerOther.value = "";
+ materialThinnerOther.hidden = true;
+ materialThinnerMin.value = "";
+ materialThinnerMax.value = "";
+ materialCoverageChoice.value = "";
+ materialCoverageMax.value = "";
+ materialCoverageOther.value = "";
+ materialCoverageOther.hidden = true;
+ materialBaseWeight.value = "";
+ materialBaseWeightOther.value = "";
+ materialBaseWeightOther.hidden = true;
+ materialHardenerWeight.value = "";
+ materialHardenerWeightOther.value = "";
+ materialHardenerWeightOther.hidden = true;
+ updateMaterialRatioFromWeights();
+ materialUrl.value = "";
+ updateMaterialUrlLink();
+ materialChecked.value = "";
+ materialMemo.value = "";
+}
+
+function resetMaterialForm(){
+ clearMaterialForm();
+}
+
+function updateMaterialProductOptions(selectedProduct = ""){
+ const maker = materialMakerChoice.value;
+ const products = MATERIAL_PRODUCT_OPTIONS[maker] || [];
+ materialProductChoice.innerHTML = "";
+ add(materialProductChoice, products.length ? "製品を選択してください" : "候補なし", "");
+ products.forEach(product => add(materialProductChoice, product, product));
+ add(materialProductChoice, "その他（手入力）", "その他");
+ materialProductChoice.disabled = !maker;
+ const hasProduct = products.includes(selectedProduct);
+ materialProductChoice.value = hasProduct ? selectedProduct : (selectedProduct ? "その他" : "");
+ materialProductOther.hidden = materialProductChoice.value !== "その他";
+ materialProductOther.value = materialProductChoice.value === "その他" ? selectedProduct : "";
+}
+
+function openMaterialModal(){
+ closeHistoryModal();
+ renderMaterialList();
+ materialModal.classList.add("open");
+ document.body.style.overflow = "hidden";
+}
+
+function closeMaterialModal(event){
+ if(event && event.target !== materialModal) return;
+ materialModal.classList.remove("open");
+ document.body.style.overflow = "";
+ clearMaterialForm();
+}
+
+function showMaterialSaveError(message, focusTarget = null){
+ materialSaveNotice.textContent = `保存できません。${message}`;
+ materialSaveNotice.classList.add("error");
+ materialSaveNotice.hidden = false;
+ document.querySelectorAll(".material-form .input-error").forEach(element => element.classList.remove("input-error"));
+ if(focusTarget){
+  focusTarget.classList.add("input-error");
+  setTimeout(() => {
+   focusTarget.scrollIntoView({ behavior:"smooth", block:"center" });
+   focusTarget.focus({ preventScroll:true });
+  }, 1500);
+ }else{
+  requestAnimationFrame(() => materialSaveNotice.scrollIntoView({ behavior:"smooth", block:"center" }));
+ }
+}
+
+function materialFormData(){
+ const maker = materialMakerChoice.value === "その他" ? materialMakerOther.value.trim() : materialMakerChoice.value;
+ const name = materialProductChoice.value === "その他" ? materialProductOther.value.trim() : materialProductChoice.value;
+ const baseValue = weightChoiceValue(materialBaseWeight, materialBaseWeightOther);
+ const hardenerValue = weightChoiceValue(materialHardenerWeight, materialHardenerWeightOther);
+ const baseWeight = baseValue === "" ? "" : Number(baseValue);
+ const hardenerWeight = hardenerValue === "" ? "" : Number(hardenerValue);
+ const hasWeightInput = baseWeight !== "" || hardenerWeight !== "";
+ const weightRatio = !hasWeightInput || !Number.isFinite(baseWeight) || !Number.isFinite(hardenerWeight) || baseWeight <= 0 || hardenerWeight <= 0 ? "" : `${formatRatioNumber(Number((baseWeight / hardenerWeight).toFixed(4)))}:1`;
+ const ratioValue = materialLiquid.value === "1液" ? "10:0" : (weightRatio || normalizeMaterialRatio(materialRatioChoice.value === "その他" ? materialRatioOther.value : materialRatioChoice.value));
+ const thinnerName = (materialThinnerChoice.value === "その他" ? materialThinnerOther.value : materialThinnerChoice.value).trim();
+ const thinnerMin = materialThinnerMin.value === "" ? "" : Number(materialThinnerMin.value);
+ const thinnerMax = materialThinnerMax.value === "" ? "" : Number(materialThinnerMax.value);
+ const coverageOther = materialCoverageOther.value.trim().replace(/[～〜]/g, "-");
+ const coverageParts = coverageOther ? coverageOther.split("-").map(value => Number(value.trim())) : [];
+ const coverageMin = materialCoverageChoice.value === "その他" ? coverageParts[0] : (materialCoverageChoice.value === "" ? "" : Number(materialCoverageChoice.value));
+ const coverageMax = materialCoverageChoice.value === "その他" ? (coverageParts.length === 2 ? coverageParts[1] : coverageParts[0]) : (materialCoverageMax.value === "" ? "" : Number(materialCoverageMax.value));
+ const missing = [];
+ let firstMissing = null;
+ const addMissing = (label, element) => { missing.push(label); if(!firstMissing) firstMissing = element; };
+ if(!maker) addMissing("メーカー", materialMakerChoice.value === "その他" ? materialMakerOther : materialMakerChoice);
+ if(!name) addMissing("製品名", materialProductChoice.value === "その他" ? materialProductOther : materialProductChoice);
+ if(!materialLiquid.value) addMissing("液数", materialLiquid);
+ if(hasWeightInput && (baseWeight === "" || hardenerWeight === "")) addMissing("セット内容（主剤・硬化剤）", baseWeight === "" ? materialBaseWeight : materialHardenerWeight);
+ if(hasWeightInput && !weightRatio) addMissing("セット内容（0より大きい数値）", !Number.isFinite(baseWeight) || baseWeight <= 0 ? materialBaseWeight : materialHardenerWeight);
+ if(materialLiquid.value === "2液" && !ratioValue) addMissing("配合比", materialRatioChoice.value === "その他" ? materialRatioOther : materialRatioChoice);
+ if(!materialThinnerField.hidden && !thinnerName) addMissing("希釈剤名", materialThinnerChoice.value === "その他" ? materialThinnerOther : materialThinnerChoice);
+ if(!materialThinnerRateField.hidden && thinnerMin === "") addMissing("標準希釈率（下限）", materialThinnerMin);
+ if(!materialThinnerRateField.hidden && thinnerMax === "") addMissing("標準希釈率（上限）", materialThinnerMax);
+ if(coverageMin === "") addMissing("標準塗布量（下限）", materialCoverageChoice.value === "その他" ? materialCoverageOther : materialCoverageChoice);
+ if(coverageMax === "") addMissing("標準塗布量（上限）", materialCoverageChoice.value === "その他" ? materialCoverageOther : materialCoverageMax);
+ if(!materialUrl.value.trim()) addMissing("公式資料URL", materialUrl);
+ if(!materialChecked.value) addMissing("公式確認日", materialChecked);
+ if(missing.length){ showMaterialSaveError(`未入力：${missing.join("、")}`, firstMissing); return null; }
+ if((thinnerMin === "") !== (thinnerMax === "")){
+  alert("標準希釈率は下限・上限を両方入力してください"); return null;
+ }
+ if(thinnerMin !== "" && (!Number.isInteger(thinnerMin) || !Number.isInteger(thinnerMax) || thinnerMin < 0 || thinnerMax < 0 || thinnerMin > 100 || thinnerMax > 100 || thinnerMin > thinnerMax)){
+  alert("標準希釈率は0〜100％で、下限が上限以下になるよう入力してください"); return null;
+ }
+ if((coverageMin === "") !== (coverageMax === "")){
+  alert("標準塗布量は下限・上限を両方入力してください"); return null;
+ }
+ if(coverageMin !== "" && (!Number.isFinite(coverageMin) || !Number.isFinite(coverageMax) || coverageMin <= 0 || coverageMax <= 0 || coverageMin > 1 || coverageMax > 1 || coverageMin > coverageMax)){
+  alert("標準塗布量は0より大きく1以下で、下限が上限以下になるよう入力してください"); return null;
+ }
+ let url = materialUrl.value.trim();
+ if(url && !/^https?:\/\//i.test(url)){ alert("公式資料URLは https:// から入力してください"); return null; }
+ return {
+  id: editingMaterialId || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  maker, name, liquid:normalizeMaterialLiquid(materialLiquid.value), ratio:ratioValue,
+  thinnerName, thinnerMin, thinnerMax,
+  coverage:coverageMin !== "" && coverageMin === coverageMax ? coverageMin.toFixed(2) : "",
+  coverageMin:coverageMin === "" ? "" : coverageMin.toFixed(2), coverageMax:coverageMax === "" ? "" : coverageMax.toFixed(2),
+  baseWeight:weightRatio ? formatRatioNumber(baseWeight) : "", hardenerWeight:weightRatio ? formatRatioNumber(hardenerWeight) : "",
+  url, checked:materialChecked.value, memo:materialMemo.value.trim()
+ };
+}
+
+function saveMaterial(){
+ const item = materialFormData();
+ if(!item) return;
+ const materials = getMaterials();
+ const index = materials.findIndex(entry => entry.id === item.id);
+ if(index >= 0) materials[index] = item; else materials.push(item);
+ setMaterials(materials);
+ renderMaterialSelect(item.id);
+ applyMaterialToForm(item);
+ renderMaterialList();
+ clearMaterialForm(true);
+ materialSaveNotice.textContent = `「${materialDisplayName(item)}」を保存しました。登録済み材料に追加済みです。`;
+ materialSaveNotice.classList.remove("error");
+ playVoiceTone("confirm");
+ document.querySelectorAll(".material-form .input-error").forEach(element => element.classList.remove("input-error"));
+ materialSaveNotice.hidden = false;
+ requestAnimationFrame(() => materialSaveNotice.scrollIntoView({ behavior:"smooth", block:"center" }));
+ if(materialSaveTimer) clearTimeout(materialSaveTimer);
+ materialSaveButton.textContent = "保存しました ✓";
+ materialSaveButton.classList.add("saved");
+ materialSaveTimer = setTimeout(() => {
+  materialSaveButton.textContent = "材料を保存";
+  materialSaveButton.classList.remove("saved");
+  materialSaveTimer = null;
+ }, 3000);
+}
+
+function editMaterial(itemId){
+ const item = getMaterials().find(entry => entry.id === itemId);
+ if(!item) return;
+ materialSaveNotice.hidden = true;
+ materialSaveNotice.textContent = "";
+ editingMaterialId = item.id;
+ const predefinedMaker = Array.from(materialMakerChoice.options).some(option => option.value === item.maker);
+ materialMakerChoice.value = predefinedMaker ? item.maker : "その他";
+ materialMakerOther.hidden = predefinedMaker;
+ materialMakerOther.value = predefinedMaker ? "" : (item.maker || "");
+ updateMakerSiteLink();
+ updateMaterialProductOptions(item.name || "");
+ materialLiquid.value = normalizeMaterialLiquid(item.liquid);
+ const hasRatio = Array.from(materialRatioChoice.options).some(option => option.value === item.ratio);
+ materialRatioChoice.value = hasRatio ? item.ratio : (item.ratio ? "その他" : "");
+ materialRatioOther.hidden = materialRatioChoice.value !== "その他";
+ materialRatioOther.value = materialRatioChoice.value === "その他" ? (item.ratio || "") : "";
+ updateMaterialLiquidUI();
+ const hasThinner = Array.from(materialThinnerChoice.options).some(option => option.value === item.thinnerName);
+ materialThinnerChoice.value = hasThinner ? item.thinnerName : (item.thinnerName ? "その他" : "");
+ materialThinnerOther.hidden = materialThinnerChoice.value !== "その他";
+ materialThinnerOther.value = materialThinnerChoice.value === "その他" ? (item.thinnerName || "") : "";
+ materialThinnerMin.value = item.thinnerMin ?? item.thinner ?? "";
+ materialThinnerMax.value = item.thinnerMax ?? item.thinner ?? "";
+ updateMaterialThinnerUI();
+ const coverageRange = materialCoverageRange(item);
+ const coverageMin = coverageRange ? coverageRange.min.toFixed(2) : "";
+ const coverageMax = coverageRange ? coverageRange.max.toFixed(2) : "";
+ const hasCoverageMin = Array.from(materialCoverageChoice.options).some(option => option.value === coverageMin);
+ const hasCoverageMax = Array.from(materialCoverageMax.options).some(option => option.value === coverageMax);
+ materialCoverageChoice.value = hasCoverageMin && hasCoverageMax ? coverageMin : (coverageMin ? "その他" : "");
+ materialCoverageOther.hidden = materialCoverageChoice.value !== "その他";
+ materialCoverageOther.value = materialCoverageChoice.value === "その他" ? (coverageRange ? materialCoverageText(item) : "") : "";
+ materialCoverageMax.value = materialCoverageChoice.value === "その他" ? "" : coverageMax;
+ restoreWeightChoice(materialBaseWeight, materialBaseWeightOther, item.baseWeight || "");
+ restoreWeightChoice(materialHardenerWeight, materialHardenerWeightOther, item.hardenerWeight || "");
+ updateMaterialRatioFromWeights();
+ materialUrl.value = item.url || "";
+ updateMaterialUrlLink();
+ materialChecked.value = item.checked || "";
+ materialMemo.value = item.memo || "";
+ materialModal.querySelector(".modal-body").scrollTop = 0;
+}
+
+function deleteMaterial(itemId){
+ const item = getMaterials().find(entry => entry.id === itemId);
+ if(!item || !confirm(`「${materialDisplayName(item)}」を削除しますか？`)) return;
+ setMaterials(getMaterials().filter(entry => entry.id !== itemId));
+ renderMaterialSelect(materialSelect.value === itemId ? "" : materialSelect.value);
+ renderMaterialList();
+}
+
+function renderMaterialList(){
+ const materials = getMaterials().sort((a, b) => materialDisplayName(a).localeCompare(materialDisplayName(b), "ja"));
+ materialList.innerHTML = materials.length ? "" : '<div class="modal-empty">登録済み材料はありません。</div>';
+ materials.forEach(item => {
+  const box = document.createElement("div");
+  box.className = "material-item";
+  const title = document.createElement("div");
+  title.className = "material-item-title";
+  title.textContent = materialDisplayName(item);
+  const detail = document.createElement("div");
+  detail.className = "material-item-detail";
+  detail.textContent = `${normalizeMaterialLiquid(item.liquid) || ""}　配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}${materialWeightText(item) ? `　セット内容：${materialWeightText(item)}` : ""}${materialThinnerText(item) ? `　標準希釈率：${materialThinnerText(item)}` : ""}${materialCoverageText(item) ? `　塗布量：${materialCoverageText(item)}kg/㎡/回` : ""}`;
+  const actions = document.createElement("div");
+  actions.className = "material-item-actions";
+  const edit = document.createElement("button");
+  edit.type = "button"; edit.textContent = "編集"; edit.addEventListener("click", () => editMaterial(item.id));
+  const remove = document.createElement("button");
+  remove.type = "button"; remove.className = "material-delete"; remove.textContent = "削除"; remove.addEventListener("click", () => deleteMaterial(item.id));
+  actions.append(edit, remove); box.append(title, detail, actions); materialList.appendChild(box);
+ });
+}
+
+function applyMaterialToForm(item){
+ const isOneLiquid = normalizeMaterialLiquid(item.liquid) === "1液";
+ const ratioValue = isOneLiquid ? "10:0" : normalizeMaterialRatio(item.ratio);
+ if(Array.from(ratio.options).some(option => option.value === ratioValue)){
+  ratio.value = ratioValue;
+  customRatioMain.value = "";
+  customRatioHard.value = "";
+ }else{
+  const parts = ratioValue.split(":");
+  ratio.value = "custom";
+  customRatioMain.value = parts[0] || "";
+  customRatioHard.value = parts[1] || "";
+ }
+ const thinnerMin = item.thinnerMin ?? item.thinner ?? "";
+ const thinnerMax = item.thinnerMax ?? item.thinner ?? "";
+ if(thinnerMin !== ""){
+  const standardThinner = String(thinnerMax === "" ? thinnerMin : thinnerMax);
+  if(Array.from(thinner.options).some(option => option.value === standardThinner)) thinner.value = standardThinner;
+ }
+ const coverageRange = materialCoverageRange(item);
+ if(coverageRange){
+  const standardCoverage = coverageRange.max.toFixed(2);
+  if(Array.from(coverage.options).some(option => option.value === standardCoverage)) coverage.value = standardCoverage;
+ }
+ updateCustomRatioUI();
+ updateThinnerUI();
+ clearResult();
+}
+
+materialSelect.addEventListener("change", () => {
+ const item = getMaterials().find(entry => entry.id === materialSelect.value) || null;
+ renderMaterialSummary(item);
+ if(item) applyMaterialToForm(item);
+});
+
+materialMakerChoice.addEventListener("change", () => {
+ const isOther = materialMakerChoice.value === "その他";
+ materialMakerOther.hidden = !isOther;
+ if(!isOther) materialMakerOther.value = "";
+ if(isOther) materialMakerOther.focus();
+ updateMaterialProductOptions();
+ updateMakerSiteLink();
+});
+
+materialProductOther.addEventListener("input", updateMakerSiteLink);
+
+makerSiteLink.addEventListener("click", () => {
+ const url = makerSiteLink.href;
+ if(/^https?:\/\//i.test(url)){
+  materialUrl.value = url;
+  updateMaterialUrlLink();
+ }
+ setCheckedToday();
+});
+materialUrl.addEventListener("input", updateMaterialUrlLink);
+materialUrlLink.addEventListener("click", setCheckedToday);
+
+materialCoverageChoice.addEventListener("change", () => {
+ const isOther = materialCoverageChoice.value === "その他";
+ materialCoverageOther.hidden = !isOther;
+ if(isOther){
+  materialCoverageMax.value = "";
+  materialCoverageOther.focus();
+ }else{
+  materialCoverageOther.value = "";
+ }
+});
+
+materialProductChoice.addEventListener("change", () => {
+ const isOther = materialProductChoice.value === "その他";
+ materialProductOther.hidden = !isOther;
+ if(!isOther) materialProductOther.value = "";
+ if(isOther) materialProductOther.focus();
+ updateMaterialThinnerUI();
+ updateMakerSiteLink();
+});
+
+materialRatioChoice.addEventListener("change", () => {
+ const isOther = materialRatioChoice.value === "その他";
+ materialRatioOther.hidden = !isOther;
+ if(!isOther) materialRatioOther.value = "";
+ if(isOther) materialRatioOther.focus();
+});
+
+materialLiquid.addEventListener("change", updateMaterialLiquidUI);
+materialBaseWeight.addEventListener("change", () => {
+ materialBaseWeightOther.hidden = materialBaseWeight.value !== "その他";
+ if(materialBaseWeight.value !== "その他") materialBaseWeightOther.value = "";
+ if(materialBaseWeight.value === "その他") materialBaseWeightOther.focus();
+ updateMaterialRatioFromWeights();
+});
+materialHardenerWeight.addEventListener("change", () => {
+ materialHardenerWeightOther.hidden = materialHardenerWeight.value !== "その他";
+ if(materialHardenerWeight.value !== "その他") materialHardenerWeightOther.value = "";
+ if(materialHardenerWeight.value === "その他") materialHardenerWeightOther.focus();
+ updateMaterialRatioFromWeights();
+});
+materialBaseWeightOther.addEventListener("input", updateMaterialRatioFromWeights);
+materialHardenerWeightOther.addEventListener("input", updateMaterialRatioFromWeights);
+
+materialThinnerChoice.addEventListener("change", () => {
+ updateMaterialThinnerUI();
+ if(materialThinnerChoice.value === "その他") materialThinnerOther.focus();
+});
+
+function bindOtherChoice(choice, other){
+ choice.addEventListener("change", () => {
+  const isOther = choice.value === "その他";
+  other.hidden = !isOther;
+  if(!isOther) other.value = "";
+  if(isOther) other.focus();
+ });
+}
+
+bindOtherChoice(materialCoverageChoice, materialCoverageOther);
+
+function renderLatestBox(data){
+ // 前回使用の要約はメイン画面に表示せず、ヘッダーの「履歴」から確認します。
+}
+
+function renderHistoryCount(count){
+ if(calculationMode === "history"){
+  normalGuideText.innerHTML = `履歴は最新${HISTORY_MAX}件まで保存されます。<span class="history-guide-count">（現在${count}/${HISTORY_MAX}件）</span>`;
+ }
+}
+
+function saveData(ratioInfo){
+ const usedActual = actualBox.style.display === "block" && actual.value !== "";
+ const usedMain = usedActual ? actual.value : base.value;
+ const data = {
+  id: Date.now(),
+  date: new Date().toLocaleString("ja-JP"),
+  materialId: materialSelect.value || "",
+  materialLabel: materialSelect.value ? materialDisplayName(getMaterials().find(item => item.id === materialSelect.value) || {}) : "",
+  ratio: ratioInfo.value,
+  ratioLabel: ratioInfo.label,
+  customRatioMain: ratioInfo.customRatioMain,
+  customRatioHard: ratioInfo.customRatioHard,
+  base: base.value,
+  actualValue: usedActual ? actual.value : "",
+  usedActual,
+  usedMain,
+  thinner: thinner.value,
+  mode: calculationMode,
+  paintArea: calculationMode === "area" ? paintArea.value : "",
+  coverage: calculationMode === "area" ? coverage.value : "",
+  finishedTotal: calculationMode === "area" ? (Number(paintArea.value) * Number(coverage.value)).toFixed(2) : calculationMode === "total" ? targetTotal.value : ""
+ };
+
+ const arr = getHistory();
+ arr.unshift(data);
+ setHistory(arr);
+ setLastData(data);
+ renderLatestBox(data);
+ renderHistoryList();
+}
+
+function applyDataToForm(item, restoreMode = true){
+ setMode(restoreMode && item.mode === "area" ? "area" : restoreMode && item.mode === "total" ? "total" : "normal");
+ ratio.value = item.ratio || "";
+
+ if(item.ratio === "custom"){
+  customRatioMain.value = item.customRatioMain || "";
+  customRatioHard.value = item.customRatioHard || "";
+ }else{
+  customRatioMain.value = "";
+  customRatioHard.value = "";
+ }
+ updateCustomRatioUI();
+
+ base.value = item.base || "";
+ updateActual();
+ thinner.value = item.thinner ?? "";
+ if(item.mode === "area"){
+  paintArea.value = item.paintArea || "";
+  coverage.value = item.coverage || "";
+  updateNeededTotal();
+ }
+ if(item.mode === "total") targetTotal.value = item.finishedTotal || "";
+ updateThinnerUI();
+ materialSelect.value = Array.from(materialSelect.options).some(option => option.value === item.materialId) ? item.materialId : "";
+ renderMaterialSummary(getMaterials().find(entry => entry.id === materialSelect.value) || null);
+
+ if(item.usedActual && item.actualValue){
+  actualBox.style.display = "block";
+  if(showActualBtn) showActualBtn.style.display = "none";
+  actual.value = item.actualValue;
+ }else{
+  actual.value = "";
+  actualBox.style.display = "none";
+  if(showActualBtn) showActualBtn.style.display = "inline";
+ }
+}
+
+function loadData(){
+ const last = getLastData();
+ if(!last){
+  updateActual();
+  updateCustomRatioUI();
+  renderLatestBox(null);
+  renderHistoryList();
+  return;
+ }
+
+ applyDataToForm(last, false);
+ renderLatestBox(last);
+ renderHistoryList();
+}
+
+function calc(){
+ if(ratio.value === "" || thinner.value === "" || (calculationMode === "normal" && base.value === "") || (calculationMode === "total" && targetTotal.value === "")){
+  alert(calculationMode === "area" ? "配合比・希釈率を選択してください" : calculationMode === "total" ? "作りたい完成量・配合比・希釈率を選択してください" : "配合比・主剤重量・希釈率を選択してください");
+  return;
+ }
+
+ const ratioInfo = getCurrentRatioInfo();
+ if(ratioInfo.error){
+  alert(ratioInfo.error);
+  return;
+ }
+
+ const finishedTotal = calculationMode === "area" ? Number(paintArea.value) * Number(coverage.value) : calculationMode === "total" ? Number(targetTotal.value) : 0;
+ if((calculationMode === "area" || calculationMode === "total") && (!Number.isFinite(finishedTotal) || finishedTotal <= 0)){
+  alert(calculationMode === "area" ? "塗装面積と塗布量を入力してください" : "作りたい完成量を入力してください");
+  return;
+ }
+ const main = (calculationMode === "area" || calculationMode === "total")
+  ? finishedTotal / (1 + Number(thinner.value) / 100) * ratioInfo.mainPart / (ratioInfo.mainPart + ratioInfo.hardPart)
+  : actualBox.style.display === "block" && actual.value !== ""
+  ? Number(actual.value)
+  : Number(base.value);
+
+ const hard = main * ratioInfo.hardPart / ratioInfo.mainPart;
+ const mix = main + hard;
+ const thin = mix * Number(thinner.value) / 100;
+ const total = mix + thin;
+ const hasThin = Number(thinner.value) > 0;
+ const hasHardener = Math.abs(hard) > 1e-12;
+
+ if(!hasHardener){
+ result.innerHTML =
+   `<div class="step">主剤（${ratioInfo.label}）ここまで入れる<div class="value">${main.toFixed(2)}kg</div></div>` +
+   (hasThin
+    ? `<div class="step">希釈剤（${thinner.value}％） ${thin.toFixed(2)}kg 入れる<div class="value">${total.toFixed(2)}kg</div></div>`
+    : "");
+ }else{
+  result.innerHTML =
+   `<div class="step">主剤（${ratioInfo.label}）ここまで入れる<div class="value">${main.toFixed(2)}kg</div></div>` +
+   `<div class="step">硬化剤 ${hard.toFixed(2)}kg 入れる<div class="value">${mix.toFixed(2)}kg</div></div>` +
+   (hasThin
+    ? `<div class="step">希釈剤（${thinner.value}％） ${thin.toFixed(2)}kg 入れる<div class="value">${total.toFixed(2)}kg</div></div>`
+    : "");
+ }
+
+ result.insertAdjacentHTML("beforeend", '<button type="button" class="result-scroll-top" onclick="scrollToAppTop()" aria-label="画面上部へ戻る" title="画面上部へ戻る">↑</button>');
+
+ saveData(ratioInfo);
+
+ actual.value = "";
+ actualBox.style.display = "none";
+ if(showActualBtn) showActualBtn.style.display = "inline";
+
+ smoothScrollTo(result, "start");
+}
+
+function scrollToAppTop(){
+ window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+function openHistoryModal(){
+ setMode("history");
+}
+
+function closeHistoryModal(){
+ if(calculationMode === "history") setMode("normal");
+}
+
+function restoreHistoryItem(itemId){
+ const arr = getHistory();
+ const item = arr.find(entry => String(entry.id) === String(itemId));
+ if(!item) return;
+
+ applyDataToForm(item);
+ clearResult();
+ renderLatestBox(item);
+ setLastData(item);
+ setTimeout(() => smoothScrollTo(ratioBox, "start"), 50);
+}
+
+function deleteHistoryItem(itemId){
+ const arr = getHistory().filter(entry => String(entry.id) !== String(itemId));
+ setHistory(arr);
+
+ const last = arr[0] || null;
+ if(last){
+  setLastData(last);
+  renderLatestBox(last);
+ }else{
+  localStorage.removeItem(STORAGE_LAST);
+  renderLatestBox(null);
+ }
+
+ renderHistoryList();
+}
+
+function clearAllHistory(){
+ if(!confirm("履歴をすべて削除しますか？")) return;
+ localStorage.removeItem(STORAGE_HISTORY);
+ localStorage.removeItem(STORAGE_LAST);
+ renderLatestBox(null);
+ renderHistoryList();
+}
+
+function renderHistoryList(){
+ const arr = getHistory();
+ historyList.innerHTML = "";
+ renderHistoryCount(arr.length);
+
+ if(arr.length === 0){
+  historyList.innerHTML = '<div class="modal-empty">履歴はまだありません。</div>';
+  return;
+ }
+
+ const monthGroups = new Map();
+ arr.forEach(item => {
+  const matchedDate = String(item.date || "").match(/(\d{4})\D+(\d{1,2})/);
+  const year = matchedDate ? Number(matchedDate[1]) : 0;
+  const month = matchedDate ? Number(matchedDate[2]) : 0;
+  const key = matchedDate ? `${year}-${String(month).padStart(2, "0")}` : "other";
+  const label = matchedDate ? `${year}年${month}月` : "日付不明";
+  if(!monthGroups.has(key)) monthGroups.set(key, { label, items:[] });
+  monthGroups.get(key).items.push(item);
+ });
+
+ Array.from(monthGroups.values()).forEach((group, groupIndex) => {
+  const monthBox = document.createElement("details");
+  monthBox.className = "history-month";
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  monthBox.open = key === currentMonthKey;
+  monthBox.innerHTML = `<summary><span>${group.label}</span><span class="history-month-count">${group.items.length}件</span></summary>`;
+  const monthItems = document.createElement("div");
+  monthItems.className = "history-month-items";
+
+  group.items.forEach(item => {
+  const div = document.createElement("div");
+  div.className = "history-item";
+
+  const mainLabel = item.mode === "area"
+   ? `面積：${item.paintArea}㎡<br>塗布量：${item.coverage}kg/㎡/回<br>今回必要量：${item.finishedTotal}kg`
+   : item.usedActual && item.actualValue
+   ? `実測主剤重量：${item.actualValue}kg`
+   : `主剤重量：${item.base}kg`;
+
+  div.innerHTML = `
+   <div class="history-main" data-id="${item.id}">
+    <div class="history-date">${item.date || ""}</div>
+   <div class="history-text">
+     ${item.materialLabel ? `材料：${item.materialLabel}<br>` : ""}
+     配合比：${getItemRatioLabel(item)}<br>
+     ${mainLabel}<br>
+     希釈率：${item.thinner}％
+    </div>
+   </div>
+   <div class="history-actions">
+    <button class="history-restore" data-restore="${item.id}">復元</button>
+    <button class="history-delete" data-delete="${item.id}">削除</button>
+   </div>
+  `;
+   monthItems.appendChild(div);
+  });
+  monthBox.appendChild(monthItems);
+  historyList.appendChild(monthBox);
+ });
+
+ historyList.querySelectorAll("[data-restore]").forEach(button => {
+  button.addEventListener("click", event => {
+   event.stopPropagation();
+   restoreHistoryItem(button.getAttribute("data-restore"));
+  });
+ });
+
+ historyList.querySelectorAll("[data-delete]").forEach(button => {
+  button.addEventListener("click", event => {
+   event.stopPropagation();
+   deleteHistoryItem(button.getAttribute("data-delete"));
+  });
+ });
+
+ historyList.querySelectorAll("[data-id]").forEach(box => {
+  box.addEventListener("click", () => {
+   restoreHistoryItem(box.getAttribute("data-id"));
+  });
+ });
+}
+
+// ===== 音声入力 =====
+const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voiceOverlay = document.getElementById("voiceOverlay");
+const voiceList = document.getElementById("voiceList");
+const voiceGuide = document.getElementById("voiceGuide");
+const voiceStatus = document.getElementById("voiceStatus");
+let voiceRecognition = null;
+let voiceStepIndex = 0;
+let voiceIsListening = false;
+let voiceRetryTimer = null;
+let voiceSteps = [];
+
+function getVoiceSteps(){
+ const selectedMaterial = getSelectedMaterial();
+ const storedRatio = selectedMaterial ? normalizeMaterialRatio(selectedMaterial.ratio) : "";
+ const isOneLiquid = Boolean(selectedMaterial && normalizeMaterialLiquid(selectedMaterial.liquid) === "1液");
+ const hasStoredRatio = Boolean(selectedMaterial && (isOneLiquid || storedRatio));
+ const steps = [];
+ const stepNumbers = ["①", "②", "③", "④"];
+ const add = (key, label, example = "") => steps.push({ key, label:`${stepNumbers[steps.filter(step => !step.static).length]} ${label}`, example });
+ const thinnerRange = selectedMaterial ? materialThinnerText(selectedMaterial) : "";
+ const coverageRange = selectedMaterial ? materialCoverageText(selectedMaterial) : "";
+ const hasNoThinner = Boolean(selectedMaterial && (selectedMaterial.thinnerName === "なし" || thinnerRange === "無希釈"));
+
+ if(selectedMaterial && !isOneLiquid && storedRatio){
+  steps.push({ key:"storedRatio", label:"配合比（登録済み）", value:storedRatio.replace(":", "："), static:true });
+ }
+
+ if(calculationMode === "area"){
+  add("paintArea", "塗装面積", "例：30㎡");
+  add("coverage", `塗布量${coverageRange ? `（メーカー仕様：${coverageRange}kg/㎡/回）` : ""}`, coverageRange ? "" : "例：0.15kg/㎡/回");
+ }else if(calculationMode === "total"){
+  add("targetTotal", "作りたい完成量", "例：3kg");
+ }else{
+  add("base", "主剤重量", "例：3kg");
+ }
+ if(!hasStoredRatio) add("ratio", "配合比", "例：9：1");
+ if(!hasNoThinner) add("thinner", `希釈率${thinnerRange ? `（メーカー仕様：${thinnerRange}）` : ""}`);
+ return steps;
+}
+
+function normalizeVoiceText(text){
+ const kanjiDigits = { "〇":"0", "零":"0", "一":"1", "二":"2", "三":"3", "四":"4", "五":"5", "六":"6", "七":"7", "八":"8", "九":"9" };
+ return text.replace(/[〇零一二三四五六七八九]/g, character => kanjiDigits[character])
+  .replace(/[：:]/g, "対").replace(/たい|対|to/gi, "対")
+  .replace(/平方メートル|平米|㎡/gi, "").replace(/キログラム|キロ|kg/gi, "")
+  .replace(/パーセント|％|%/gi, "").replace(/点/g, ".").replace(/[\s、。]/g, "");
+}
+
+function parseVoiceValue(text){
+ const step = voiceSteps[voiceStepIndex];
+ const normalized = normalizeVoiceText(text);
+ if(!step) return null;
+ if(step.key === "ratio"){
+  const match = normalized.match(/(10|[1-9])対(10|[0-9])/);
+  if(!match) return null;
+  const value = `${match[1]}:${match[2]}`;
+  return Array.from(ratio.options).some(option => option.value === value) ? value : null;
+ }
+ const match = normalized.match(/\d+(?:\.\d+)?/);
+ if(!match) return null;
+ const number = Number(match[0]);
+ if(step.key === "base") return number >= .01 && number <= 20 ? number.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") : null;
+ if(step.key === "targetTotal") return number >= .01 && number <= 20 ? number.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") : null;
+ if(step.key === "paintArea") return Number.isInteger(number) && number >= 1 && number <= 500 && Array.from(paintArea.options).some(option => option.value === String(number)) ? String(number) : null;
+ if(step.key === "coverage"){
+  const value = number.toFixed(2);
+  return number >= .01 && number <= 1 && Array.from(coverage.options).some(option => option.value === value) ? value : null;
+ }
+ return Number.isInteger(number) && number >= 0 && number <= 30 ? String(number) : null;
+}
+
+function voiceDisplayValue(step, value){
+ if(step.key === "ratio") return value.replace(":", "：");
+ if(step.key === "paintArea") return `${value}㎡`;
+ if(step.key === "coverage") return `${value}kg/㎡/回`;
+ if(step.key === "base" || step.key === "targetTotal") return `${value}kg`;
+ return `${value}％`;
+}
+
+function renderVoiceStep(){
+ voiceList.innerHTML = voiceSteps.map((step, index) => {
+  const isStatic = Boolean(step.static);
+  const state = isStatic ? "登録済み ✓" : index < voiceStepIndex ? "完了 ✓" : index === voiceStepIndex ? '聞き取り中<span class="voice-listening-dots" aria-hidden="true"><i></i><i></i><i></i></span>' : "未入力";
+  const value = isStatic ? step.value : index < voiceStepIndex ? voiceDisplayValue(step, getVoiceSelect(step.key).value) : step.example;
+  return `<div class="voice-item ${!isStatic && index === voiceStepIndex ? "active" : ""} ${isStatic || index < voiceStepIndex ? "done" : ""}" data-voice-item="${index}"><div class="voice-item-top"><div class="voice-item-label">${step.label}</div><div class="voice-item-state">${state}</div></div><div class="voice-item-value">${value}</div></div>`;
+ }).join("");
+ voiceStatus.textContent = "マイクに向かって話してください";
+}
+
+function getFirstVoiceInputIndex(){ return voiceSteps.findIndex(step => !step.static); }
+function getPreviousVoiceInputIndex(index){
+ for(let i = index - 1; i >= 0; i -= 1) if(!voiceSteps[i].static) return i;
+ return -1;
+}
+
+function getVoiceSelect(key){ return ({ ratio, base, thinner, paintArea, coverage, targetTotal })[key]; }
+function ensureVoiceOption(select, value){
+ if(!select || Array.from(select.options).some(option => option.value === String(value))) return;
+ const option = document.createElement("option");
+ option.value = String(value);
+ option.textContent = select === targetTotal ? `${value}kg` : `${value}kg`;
+ select.appendChild(option);
+}
+function clearVoiceRetry(){ if(voiceRetryTimer) clearTimeout(voiceRetryTimer); voiceRetryTimer = null; }
+function showVoiceFailure(message){
+ const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
+ if(item){ item.classList.remove("active"); item.classList.add("error"); const state = item.querySelector(".voice-item-state"); if(state) state.textContent = "確認できません"; }
+ voiceStatus.textContent = message;
+}
+function retryVoiceStep(message){
+ clearVoiceRetry(); showVoiceFailure(message);
+ voiceRetryTimer = window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 1200);
+}
+function playVoiceTone(type){
+ const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+ if(!AudioContextClass) return;
+ try{
+  const context = new AudioContextClass();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = type === "warning" ? 380 : 780;
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(type === "warning" ? 0.10 : 0.075, context.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + (type === "warning" ? 0.20 : 0.11));
+  oscillator.connect(gain).connect(context.destination);
+  oscillator.start();
+  oscillator.stop(context.currentTime + (type === "warning" ? 0.21 : 0.12));
+  oscillator.onended = () => context.close();
+ }catch(error){}
+}
+function createVoiceRecognition(){
+ if(!SpeechRecognitionClass) return null;
+ const recognition = new SpeechRecognitionClass();
+ recognition.lang = "ja-JP"; recognition.continuous = false; recognition.interimResults = true; recognition.maxAlternatives = 1;
+ recognition.onresult = event => {
+  const text = Array.from(event.results).map(result => result[0].transcript).join("").trim();
+  const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"] .voice-item-value`);
+  if(text && item){
+   const provisionalValue = parseVoiceValue(text);
+   item.textContent = provisionalValue === null ? text : voiceDisplayValue(voiceSteps[voiceStepIndex], provisionalValue);
+  }
+  const finalResult = event.results[event.results.length - 1];
+  if(finalResult && finalResult.isFinal) handleVoiceResult(text);
+ };
+ recognition.onerror = event => { voiceIsListening = false; if(event.error === "not-allowed" || event.error === "service-not-allowed") voiceStatus.textContent = "マイクの許可が必要です"; else if(event.error !== "aborted") retryVoiceStep("聞き取れませんでした。もう一度聞き取ります…"); };
+ recognition.onend = () => { voiceIsListening = false; };
+ return recognition;
+}
+function startVoiceListening(){
+ if(!voiceRecognition || !voiceOverlay.classList.contains("open")) return;
+ try{ voiceIsListening = true; voiceRecognition.start(); }
+ catch(error){ voiceIsListening = false; voiceStatus.textContent = "音声入力を開始し直しています…"; window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); try{ voiceIsListening = true; voiceRecognition.start(); }catch(retryError){ voiceIsListening = false; showVoiceFailure("音声入力を開始できませんでした。もう一度を押してください"); } }, 350); }
+}
+function stopVoiceRecognition(){
+ const recognition = voiceRecognition; voiceRecognition = null; voiceIsListening = false;
+ if(!recognition) return;
+ try{ recognition.onresult = null; recognition.onerror = null; recognition.onend = null; recognition.abort(); }catch(error){ try{ recognition.stop(); }catch(stopError){} }
+}
+function advanceVoiceStep(){
+ if(voiceStepIndex < voiceSteps.length - 1){ voiceStepIndex += 1; window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 500); }
+ else { window.setTimeout(() => { closeVoiceInput(); calc(); }, 250); }
+}
+function handleVoiceResult(text){
+ const normalized = normalizeVoiceText(text);
+ if(normalized.includes("最初から")){ restartVoiceInput(); return; }
+ const value = parseVoiceValue(text);
+ if(value === null){ retryVoiceStep("確認できませんでした。もう一度聞き取ります…"); return; }
+ const step = voiceSteps[voiceStepIndex];
+ const voiceSelect = getVoiceSelect(step.key);
+ ensureVoiceOption(voiceSelect, value);
+ voiceSelect.value = value;
+ updateCustomRatioUI(); updateActual(); updateThinnerUI(); clearResult();
+ const item = voiceList.querySelector(`[data-voice-item="${voiceStepIndex}"]`);
+ if(item){ item.classList.remove("active"); item.classList.add("done"); item.querySelector(".voice-item-state").textContent = "完了 ✓"; item.querySelector(".voice-item-value").textContent = voiceDisplayValue(step, value); }
+ playVoiceTone("confirm");
+ voiceStatus.textContent = `はい、${voiceDisplayValue(step, value)}ですね`;
+ if(voiceRecognition && voiceIsListening) try{ voiceRecognition.abort(); }catch(error){}
+ voiceIsListening = false; advanceVoiceStep();
+}
+function openVoiceInput(){
+ if(calculationMode === "history") return;
+ if(!SpeechRecognitionClass){ alert("このブラウザは音声入力に対応していません"); return; }
+ closeHistoryModal(); clearVoiceRetry(); voiceSteps = getVoiceSteps(); voiceStepIndex = getFirstVoiceInputIndex(); voiceOverlay.classList.add("open"); document.body.style.overflow = "hidden";
+ const selectedMaterial = getSelectedMaterial();
+ const ratioGuide = selectedMaterial && (normalizeMaterialLiquid(selectedMaterial.liquid) === "1液" || normalizeMaterialRatio(selectedMaterial.ratio))
+  ? `登録済み材料「${materialDisplayName(selectedMaterial)}」の配合比を反映しています。`
+  : "";
+ voiceGuide.textContent = `${calculationMode === "area" ? "面積から計算する内容を順番に声で入力します。" : "順番に声で入力します。"}${ratioGuide}`; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening();
+}
+function closeVoiceInput(){ clearVoiceRetry(); stopVoiceRecognition(); voiceOverlay.classList.remove("open"); document.body.style.overflow = ""; }
+function backVoiceStep(){
+ if(!voiceOverlay.classList.contains("open")) return;
+ const previousIndex = getPreviousVoiceInputIndex(voiceStepIndex);
+ if(previousIndex < 0){ voiceStatus.textContent = "最初の項目です"; return; }
+ clearVoiceRetry();
+ stopVoiceRecognition();
+ voiceStepIndex = previousIndex;
+ const step = voiceSteps[voiceStepIndex];
+ getVoiceSelect(step.key).value = "";
+ if(step.key === "ratio") updateCustomRatioUI();
+ if(step.key === "base") updateActual();
+ if(step.key === "thinner") updateThinnerUI();
+ clearResult();
+ voiceRecognition = createVoiceRecognition();
+ renderVoiceStep();
+ window.setTimeout(startVoiceListening, 120);
+}
+function restartVoiceInput(){ if(!voiceOverlay.classList.contains("open")) return; clearVoiceRetry(); stopVoiceRecognition(); voiceStepIndex = getFirstVoiceInputIndex(); voiceRecognition = createVoiceRecognition(); renderVoiceStep(); window.setTimeout(startVoiceListening, 120); }
+
+document.addEventListener("keydown", event => {
+ if(event.key === "Escape" && materialModal.classList.contains("open")){
+  closeMaterialModal();
+ }
+ if(event.key === "Escape" && voiceOverlay.classList.contains("open")){
+  closeVoiceInput();
+ }
+});
+
+populateCoverageMaxOptions();
+initializeAppInfo();
+renderMaterialSelect();
+updateThinnerUI();
+setMode("normal");
+loadData();
+updateSafetyInformation();
+// 疑似表示確認用。本番版には含めない。
+setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります", "https://api.open-meteo.com/");
+</script>
+
+</body>
+</html>
