@@ -822,7 +822,7 @@ button:active{
 const APP_NAME = "塗料配合計算　材料仕様試作版";
 const APP_VERSION = "Ver.1.87";
 const APP_DATE = "2026/08/29";
-const APP_TIME = "22:03";
+const APP_TIME = "22:20";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1034,9 +1034,9 @@ async function updateWeatherAlerts(position){
   url.search = new URLSearchParams({
    latitude: latitude.toFixed(4),
    longitude: longitude.toFixed(4),
-   hourly: "precipitation_probability,precipitation",
-   forecast_days: "2",
-   timezone: "Asia/Tokyo"
+   hourly: "precipitation_probability",
+   forecast_days: "1",
+   timezone: "auto"
   });
   const response = await fetch(url);
   if(!response.ok) throw new Error("forecast request failed");
@@ -1044,17 +1044,16 @@ async function updateWeatherAlerts(position){
   const hourly = data.hourly;
   if(!hourly?.time?.length) throw new Error("forecast data unavailable");
 
-  const now = Date.now();
-  const withinOneHour = hourly.time.reduce((items, time, index) => {
-   const forecastTime = new Date(`${time}:00+09:00`).getTime();
-   if(forecastTime >= now - 30 * 60 * 1000 && forecastTime <= now + 60 * 60 * 1000){
-    items.push({ probability: Number(hourly.precipitation_probability[index]) || 0, precipitation: Number(hourly.precipitation[index]) || 0 });
+  const now = new Date();
+  const endTime = new Date(now.getTime() + WEATHER_FORECAST_HOURS * 60 * 60 * 1000);
+  const maxProbability = hourly.time.reduce((maximum, time, index) => {
+   const forecastTime = new Date(time);
+   if(forecastTime >= now && forecastTime <= endTime){
+    return Math.max(maximum, Number(hourly.precipitation_probability[index]) || 0);
    }
-   return items;
-  }, []);
-  const probability = Math.max(0, ...withinOneHour.map(item => item.probability));
-  const precipitation = Math.max(0, ...withinOneHour.map(item => item.precipitation));
-  if(probability >= WEATHER_PROBABILITY_THRESHOLD || precipitation > 0){
+   return maximum;
+  }, 0);
+  if(maxProbability >= WEATHER_PROBABILITY_THRESHOLD){
    setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります", url.toString());
   }else{
    setSafetyAlert("rain", "");
