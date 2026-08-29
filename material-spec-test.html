@@ -822,7 +822,7 @@ button:active{
 const APP_NAME = "塗料配合計算　材料仕様試作版";
 const APP_VERSION = "Ver.1.87";
 const APP_DATE = "2026/08/29";
-const APP_TIME = "21:45";
+const APP_TIME = "22:03";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -2113,7 +2113,6 @@ function calc(){
  if(showActualBtn) showActualBtn.style.display = "inline";
 
  smoothScrollTo(result, "start");
- window.setTimeout(() => smoothScrollTo(result, "start"), 180);
 }
 
 function scrollToAppTop(){
@@ -2409,7 +2408,7 @@ function stopVoiceRecognition(){
 }
 function advanceVoiceStep(){
  if(voiceStepIndex < voiceSteps.length - 1){ voiceStepIndex += 1; window.setTimeout(() => { if(!voiceOverlay.classList.contains("open")) return; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening(); }, 500); }
- else { window.setTimeout(() => { closeVoiceInput(true); }, 250); }
+ else { window.setTimeout(() => { closeVoiceInput(); calc(); }, 250); }
 }
 function handleVoiceResult(text){
  const normalized = normalizeVoiceText(text);
@@ -2438,73 +2437,7 @@ function openVoiceInput(){
   : "";
  voiceGuide.textContent = `${calculationMode === "area" ? "面積から計算する内容を順番に声で入力します。" : "順番に声で入力します。"}${ratioGuide}`; voiceRecognition = createVoiceRecognition(); renderVoiceStep(); startVoiceListening();
 }
-const VOICE_RELOAD_STATE = "materialSpecVoiceReloadState";
-
-function isIPhoneVoiceInput(){
- return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-function saveVoiceReloadState(calculateAfterReload){
- try{
-  sessionStorage.setItem(VOICE_RELOAD_STATE, JSON.stringify({
-   ratio: ratio.value,
-   customRatioMain: customRatioMain.value,
-   customRatioHard: customRatioHard.value,
-   base: base.value,
-   actual: actual.value,
-   actualOpen: actualBox.style.display === "block",
-   thinner: thinner.value,
-   calculationMode,
-   paintArea: paintArea.value,
-   coverage: coverage.value,
-   targetTotal: targetTotal.value,
-   calculate: Boolean(calculateAfterReload)
-  }));
-  return true;
- }catch(error){ return false; }
-}
-
-function closeVoiceInput(calculateAfterReload = false){
- clearVoiceRetry();
- stopVoiceRecognition();
- voiceOverlay.classList.remove("open");
- document.body.style.overflow = "";
- if(isIPhoneVoiceInput() && saveVoiceReloadState(calculateAfterReload)){
-  window.setTimeout(() => window.location.reload(), 100);
-  return true;
- }
- if(calculateAfterReload) calc();
- return false;
-}
-
-function restoreVoiceReloadState(){
- let state;
- try{
-  const raw = sessionStorage.getItem(VOICE_RELOAD_STATE);
-  if(!raw) return;
-  sessionStorage.removeItem(VOICE_RELOAD_STATE);
-  state = JSON.parse(raw);
- }catch(error){ return; }
- if(!state || typeof state !== "object") return;
- if(state.calculationMode) setMode(state.calculationMode);
- ratio.value = state.ratio || "";
- customRatioMain.value = state.customRatioMain || "";
- customRatioHard.value = state.customRatioHard || "";
- base.value = state.base || "";
- paintArea.value = state.paintArea || "";
- coverage.value = state.coverage || "";
- targetTotal.value = state.targetTotal || "";
- updateCustomRatioUI();
- updateActual();
- thinner.value = state.thinner ?? "";
- updateThinnerUI();
- if(state.actualOpen){
-  actualBox.style.display = "block";
-  if(showActualBtn) showActualBtn.style.display = "none";
-  actual.value = state.actual || "";
- }
- if(state.calculate) window.setTimeout(calc, 80);
-}
+function closeVoiceInput(){ clearVoiceRetry(); stopVoiceRecognition(); voiceOverlay.classList.remove("open"); document.body.style.overflow = ""; }
 function backVoiceStep(){
  if(!voiceOverlay.classList.contains("open")) return;
  const previousIndex = getPreviousVoiceInputIndex(voiceStepIndex);
@@ -2539,7 +2472,6 @@ renderMaterialSelect();
 updateThinnerUI();
 setMode("normal");
 loadData();
-restoreVoiceReloadState();
 updateSafetyInformation();
 </script>
 
