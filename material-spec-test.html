@@ -820,9 +820,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test8";
+const APP_VERSION = "Ver.1.87-test9";
 const APP_DATE = "2026/09/02";
-const APP_TIME = "21:10";
+const APP_TIME = "21:26";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1232,30 +1232,31 @@ function clearResult(){
 
 function smoothScrollTo(element, block = "start"){
  if(!element) return;
- window.setTimeout(() => {
+ window.requestAnimationFrame(() => {
   element.scrollIntoView({ behavior: "smooth", block });
- }, 120);
+ });
 }
 
 ratio.addEventListener("change", () => {
  updateCustomRatioUI();
  clearResult();
- smoothScrollTo(calculationMode === "area" ? thinner.parentNode : baseBox, "start");
+ smoothScrollTo(calculationMode === "normal" ? baseBox : thinner.parentNode, "center");
 });
 customRatioMain.addEventListener("input", clearResult);
 customRatioHard.addEventListener("input", clearResult);
 base.addEventListener("change", () => {
  updateActual();
  clearResult();
- smoothScrollTo(thinner.parentNode, "start");
+ smoothScrollTo(thinner.parentNode, "center");
 });
-paintArea.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(coverage.parentNode, "start"); });
-coverage.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(ratioBox, "start"); });
-targetTotal.addEventListener("change", () => { clearResult(); smoothScrollTo(ratioBox, "start"); });
+paintArea.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(coverage.parentNode, "center"); });
+coverage.addEventListener("change", () => { updateNeededTotal(); clearResult(); smoothScrollTo(ratioBox, "center"); });
+targetTotal.addEventListener("change", () => { clearResult(); smoothScrollTo(ratioBox, "center"); });
 actual.addEventListener("change", clearResult);
 thinner.addEventListener("change", () => {
  updateThinnerUI();
  clearResult();
+ smoothScrollTo(document.getElementById("calculateButton"), "center");
 });
 
 function updateThinnerUI(){
@@ -2111,7 +2112,10 @@ function calc(){
  actualBox.style.display = "none";
  if(showActualBtn) showActualBtn.style.display = "inline";
 
- smoothScrollTo(document.getElementById("calculateButton"), "start");
+ window.setTimeout(() => {
+  const calculateButton = document.getElementById("calculateButton");
+  if(calculateButton) calculateButton.scrollIntoView({ behavior:"smooth", block:"start" });
+ }, 120);
 }
 
 function scrollToAppTop(){
