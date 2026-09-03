@@ -1,0 +1,39 @@
+name: One-off test13 update
+on:
+  push:
+    paths:
+      - '.github/workflows/oneoff-test13.yml'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply exact test13 changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('material-spec-test.html')
+          text = p.read_text(encoding='utf-8')
+          replacements = [
+            ('const APP_VERSION = "Ver.1.87-test12";', 'const APP_VERSION = "Ver.1.87-test13";'),
+            ('const APP_TIME = "21:12";', 'const APP_TIME = "21:20";'),
+            ('<div class="weather-alert" id="weatherAlert" hidden role="status"></div>\n\n<div class="box">', '<div class="weather-alert" id="weatherAlert" hidden role="status"></div>\n<div id="test13LayoutSpacer" style="display:none;height:94px;margin-top:12px;" aria-hidden="true"></div>\n\n<div class="box">'),
+            ('const result = document.getElementById("result");', 'const result = document.getElementById("result");\nconst test13LayoutSpacer = document.getElementById("test13LayoutSpacer");'),
+            ('function clearResult(){\n result.innerHTML = "";\n}', 'function clearResult(){\n result.innerHTML = "";\n if(test13LayoutSpacer) test13LayoutSpacer.style.display = "none";\n}'),
+            (' if(showActualBtn) showActualBtn.style.display = "inline";\n\n window.setTimeout(() => {', ' if(showActualBtn) showActualBtn.style.display = "inline";\n if(test13LayoutSpacer) test13LayoutSpacer.style.display = "block";\n\n window.setTimeout(() => {'),
+          ]
+          for old, new in replacements:
+              c = text.count(old)
+              if c != 1:
+                  raise SystemExit(f'Expected exactly one match, got {c}: {old[:80]}')
+              text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+          git config user.name "aragau"
+          git config user.email "info_nhs_y@ybb.ne.jp"
+          git add material-spec-test.html
+          git commit -m "Update material spec test to Ver.1.87-test13"
+          git push
