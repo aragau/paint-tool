@@ -1,0 +1,57 @@
+name: One-off test11 update
+on:
+  push:
+    paths:
+      - '.github/workflows/oneoff-test11.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply exact test11 changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('material-spec-test.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = [
+              ('const APP_VERSION = "Ver.1.87-test9";', 'const APP_VERSION = "Ver.1.87-test11";'),
+              ('const APP_DATE = "2026/09/02";', 'const APP_DATE = "2026/09/03";'),
+              ('const APP_TIME = "21:26";', 'const APP_TIME = "21:01";'),
+              ('''function smoothScrollTo(element, block = "start"){
+ if(!element) return;
+ window.requestAnimationFrame(() => {
+  element.scrollIntoView({ behavior: "smooth", block });
+ });
+}''', '''function smoothScrollTo(element, block = "start"){
+ if(!element) return;
+ // PCでは<select>が閉じる前のスクロールが打ち消されることがあるため、少し待ってから動かす。
+ window.setTimeout(() => {
+  element.scrollIntoView({ behavior: "smooth", block });
+ }, 120);
+}'''),
+              (''' window.setTimeout(() => {
+  const calculateButton = document.getElementById("calculateButton");
+  if(calculateButton) calculateButton.scrollIntoView({ behavior:"smooth", block:"start" });
+ }, 120);''', ''' smoothScrollTo(document.getElementById("calculateButton"), "start");'''),
+          ]
+
+          for old, new in replacements:
+              count = s.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected exactly one match, found {count}: {old[:80]!r}')
+              s = s.replace(old, new, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+          git rm .github/workflows/oneoff-test11.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add material-spec-test.html
+          git diff --check
+          git commit -m 'Update material-spec-test to Ver.1.87-test11'
+          git push
