@@ -820,9 +820,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test9";
-const APP_DATE = "2026/09/02";
-const APP_TIME = "21:26";
+const APP_VERSION = "Ver.1.87-test11";
+const APP_DATE = "2026/09/03";
+const APP_TIME = "21:01";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1232,9 +1232,10 @@ function clearResult(){
 
 function smoothScrollTo(element, block = "start"){
  if(!element) return;
- window.requestAnimationFrame(() => {
+ // PCでは<select>が閉じる前のスクロールが打ち消されることがあるため、少し待ってから動かす。
+ window.setTimeout(() => {
   element.scrollIntoView({ behavior: "smooth", block });
- });
+ }, 120);
 }
 
 ratio.addEventListener("change", () => {
@@ -2112,10 +2113,7 @@ function calc(){
  actualBox.style.display = "none";
  if(showActualBtn) showActualBtn.style.display = "inline";
 
- window.setTimeout(() => {
-  const calculateButton = document.getElementById("calculateButton");
-  if(calculateButton) calculateButton.scrollIntoView({ behavior:"smooth", block:"start" });
- }, 120);
+ smoothScrollTo(document.getElementById("calculateButton"), "start");
 }
 
 function scrollToAppTop(){
