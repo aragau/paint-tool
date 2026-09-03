@@ -820,9 +820,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test11";
+const APP_VERSION = "Ver.1.87-test12";
 const APP_DATE = "2026/09/03";
-const APP_TIME = "21:01";
+const APP_TIME = "21:12";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -2113,7 +2113,9 @@ function calc(){
  actualBox.style.display = "none";
  if(showActualBtn) showActualBtn.style.display = "inline";
 
- smoothScrollTo(document.getElementById("calculateButton"), "start");
+ window.setTimeout(() => {
+  smoothScrollTo(document.getElementById("calculateButton"), "start");
+ }, 0);
 }
 
 function scrollToAppTop(){
