@@ -648,6 +648,7 @@ button:active{
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
+<div id="test13LayoutSpacer" style="display:none;height:94px;margin-top:12px;" aria-hidden="true"></div>
 
 <div class="box">
  <div class="mode-switch">
@@ -820,9 +821,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test12";
+const APP_VERSION = "Ver.1.87-test13";
 const APP_DATE = "2026/09/03";
-const APP_TIME = "21:12";
+const APP_TIME = "21:20";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -888,6 +889,7 @@ const actualBox = document.getElementById("actualBox");
 const showActualBtn = document.getElementById("showActualBtn");
 const thinner = document.getElementById("thinner");
 const result = document.getElementById("result");
+const test13LayoutSpacer = document.getElementById("test13LayoutSpacer");
 const historyList = document.getElementById("historyList");
 const materialSelect = document.getElementById("materialSelect");
 const materialEntryButton = document.getElementById("materialEntryButton");
@@ -1228,6 +1230,7 @@ function hideActualField(){
 
 function clearResult(){
  result.innerHTML = "";
+ if(test13LayoutSpacer) test13LayoutSpacer.style.display = "none";
 }
 
 function smoothScrollTo(element, block = "start"){
@@ -2112,6 +2115,7 @@ function calc(){
  actual.value = "";
  actualBox.style.display = "none";
  if(showActualBtn) showActualBtn.style.display = "inline";
+ if(test13LayoutSpacer) test13LayoutSpacer.style.display = "block";
 
  window.setTimeout(() => {
   smoothScrollTo(document.getElementById("calculateButton"), "start");
