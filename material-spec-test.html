@@ -648,7 +648,6 @@ button:active{
 </div>
 
 <div class="weather-alert" id="weatherAlert" hidden role="status"></div>
-<div id="test13LayoutSpacer" style="display:none;height:94px;margin-top:12px;" aria-hidden="true"></div>
 
 <div class="box">
  <div class="mode-switch">
@@ -821,9 +820,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test13";
+const APP_VERSION = "Ver.1.87-test14";
 const APP_DATE = "2026/09/03";
-const APP_TIME = "21:20";
+const APP_TIME = "21:27";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1230,7 +1229,6 @@ function hideActualField(){
 
 function clearResult(){
  result.innerHTML = "";
- if(test13LayoutSpacer) test13LayoutSpacer.style.display = "none";
 }
 
 function smoothScrollTo(element, block = "start"){
@@ -2115,7 +2113,6 @@ function calc(){
  actual.value = "";
  actualBox.style.display = "none";
  if(showActualBtn) showActualBtn.style.display = "inline";
- if(test13LayoutSpacer) test13LayoutSpacer.style.display = "block";
 
  window.setTimeout(() => {
   smoothScrollTo(document.getElementById("calculateButton"), "start");
@@ -2191,7 +2188,7 @@ function renderHistoryList(){
   monthGroups.get(key).items.push(item);
  });
 
- Array.from(monthGroups.values()).forEach((group, groupIndex) => {
+ Array.from(monthGroups.entries()).forEach(([key, group], groupIndex) => {
   const monthBox = document.createElement("details");
   monthBox.className = "history-month";
   const now = new Date();
