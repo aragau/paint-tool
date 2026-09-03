@@ -1,0 +1,24 @@
+name: One-off test14 update
+on:
+  push:
+    paths:
+      - '.github/workflows/oneoff-test14.yml'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply exact test14 changes
+        shell: bash
+        run: |
+          echo ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgibWF0ZXJpYWwtc3BlYy10ZXN0Lmh0bWwiKQpzPXAucmVhZF90ZXh0KGVuY29kaW5nPSJ1dGYtOCIpCnJlcGxzPVsKKCdjb25zdCBBUFBfVkVSU0lPTiA9ICJWZXIuMS44Ny10ZXN0MTMiOycsJ2NvbnN0IEFQUF9WRVJTSU9OID0gIlZlci4xLjg3LXRlc3QxNCI7JyksCignY29uc3QgQVBQX1RJTUUgPSAiMjE6MjAiOycsJ2NvbnN0IEFQUF9USU1FID0gIjIxOjI3IjsnKSwKKCc8ZGl2IGlkPSJ0ZXN0MTNMYXlvdXRTcGFjZXIiIHN0eWxlPSJkaXNwbGF5Om5vbmU7aGVpZ2h0Ojk0cHg7bWFyZ2luLXRvcDoxMnB4OyIgYXJpYS1oaWRkZW49InRydWUiPjwvZGl2PlxuJywnJyksCignIHJlc3VsdC5pbm5lckhUTUwgPSAiIjtcbiBpZih0ZXN0MTNMYXlvdXRTcGFjZXIpIHRlc3QxM0xheW91dFNwYWNlci5zdHlsZS5kaXNwbGF5ID0gIm5vbmUiO1xuJywnIHJlc3VsdC5pbm5lckhUTUwgPSAiIjtcbicpLAooJyBpZihzaG93QWN0dWFsQnRuKSBzaG93QWN0dWFsQnRuLnN0eWxlLmRpc3BsYXkgPSAiaW5saW5lIjtcbiBpZih0ZXN0MTNMYXlvdXRTcGFjZXIpIHRlc3QxM0xheW91dFNwYWNlci5zdHlsZS5kaXNwbGF5ID0gImJsb2NrIjtcblxuIHdpbmRvdy5zZXRUaW1lb3V0KCgpID0+IHsnLCcgaWYoc2hvd0FjdHVhbEJ0bikgc2hvd0FjdHVhbEJ0bi5zdHlsZS5kaXNwbGF5ID0gImlubGluZSI7XG5cbiB3aW5kb3cuc2V0VGltZW91dCgoKSA9PiB7JyksCignQXJyYXkuZnJvbShtb250aEdyb3Vwcy52YWx1ZXMoKSkuZm9yRWFjaCgoZ3JvdXAsIGdyb3VwSW5kZXgpID0+IHsnLCdBcnJheS5mcm9tKG1vbnRoR3JvdXBzLmVudHJpZXMoKSkuZm9yRWFjaCgoW2tleSwgZ3JvdXBdLCBncm91cEluZGV4KSA9PiB7JykKXQpmb3Igb2xkLG5ldyBpbiByZXBsczoKICAgIGM9cy5jb3VudChvbGQpCiAgICBpZiBjICE9IDE6CiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdChmInJlcGxhY2VtZW50IGNvdW50IHtjfToge29sZFs6ODBdIXJ9IikKICAgIHM9cy5yZXBsYWNlKG9sZCxuZXcsMSkKcC53cml0ZV90ZXh0KHMsZW5jb2Rpbmc9InV0Zi04IikK | base64 -d > /tmp/update_test14.py
+          python /tmp/update_test14.py
+          git diff --check
+          git config user.name aragau
+          git config user.email info_nhs_y@ybb.ne.jp
+          git add material-spec-test.html
+          git rm .github/workflows/oneoff-test14.yml
+          git commit -m "Update material-spec-test to Ver.1.87-test14"
+          git push
