@@ -1,0 +1,36 @@
+name: oneoff-test16
+on:
+  push:
+    paths:
+      - '.github/workflows/oneoff-test16.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply exact display change
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('material-spec-test.html')
+          s=p.read_text(encoding='utf-8')
+          changes=[
+            ('const APP_VERSION = "Ver.1.87-test15";', 'const APP_VERSION = "Ver.1.87-test16";'),
+            ('const APP_TIME = "21:55";', 'const APP_TIME = "22:12";'),
+            ('add(thinner, i === 0 ? "無希釈" : `${i}％`, String(i));', 'add(thinner, i === 0 ? "0％（無希釈）" : `${i}％`, String(i));'),
+          ]
+          for old,new in changes:
+            n=s.count(old)
+            if n != 1:
+              raise SystemExit(f'expected exactly 1 match, got {n}: {old}')
+            s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add material-spec-test.html
+          git commit -m "Change zero dilution label in test16"
+          git push
