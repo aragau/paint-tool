@@ -820,9 +820,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test15";
+const APP_VERSION = "Ver.1.87-test16";
 const APP_DATE = "2026/09/03";
-const APP_TIME = "21:55";
+const APP_TIME = "22:12";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1186,7 +1186,7 @@ for(let i = 0.1; i <= 20; i += 0.1){
 
 add(thinner, "", "");
 for(let i = 0; i <= 30; i++){
- add(thinner, i === 0 ? "無希釈" : `${i}％`, String(i));
+ add(thinner, i === 0 ? "0％（無希釈）" : `${i}％`, String(i));
 }
 
 add(paintArea, "", "");
