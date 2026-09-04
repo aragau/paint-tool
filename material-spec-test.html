@@ -444,6 +444,21 @@ button:active{
  color:#1f2937;
 }
 
+.history-scroll-top{
+ position:fixed;
+ right:16px;
+ bottom:18px;
+ z-index:20;
+ width:auto;
+ margin:0;
+ padding:10px 14px;
+ border-radius:999px;
+ background:#2d6cdf;
+ color:#fff;
+ font-size:16px;
+ box-shadow:0 2px 8px rgba(0,0,0,.22);
+}
+
 @media (max-width: 420px){
  .history-actions{
   width:64px;
@@ -803,6 +818,8 @@ button:active{
 <section class="box history-screen" id="historyPanel" hidden>
  <div class="history-list" id="historyList"></div>
  <button class="modal-clearall" onclick="clearAllHistory()">履歴をすべて削除</button>
+ <button type="button" class="history-scroll-top" onclick="scrollToAppTop()" aria-label="ページ上部へ戻る" title="ページ上部へ戻る">↑ 上へ戻る</button>
+ <div class="footer" id="historyFooterInfo"></div>
 </section>
 
 <div class="voice-overlay" id="voiceOverlay" aria-modal="true" role="dialog" aria-label="音声入力">
@@ -820,9 +837,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test16";
-const APP_DATE = "2026/09/03";
-const APP_TIME = "22:12";
+const APP_VERSION = "Ver.1.87-test17";
+const APP_DATE = "2026/09/04";
+const APP_TIME = "21:13";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -942,13 +959,16 @@ const normalGuide = document.getElementById("normalGuide");
 const normalGuideText = document.getElementById("normalGuideText");
 const calculatorContent = document.getElementById("calculatorContent");
 const historyPanel = document.getElementById("historyPanel");
+const historyFooterInfo = document.getElementById("historyFooterInfo");
 let calculationMode = "normal";
 const safetyAlerts = new Map();
 
 function initializeAppInfo(){
  document.title = APP_NAME;
  appTitle.textContent = APP_NAME;
- footerInfo.innerHTML = `Produced by N.H.S.　material-spec-test ${APP_VERSION}<br>${APP_DATE} ${APP_TIME}<br>公開URL：<a href="${APP_PUBLIC_URL}" target="_blank" rel="noopener noreferrer">${APP_PUBLIC_URL}</a>`;
+ const footerMarkup = `Produced by N.H.S.　material-spec-test ${APP_VERSION}<br>${APP_DATE} ${APP_TIME}<br>公開URL：<a href="${APP_PUBLIC_URL}" target="_blank" rel="noopener noreferrer">${APP_PUBLIC_URL}</a>`;
+ footerInfo.innerHTML = footerMarkup;
+ historyFooterInfo.innerHTML = footerMarkup;
 }
 
 function updateNeededTotal(){}
