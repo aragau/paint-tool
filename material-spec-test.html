@@ -837,9 +837,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test19";
-const APP_DATE = "2026/09/04";
-const APP_TIME = "22:20";
+const APP_VERSION = "Ver.1.87-test20";
+const APP_DATE = "2026/09/06";
+const APP_TIME = "22:24";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1048,34 +1048,81 @@ function updateSafetyInformation(){
  navigator.geolocation.getCurrentPosition(updateWeatherAlerts, () => {}, { enableHighAccuracy:false, timeout:10000, maximumAge:300000 });
 }
 
+function parseJmaTime(value){
+ const text = String(value);
+ return new Date(Date.UTC(
+  Number(text.slice(0,4)),
+  Number(text.slice(4,6)) - 1,
+  Number(text.slice(6,8)),
+  Number(text.slice(8,10)),
+  Number(text.slice(10,12)),
+  Number(text.slice(12,14))
+ ));
+}
+
+function getJmaTilePoint(latitude, longitude, zoom){
+ const scale = 2 ** zoom;
+ const x = ((longitude + 180) / 360) * scale;
+ const latitudeRadians = latitude * Math.PI / 180;
+ const y = ((1 - Math.asinh(Math.tan(latitudeRadians)) / Math.PI) / 2) * scale;
+ const tileX = Math.floor(x);
+ const tileY = Math.floor(y);
+ return { tileX, tileY, pixelX: Math.floor((x - tileX) * 256), pixelY: Math.floor((y - tileY) * 256) };
+}
+
+function loadJmaRainTile(url){
+ return new Promise((resolve, reject) => {
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.onload = () => resolve(image);
+  image.onerror = () => reject(new Error("JMA nowcast tile request failed"));
+  image.src = url;
+ });
+}
+
+async function hasJmaRainAtPoint(url, pixelX, pixelY){
+ const image = await loadJmaRainTile(url);
+ const canvas = document.createElement("canvas");
+ canvas.width = image.naturalWidth || 256;
+ canvas.height = image.naturalHeight || 256;
+ const context = canvas.getContext("2d", { willReadFrequently:true });
+ context.drawImage(image, 0, 0);
+ for(let offsetY = -1; offsetY <= 1; offsetY += 1){
+  for(let offsetX = -1; offsetX <= 1; offsetX += 1){
+   const x = Math.max(0, Math.min(canvas.width - 1, pixelX + offsetX));
+   const y = Math.max(0, Math.min(canvas.height - 1, pixelY + offsetY));
+   if(context.getImageData(x, y, 1, 1).data[3] > 8) return true;
+  }
+ }
+ return false;
+}
+
 async function updateWeatherAlerts(position){
  try{
   const { latitude, longitude } = position.coords;
-  const url = new URL("https://api.open-meteo.com/v1/forecast");
-  url.search = new URLSearchParams({
-   latitude: latitude.toFixed(4),
-   longitude: longitude.toFixed(4),
-   hourly: "precipitation_probability",
-   forecast_days: "1",
-   timezone: "auto"
-  });
-  const response = await fetch(url);
-  if(!response.ok) throw new Error("forecast request failed");
-  const data = await response.json();
-  const hourly = data.hourly;
-  if(!hourly?.time?.length) throw new Error("forecast data unavailable");
-
+  const point = getJmaTilePoint(latitude, longitude, 8);
+  const targetResponse = await fetch("https://www.jma.go.jp/bosai/jmatile/data/nowc/targetTimes_N2.json");
+  if(!targetResponse.ok) throw new Error("JMA nowcast time request failed");
+  const targetTimes = await targetResponse.json();
   const now = new Date();
   const endTime = new Date(now.getTime() + WEATHER_FORECAST_HOURS * 60 * 60 * 1000);
-  const maxProbability = hourly.time.reduce((maximum, time, index) => {
-   const forecastTime = new Date(time);
-   if(forecastTime >= now && forecastTime <= endTime){
-    return Math.max(maximum, Number(hourly.precipitation_probability[index]) || 0);
+  const forecastTimes = targetTimes
+   .filter(item => item?.basetime && item?.validtime)
+   .map(item => ({ ...item, validDate: parseJmaTime(item.validtime) }))
+   .filter(item => item.validDate >= now && item.validDate <= endTime)
+   .slice(0, 13);
+  if(!forecastTimes.length) throw new Error("JMA nowcast forecast data unavailable");
+
+  let hasRain = false;
+  for(const item of forecastTimes){
+   const tileUrl = `https://www.jma.go.jp/bosai/jmatile/data/nowc/${item.basetime}/none/${item.validtime}/surf/hrpns/8/${point.tileX}/${point.tileY}.png`;
+   if(await hasJmaRainAtPoint(tileUrl, point.pixelX, point.pixelY)){
+    hasRain = true;
+    break;
    }
-   return maximum;
-  }, 0);
-  if(maxProbability >= WEATHER_PROBABILITY_THRESHOLD){
-   setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります", "https://maps.open-meteo.com/?variable=precipitation#3/36/138");
+  }
+  if(hasRain){
+   setSafetyAlert("rain", "⚠ 今後1時間以内に降雨の予報があります", "https://www.jma.go.jp/bosai/nowc/");
   }else{
    setSafetyAlert("rain", "");
   }
