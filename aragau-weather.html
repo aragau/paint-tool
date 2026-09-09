@@ -24,7 +24,7 @@
 <body>
   <header>
     <h1>ARAGAU WEATHER</h1>
-    <p>雨雲レーダー比較 / Ver.0.2 Test / 2026-09-09</p>
+    <p>雨雲レーダー比較 / Ver.0.3 / 2026-09-09</p>
     <div id="locationStatus">現在地を取得しています…</div>
   </header>
 
@@ -40,52 +40,17 @@
     </section>
 
     <section>
-      <div class="label">3. RainViewer 雨雲レーダー<span class="note">公式Embed / 現在地に移動</span></div>
-      <iframe id="rainviewer" title="RainViewer 雨雲レーダー" loading="lazy" allow="geolocation" allowfullscreen></iframe>
-    </section>
-
-    <section>
-      <div class="label">4. 気象庁 ナウキャスト<span class="note">公式ページ / 埋め込み表示テスト</span></div>
-      <iframe title="気象庁 ナウキャスト" src="https://www.jma.go.jp/bosai/nowc/" loading="lazy" allow="geolocation"></iframe>
-    </section>
-
-    <section>
-      <div class="label">5. 気象庁 今後の雨<span class="note">公式ページ / 埋め込み表示テスト</span></div>
-      <iframe title="気象庁 今後の雨" src="https://www.jma.go.jp/bosai/kaikotan/" loading="lazy" allow="geolocation"></iframe>
-    </section>
-
-    <section>
-      <div class="label">6. ウェザーニュース<span class="note">雨雲レーダー / 埋め込み表示テスト</span></div>
+      <div class="label">3. ウェザーニュース<span class="note">雨雲レーダー / 表示確認済み</span></div>
       <iframe title="ウェザーニュース 雨雲レーダー" src="https://weathernews.jp/onebox/radar/" loading="lazy" allow="geolocation"></iframe>
     </section>
 
     <section>
-      <div class="label">7. tenki.jp 実況<span class="note">日本気象協会 / 埋め込み表示テスト</span></div>
-      <iframe title="tenki.jp 雨雲レーダー実況" src="https://tenki.jp/radar/" loading="lazy" allow="geolocation"></iframe>
-    </section>
-
-    <section>
-      <div class="label">8. tenki.jp 予報<span class="note">日本気象協会 / 埋め込み表示テスト</span></div>
-      <iframe title="tenki.jp 雨雲レーダー予報" src="https://tenki.jp/radar/rainmesh.html" loading="lazy" allow="geolocation"></iframe>
-    </section>
-
-    <section>
-      <div class="label">9. Yahoo!天気<span class="note">雨雲レーダー / 埋め込み表示テスト</span></div>
-      <iframe title="Yahoo!天気 雨雲レーダー" src="https://weather.yahoo.co.jp/weather/zoomradar/" loading="lazy" allow="geolocation"></iframe>
-    </section>
-
-    <section>
-      <div class="label">10. Zoom Earth<span class="note">世界の雨・衛星・気象マップ / 埋め込み表示テスト</span></div>
-      <iframe title="Zoom Earth" src="https://zoom.earth/places/japan/" loading="lazy" allow="geolocation"></iframe>
-    </section>
-
-    <section>
-      <div class="label">11. AccuWeather<span class="note">Japan Weather Radar / 埋め込み表示テスト</span></div>
+      <div class="label">4. AccuWeather<span class="note">Japan Weather Radar / 表示確認済み</span></div>
       <iframe title="AccuWeather Japan Weather Radar" src="https://www.accuweather.com/en/jp/national/weather-radar" loading="lazy" allow="geolocation"></iframe>
     </section>
 
     <section>
-      <div class="label">12. 雨雲ウィークリー<span class="note">1週間先の雨雲レーダー / 埋め込み表示テスト</span></div>
+      <div class="label">5. 雨雲ウィークリー<span class="note">1週間先の雨雲レーダー / 表示確認済み</span></div>
       <iframe title="雨雲ウィークリー" src="https://meteorological-curiosity.com/" loading="lazy" allow="geolocation"></iframe>
     </section>
   </main>
@@ -102,7 +67,6 @@
       windy.search = new URLSearchParams({ lat, lon, detailLat: lat, detailLon: lon, width: 650, height: 520, zoom: 9, level: "surface", overlay: "radar", product: "radar", menu: "", message: "", marker: "", calendar: "now", pressure: "", type: "map", location: "coordinates", detail: "", metricWind: "default", metricTemp: "default", radarRange: "-1" });
       document.getElementById("windy").src = windy.href;
       document.getElementById("ventusky").src = `https://embed.ventusky.com/?p=${lat};${lon};9&l=radar`;
-      document.getElementById("rainviewer").src = `https://www.rainviewer.com/map.html?c=1&layer=radar&lm=0&loc=${lat}%2C${lon}%2C9&o=83&oAP=1&oC=0&oCS=1&oF=0&oFa=0&oU=0&rmt=2&sm=1&sn=1`;
       status.textContent = `${label}（緯度 ${Number(lat).toFixed(4)} / 経度 ${Number(lon).toFixed(4)}）`;
     }
 
