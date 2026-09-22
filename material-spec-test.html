@@ -1638,7 +1638,7 @@ function renderMaterialSelect(selectedId = materialSelect.value){
 
 function refreshMaterialEntry(){
  const hasMaterials = getMaterials().length > 0;
- materialEntryButton.textContent = hasMaterials ? "登録済み材料" : "材料を登録";
+ materialEntryButton.textContent = hasMaterials ? "登録済み材料・材料登録" : "材料を登録";
  if(!hasMaterials) materialChooser.hidden = true;
 }
 
