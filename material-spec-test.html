@@ -608,6 +608,7 @@ button:active{
 
 .material-actions{display:flex;gap:10px;align-items:center;}
 .material-actions button{width:auto;margin:0;white-space:nowrap;padding:12px 14px;font-size:16px;background:#16a34a;}
+.material-actions .material-chooser-close{flex:0 0 42px;width:42px;height:42px;min-width:42px;margin:0;padding:0;border:1px solid #9bb7d7;border-radius:8px;background:#fff;color:#334155;font-size:25px;line-height:1;}
 .material-actions select{margin:0;min-width:0;flex:1;font-size:17px;padding:12px;}
 .material-entry-row{margin-top:10px;text-align:right;}
 .material-entry{width:auto;margin:0;padding:9px 12px;background:#7898bc;font-size:15px;}
@@ -683,6 +684,7 @@ button:active{
  <div class="material-actions">
   <select id="materialSelect" aria-label="登録済み材料"><option value="">材料を選択</option></select>
   <button type="button" onclick="openMaterialModal()">材料登録</button>
+  <button type="button" class="material-chooser-close" onclick="closeMaterialChooser()" aria-label="材料選択を閉じる">×</button>
  </div>
  <div class="material-summary empty" id="materialSummary">材料を選ぶと、登録済みの配合比・標準希釈率・塗布量を入力欄へ反映します。</div>
 </div>
@@ -840,9 +842,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test21";
+const APP_VERSION = "Ver.1.87-test22";
 const APP_DATE = "2026/09/22";
-const APP_TIME = "21:23";
+const APP_TIME = "21:37";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1640,6 +1642,10 @@ function refreshMaterialEntry(){
  const hasMaterials = getMaterials().length > 0;
  materialEntryButton.textContent = hasMaterials ? "登録済み材料・材料登録" : "材料を登録";
  if(!hasMaterials) materialChooser.hidden = true;
+}
+
+function closeMaterialChooser(){
+ materialChooser.hidden = true;
 }
 
 function handleMaterialEntry(){
