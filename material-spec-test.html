@@ -841,9 +841,9 @@ button:active{
 <script>
 // ===== 開発者設定 =====
 const APP_NAME = "塗料配合計算　材料仕様試作版";
-const APP_VERSION = "Ver.1.87-test22";
+const APP_VERSION = "Ver.1.87-test23";
 const APP_DATE = "2026/09/25";
-const APP_TIME = "22:33";
+const APP_TIME = "22:40";
 const APP_PUBLIC_URL = "https://aragau.github.io/paint-tool/material-spec-test.html";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
@@ -1608,6 +1608,14 @@ function renderMaterialSummary(item){
   if(index) materialSummary.appendChild(document.createElement("br"));
   materialSummary.appendChild(document.createTextNode(line));
  });
+ const memoText = String(item.memo || "").trim();
+ if(memoText){
+  materialSummary.appendChild(document.createElement("br"));
+  const memo = document.createElement("span");
+  memo.style.whiteSpace = "pre-wrap";
+  memo.textContent = `メモ：${memoText}`;
+  materialSummary.appendChild(memo);
+ }
  const thinnerMin = item.thinnerMin ?? item.thinner ?? "";
  const thinnerMax = item.thinnerMax ?? item.thinner ?? "";
  const coverageRange = materialCoverageRange(item);
@@ -1913,13 +1921,25 @@ function renderMaterialList(){
   const detail = document.createElement("div");
   detail.className = "material-item-detail";
   detail.textContent = `${normalizeMaterialLiquid(item.liquid) || ""}　配合比：${normalizeMaterialLiquid(item.liquid) === "1液" ? "なし" : item.ratio}${materialWeightText(item) ? `　セット内容：${materialWeightText(item)}` : ""}${materialThinnerText(item) ? `　標準希釈率：${materialThinnerText(item)}` : ""}${materialCoverageText(item) ? `　塗布量：${materialCoverageText(item)}kg/㎡/回` : ""}`;
+  const memoText = String(item.memo || "").trim();
+  let memo = null;
+  if(memoText){
+   memo = document.createElement("div");
+   memo.className = "material-item-detail";
+   memo.style.whiteSpace = "pre-wrap";
+   memo.textContent = `メモ：${memoText}`;
+  }
   const actions = document.createElement("div");
   actions.className = "material-item-actions";
   const edit = document.createElement("button");
   edit.type = "button"; edit.textContent = "編集"; edit.addEventListener("click", () => editMaterial(item.id));
   const remove = document.createElement("button");
   remove.type = "button"; remove.className = "material-delete"; remove.textContent = "削除"; remove.addEventListener("click", () => deleteMaterial(item.id));
-  actions.append(edit, remove); box.append(title, detail, actions); materialList.appendChild(box);
+  actions.append(edit, remove);
+  box.append(title, detail);
+  if(memo) box.appendChild(memo);
+  box.append(actions);
+  materialList.appendChild(box);
  });
 }
 
