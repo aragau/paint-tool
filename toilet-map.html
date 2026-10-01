@@ -94,7 +94,7 @@
   </details>
 </main>
 
-<footer>Ver.0.1.2 / 更新 2026-10-01 22:36 JST / 個人利用テスト版</footer>
+<footer>Ver.0.1.3 / 更新 2026-10-01 22:39 JST / 個人利用テスト版</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -367,7 +367,7 @@ out center tags;`;
     }
   }
 
-  document.getElementById("locateBtn").addEventListener("click",()=>{
+  function locateCurrent(){
     if(!navigator.geolocation){
       setStatus("このブラウザでは現在地を取得できません。");
       return;
@@ -378,7 +378,9 @@ out center tags;`;
       err=>setStatus("現在地を取得できませんでした。位置情報の許可を確認してください。"),
       {enableHighAccuracy:true,timeout:12000,maximumAge:60000}
     );
-  });
+  }
+
+  document.getElementById("locateBtn").addEventListener("click",locateCurrent);
 
   async function addressSearch(){
     const q=addressInput.value.trim();
@@ -394,6 +396,8 @@ out center tags;`;
   document.getElementById("addressBtn").addEventListener("click",addressSearch);
   addressInput.addEventListener("keydown",e=>{ if(e.key==="Enter") addressSearch(); });
   radiusSelect.addEventListener("change",()=>{ if(currentOrigin) searchAt(currentOrigin,"選択地点"); });
+
+  locateCurrent();
 
 })();
 </script>
