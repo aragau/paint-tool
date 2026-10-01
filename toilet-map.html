@@ -94,7 +94,7 @@
   </details>
 </main>
 
-<footer>Ver.0.1.5 / 更新 2026-10-01 22:46 JST / 個人利用テスト版</footer>
+<footer>Ver.0.1.6 / 更新 2026-10-01 22:50 JST / 個人利用テスト版</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -220,10 +220,10 @@
       const controller=new AbortController();
       const timer=setTimeout(()=>controller.abort(),7000);
       try{
-        const r=await fetch(endpoint,{
-          method:"POST",
-          headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
-          body:"data="+encodeURIComponent(q),
+        const url=endpoint+"?data="+encodeURIComponent(q);
+        const r=await fetch(url,{
+          method:"GET",
+          headers:{"Accept":"application/json"},
           signal:controller.signal
         });
         clearTimeout(timer);
