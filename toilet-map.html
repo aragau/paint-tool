@@ -94,7 +94,7 @@
   </details>
 </main>
 
-<footer>Ver.0.1.3 / 更新 2026-10-01 22:39 JST / 個人利用テスト版</footer>
+<footer>Ver.0.1.4 / 更新 2026-10-01 22:42 JST / 個人利用テスト版</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -220,13 +220,30 @@
   nwr(around:${radius},${lat},${lon})["tourism"~"attraction|museum|information"];
 );
 out center tags;`;
-    const r=await fetch("https://overpass-api.de/api/interpreter",{
-      method:"POST",
-      headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
-      body:"data="+encodeURIComponent(q)
-    });
-    if(!r.ok) throw new Error("周辺データを取得できませんでした");
-    return (await r.json()).elements || [];
+    const endpoints=[
+      "https://overpass.kumi.systems/api/interpreter",
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.nchc.org.tw/api/interpreter"
+    ];
+    let lastError="";
+    for(const endpoint of endpoints){
+      try{
+        const r=await fetch(endpoint,{
+          method:"POST",
+          headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+          body:"data="+encodeURIComponent(q)
+        });
+        if(!r.ok){
+          lastError=`${endpoint} HTTP ${r.status}`;
+          continue;
+        }
+        const data=await r.json();
+        return data.elements || [];
+      }catch(e){
+        lastError=e?.message || String(e);
+      }
+    }
+    throw new Error("周辺データを取得できませんでした。Overpass接続失敗: "+lastError);
   }
 
   function classify(el){
