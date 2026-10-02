@@ -7,6 +7,7 @@
   <title>公衆トイレ検索</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIINfQ3yn5L6Zw1hAFTuQjMZtI3d8BmFQQM=" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css">
   <style>
     :root{
       --bg:#f5f7fa;--card:#fff;--text:#1b1f23;--muted:#667085;--line:#d9dee7;
@@ -94,18 +95,19 @@
   </details>
 </main>
 
-<footer>Ver.0.1.0 / 更新 2026-10-01 22:25 JST / 個人利用テスト版</footer>
+<footer>Ver.0.1.1 / 更新 2026-10-02 21:27 JST / 個人利用テスト版</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script>
 (() => {
   "use strict";
 
   const map = L.map("map", { zoomControl:true }).setView([35.78, 139.90], 11);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+  L.maplibreGL({
+    style: "https://tiles.openfreemap.org/styles/liberty"
   }).addTo(map);
 
   const toiletLayer = L.layerGroup().addTo(map);
