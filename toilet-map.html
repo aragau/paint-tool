@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <title>公衆トイレ検索</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3yn5L6Zw1hAFTuQjMZtI3d8BmFQQM=" crossorigin="">
   <style>
     :root{
       --bg:#f5f7fa;--card:#fff;--text:#1b1f23;--muted:#667085;--line:#d9dee7;
@@ -94,19 +94,18 @@
   </details>
 </main>
 
-<footer>Ver.0.1.6 / 更新 2026-10-01 22:50 JST / 個人利用テスト版</footer>
+<footer>Ver.0.1.0 / 更新 2026-10-01 22:25 JST / 個人利用テスト版</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script>
 (() => {
   "use strict";
 
   const map = L.map("map", { zoomControl:true }).setView([35.78, 139.90], 11);
-  L.maplibreGL({
-    style: "https://tiles.openfreemap.org/styles/liberty"
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
   }).addTo(map);
 
   const toiletLayer = L.layerGroup().addTo(map);
@@ -210,56 +209,23 @@
     return {lat:+data[0].lat, lon:+data[0].lon, label:data[0].display_name};
   }
 
-  async function fetchOverpass(q){
-    const endpoints=[
-      "https://overpass.kumi.systems/api/interpreter",
-      "https://overpass-api.de/api/interpreter"
-    ];
-    let lastError="";
-    for(const endpoint of endpoints){
-      const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),7000);
-      try{
-        const url=endpoint+"?data="+encodeURIComponent(q);
-        const r=await fetch(url,{
-          method:"GET",
-          headers:{"Accept":"application/json"},
-          signal:controller.signal
-        });
-        clearTimeout(timer);
-        if(!r.ok){
-          lastError=`${endpoint} HTTP ${r.status}`;
-          continue;
-        }
-        const data=await r.json();
-        return data.elements || [];
-      }catch(e){
-        clearTimeout(timer);
-        lastError=e?.name==="AbortError" ? "タイムアウト" : (e?.message || String(e));
-      }
-    }
-    throw new Error(lastError || "Overpass接続失敗");
-  }
-
-  async function fetchPrimary(lat,lon,radius){
-    const q=`[out:json][timeout:12];
+  async function fetchNearby(lat,lon,radius){
+    const q=`[out:json][timeout:25];
 (
   nwr(around:${radius},${lat},${lon})["amenity"="toilets"];
-);
-out center tags;`;
-    return fetchOverpass(q);
-  }
-
-  async function fetchSecondary(lat,lon,radius){
-    const q=`[out:json][timeout:12];
-(
   nwr(around:${radius},${lat},${lon})["amenity"="parking"];
   nwr(around:${radius},${lat},${lon})["shop"="convenience"];
   nwr(around:${radius},${lat},${lon})["shop"="mall"];
   nwr(around:${radius},${lat},${lon})["tourism"~"attraction|museum|information"];
 );
 out center tags;`;
-    return fetchOverpass(q);
+    const r=await fetch("https://overpass-api.de/api/interpreter",{
+      method:"POST",
+      headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+      body:"data="+encodeURIComponent(q)
+    });
+    if(!r.ok) throw new Error("周辺データを取得できませんでした");
+    return (await r.json()).elements || [];
   }
 
   function classify(el){
@@ -386,29 +352,21 @@ out center tags;`;
   async function searchAt(origin, label){
     currentOrigin=origin;
     const radius=+radiusSelect.value;
-    setStatus(`${label} 周辺の公衆トイレを検索中…`);
+    setStatus(`${label} 周辺を検索中…`);
     summaryEl.textContent="";
-    resultsEl.innerHTML='<div class="empty">公衆トイレを検索しています…</div>';
+    resultsEl.innerHTML='<div class="empty">検索しています…</div>';
     try{
-      const primary=await fetchPrimary(origin.lat,origin.lon,radius);
-      const count=drawMap(primary,origin);
-      setStatus(`${label} / 公衆トイレ候補 ${count}件 / 駐車場・補助候補を確認中…`);
-      try{
-        const secondary=await fetchSecondary(origin.lat,origin.lon,radius);
-        drawMap(primary.concat(secondary),origin);
-        setStatus(`${label} / 半径${radius/1000}km / 公衆トイレ候補 ${count}件`);
-      }catch(e2){
-        console.warn(e2);
-        setStatus(`${label} / 公衆トイレ候補 ${count}件 / 駐車場・補助候補の取得は失敗`);
-      }
+      const items=await fetchNearby(origin.lat,origin.lon,radius);
+      const count=drawMap(items,origin);
+      setStatus(`${label} / 半径${radius/1000}km / 公衆トイレ候補 ${count}件`);
     }catch(e){
       console.error(e);
-      setStatus("公衆トイレ情報を取得できませんでした: "+(e.message || "接続失敗"));
-      resultsEl.innerHTML='<div class="empty">公衆トイレ情報の取得に失敗しました。少し時間をおいて再度お試しください。</div>';
+      setStatus(e.message || "検索に失敗しました");
+      resultsEl.innerHTML='<div class="empty">データ取得に失敗しました。少し時間をおいて再度お試しください。</div>';
     }
   }
 
-  function locateCurrent(){
+  document.getElementById("locateBtn").addEventListener("click",()=>{
     if(!navigator.geolocation){
       setStatus("このブラウザでは現在地を取得できません。");
       return;
@@ -419,9 +377,7 @@ out center tags;`;
       err=>setStatus("現在地を取得できませんでした。位置情報の許可を確認してください。"),
       {enableHighAccuracy:true,timeout:12000,maximumAge:60000}
     );
-  }
-
-  document.getElementById("locateBtn").addEventListener("click",locateCurrent);
+  });
 
   async function addressSearch(){
     const q=addressInput.value.trim();
@@ -437,8 +393,6 @@ out center tags;`;
   document.getElementById("addressBtn").addEventListener("click",addressSearch);
   addressInput.addEventListener("keydown",e=>{ if(e.key==="Enter") addressSearch(); });
   radiusSelect.addEventListener("change",()=>{ if(currentOrigin) searchAt(currentOrigin,"選択地点"); });
-
-  locateCurrent();
 
 })();
 </script>
