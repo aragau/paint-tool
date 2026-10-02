@@ -79,7 +79,7 @@
 <div id="map"></div>
 <div class="legend">
   <span><i class="dot toilet"></i>公衆トイレ</span>
-  <span><i class="dot support"></i>補助候補（コンビニ等）</span>
+  <span>自治体公式情報を基にした初期データ</span>
   <span>★＝情報の信頼度（設備の良し悪しではありません）</span>
 </div>
 
@@ -89,13 +89,13 @@
 
   <details class="help">
     <summary>このアプリの情報について</summary>
-    <p>公衆トイレ候補はOpenStreetMapの登録情報を取得しています。地図上の青い🚻が本命、赤い小点はコンビニ・観光施設・商業施設などの補助候補です。</p>
-    <p>駐車場は、本人が登録した確認情報を最優先します。未確認の場合は、OpenStreetMap上でトイレの近くに駐車場が登録されていれば「近隣駐車場候補」と表示します。</p>
+    <p>公衆トイレ候補は、自治体公式オープンデータ・自治体公式施設情報を基にWorkで整理した初期データを使用しています。現在は緯度経度があり、距離順検索に使用できる37件を対象にしています。</p>
+    <p>駐車場は自治体データと、この端末に登録した確認情報を表示します。不明な項目は「不明」のまま扱います。</p>
     <p>各候補からGoogleマップを開いて、写真・ストリートビュー・現地状況を確認できます。現地確認した情報は「確認情報を登録」からこの端末内に保存できます。</p>
   </details>
 </main>
 
-<footer>Ver.0.1.2 / 更新 2026-10-02 21:40 JST / 個人利用テスト版</footer>
+<footer>Ver.0.1.3 / 更新 2026-10-02 22:29 JST / 個人利用テスト版</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -104,6 +104,8 @@
 <script>
 (() => {
   "use strict";
+
+  const PUBLIC_TOILETS = [{"id":"流山市-001","municipality":"流山市","name":"こんぴら緑地","address":"千葉県流山市西初石2丁目25番地の2","latitude":35.8858295,"longitude":139.9084014,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-002","municipality":"流山市","name":"におどり公園","address":"千葉県流山市大字西深井字大堺1028番1","latitude":35.9127053,"longitude":139.8872434,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-003","municipality":"流山市","name":"運河水辺公園","address":"千葉県流山市大字東深井字本宿368番の1","latitude":35.9145771,"longitude":139.9019041,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-004","municipality":"流山市","name":"東深井地区公園","address":"千葉県流山市大字東深井815番地","latitude":35.9114098,"longitude":139.9161354,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-005","municipality":"流山市","name":"江戸川台７号公園","address":"千葉県流山市江戸川台東4丁目241番地","latitude":35.9031002,"longitude":139.9119904,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-006","municipality":"流山市","name":"大堀川水辺公園","address":"千葉県流山市おおたかの森東3丁目9番","latitude":35.8712466,"longitude":139.934933,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-007","municipality":"流山市","name":"三輪野山近隣公園","address":"千葉県流山市三輪野山二丁目292番地","latitude":35.8573633,"longitude":139.9039092,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-008","municipality":"流山市","name":"加岸児童公園","address":"千葉県流山市加四丁目1664番","latitude":35.8614631,"longitude":139.9033835,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-009","municipality":"流山市","name":"流山３丁目休憩施設","address":"千葉県流山市流山3丁目地先（江戸川土手）","latitude":35.8533709,"longitude":139.8968637,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-010","municipality":"流山市","name":"流山３号公園","address":"千葉県流山市流山5丁目46番地","latitude":35.8508568,"longitude":139.8971846,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-011","municipality":"流山市","name":"赤城山公園","address":"千葉県流山市流山6丁目648番地の1","latitude":35.8480275,"longitude":139.8956336,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-012","municipality":"流山市","name":"南流山８号公園","address":"千葉県流山市南流山7丁目12番地","latitude":35.8420517,"longitude":139.8944494,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-013","municipality":"流山市","name":"南流山６号公園","address":"千葉県流山市南流山8丁目10番地","latitude":35.8391171,"longitude":139.8951252,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-014","municipality":"流山市","name":"南流山９号公園","address":"千葉県流山市南流山5丁目11番地","latitude":35.8415915,"longitude":139.897794,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-015","municipality":"流山市","name":"南流山中央公園","address":"千葉県流山市南流山3丁目14番地","latitude":35.838012,"longitude":139.900144,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-016","municipality":"流山市","name":"南流山１号公園","address":"千葉県流山市南流山4丁目11番地","latitude":35.840987,"longitude":139.9033086,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-017","municipality":"流山市","name":"南流山３号公園","address":"千葉県流山市南流山1丁目16番地","latitude":35.8378397,"longitude":139.9057954,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-018","municipality":"流山市","name":"南流山２号公園","address":"千葉県流山市鰭ケ崎12番地","latitude":35.8397749,"longitude":139.9072545,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-019","municipality":"流山市","name":"平和台１号公園","address":"千葉県流山市平和台5丁目40番地","latitude":35.8550347,"longitude":139.9059473,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-022","municipality":"流山市","name":"コミュニティ第1児童公園","address":"千葉県流山市野々下1丁目317番地","latitude":35.8604532,"longitude":139.9241829,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-023","municipality":"流山市","name":"コミュニティ第２児童公園","address":"千葉県流山市野々下1丁目772番地の85","latitude":35.8606256,"longitude":139.9328981,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-024","municipality":"流山市","name":"野々下水辺公園","address":"千葉県流山市野々下2丁目１番地の2","latitude":35.8581847,"longitude":139.9330764,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-025","municipality":"流山市","name":"東部近隣公園","address":"千葉県流山市名都借字ビワクビ240番","latitude":35.8463538,"longitude":139.9408588,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-026","municipality":"流山市","name":"松ケ丘ふるさと公園※汲み取り","address":"千葉県流山市松ケ丘4丁目495番1","latitude":35.8463487,"longitude":139.9080279,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-027","municipality":"流山市","name":"美原１号公園","address":"千葉県流山市美原2丁目109番地の1","latitude":35.9001916,"longitude":139.9017942,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-028","municipality":"流山市","name":"十太夫近隣公園","address":"千葉県流山市おおたかの森北3丁目7番1","latitude":35.8788338,"longitude":139.9268979,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"流山市-029","municipality":"流山市","name":"平方調整池トイレ","address":"千葉県流山市平方字上谷384番１","latitude":35.905219,"longitude":139.8920808,"facility_type":"公園","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"0:00–23:59","night_closure":"no","municipal_url":"https://www.city.nagareyama.chiba.jp/_res/projects/default_project/_page_/001/033/350/toireitiran/2024kousyuutoireitiran.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"多古町-001","municipality":"多古町","name":"西古内観光トイレ","address":"千葉県香取郡多古町西古内331","latitude":35.767815,"longitude":140.481018,"facility_type":"観光公衆トイレ","parking":"yes","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.town.tako.chiba.jp/docs/2021032900029/file_contents/6koushuutoire.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"多古町-002","municipality":"多古町","name":"多目的広場トイレ","address":"千葉県香取郡多古町多古2855番地","latitude":35.740569,"longitude":140.469834,"facility_type":"観光公衆トイレ","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.town.tako.chiba.jp/docs/2021032900029/file_contents/6koushuutoire.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"多古町-003","municipality":"多古町","name":"あじさい公園トイレ","address":"千葉県香取郡多古町多古630番地1","latitude":35.736529,"longitude":140.474953,"facility_type":"観光公衆トイレ","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.town.tako.chiba.jp/docs/2021032900029/file_contents/6koushuutoire.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"多古町-004","municipality":"多古町","name":"多古台観光トイレ","address":"千葉県香取郡多古町多古2000番地206","latitude":35.732274,"longitude":140.460999,"facility_type":"観光公衆トイレ","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.town.tako.chiba.jp/docs/2021032900029/file_contents/6koushuutoire.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"多古町-005","municipality":"多古町","name":"多古藩陣屋跡観光トイレ","address":"千葉県香取郡多古町多古2540番地2","latitude":35.734135,"longitude":140.464798,"facility_type":"観光公衆トイレ","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.town.tako.chiba.jp/docs/2021032900029/file_contents/6koushuutoire.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"多古町-006","municipality":"多古町","name":"親水公園トイレ","address":"千葉県香取郡多古町島3752番地","latitude":35.722698,"longitude":140.478691,"facility_type":"観光公衆トイレ","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.town.tako.chiba.jp/docs/2021032900029/file_contents/6koushuutoire.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"多古町-007","municipality":"多古町","name":"農村交流施設トイレ","address":"千葉県香取郡多古町島298番地1","latitude":35.722079,"longitude":140.472736,"facility_type":"観光公衆トイレ","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.town.tako.chiba.jp/docs/2021032900029/file_contents/6koushuutoire.csv","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"八千代市-036","municipality":"八千代市","name":"八千代台駅東口公衆トイレ","address":"八千代市八千代台北1丁目1-20","latitude":35.701074,"longitude":140.090633,"facility_type":"駅前","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.city.yachiyo.lg.jp/uploaded/attachment/8518.xlsx","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"八千代市-037","municipality":"八千代市","name":"勝田台駅前公衆トイレ","address":"八千代市勝田台1丁目8-1","latitude":35.715592,"longitude":140.126252,"facility_type":"駅前","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":null,"night_closure":"unknown","municipal_url":"https://www.city.yachiyo.lg.jp/uploaded/attachment/8518.xlsx","source_priority":1,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false},{"id":"香取市-001","municipality":"香取市","name":"佐原観光多機能トイレ","address":"香取市佐原イ497-2","latitude":35.89041,"longitude":140.4977,"facility_type":"観光公衆トイレ","parking":"unknown","parking_capacity":null,"parking_capacity_detail":null,"toilet_hours":"11:00–16:00／月・水休み","night_closure":"yes","municipal_url":null,"source_priority":3,"checked_date":"2026-10-02","field_verification":"not_visited","distance_sort_ready":true,"exclude_from_default_search":false}];
 
   const map = L.map("map", { zoomControl:true }).setView([35.78, 139.90], 11);
   L.maplibreGL({
@@ -152,12 +154,13 @@
   }
 
   function osmPoint(el){
+    if(typeof el.latitude === "number" && typeof el.longitude === "number") return {lat:el.latitude, lon:el.longitude};
     if(typeof el.lat === "number" && typeof el.lon === "number") return {lat:el.lat, lon:el.lon};
     if(el.center) return {lat:el.center.lat, lon:el.center.lon};
     return null;
   }
 
-  function localKey(el){ return `toilet-note:${el.type}:${el.id}`; }
+  function localKey(el){ return `toilet-note:${el.id}`; }
 
   function getLocalInfo(el){
     try { return JSON.parse(localStorage.getItem(localKey(el)) || "null"); }
@@ -166,18 +169,15 @@
 
   function calcConfidence(el, local){
     if(local?.verified) return 5;
-    const t=el.tags||{};
-    let score=2;
-    if(t.name || t["name:ja"]) score++;
-    if(t.access === "yes" || t.access === "public" || t.fee === "no" || t.wheelchair) score++;
-    return Math.min(score,4);
+    if(el.field_verification === "visited") return 5;
+    if(el.source_priority === 1) return 4;
+    return 3;
   }
 
   function stars(n){ return "★".repeat(n)+"☆".repeat(5-n); }
 
   function toiletName(el){
-    const t=el.tags||{};
-    return t["name:ja"] || t.name || "公衆トイレ";
+    return el.name || "公衆トイレ";
   }
 
   function escapeHtml(s){
@@ -248,17 +248,16 @@ out center tags;`;
        t.tourism ? "観光施設" : "補助候補");
   }
 
-  function parkingText(el, near){
+  function parkingText(el){
     const local=getLocalInfo(el);
     if(local?.parking==="yes"){
       return local.capacity ? `駐車場あり ${escapeHtml(local.capacity)}台` : "駐車場あり";
     }
     if(local?.parking==="no") return "駐車場なし";
-    if(near){
-      const cap=near.item.tags?.capacity;
-      return cap ? `近隣駐車場候補 約${Math.round(near.d)}m・${escapeHtml(cap)}台` :
-                   `近隣駐車場候補 約${Math.round(near.d)}m`;
+    if(el.parking==="yes"){
+      return el.parking_capacity ? `駐車場あり ${escapeHtml(el.parking_capacity)}台` : "駐車場あり";
     }
+    if(el.parking==="no") return "駐車場なし";
     return "駐車場不明";
   }
 
@@ -283,25 +282,25 @@ out center tags;`;
   }
 
   function renderResults(pack){
-    const {toilets, parkings, origin}=pack;
+    const {toilets, origin}=pack;
     resultsEl.innerHTML="";
     if(!toilets.length){
-      resultsEl.innerHTML='<div class="empty">この範囲では公衆トイレ候補が見つかりませんでした。検索範囲を広げてください。</div>';
+      resultsEl.innerHTML='<div class="empty">この範囲では登録済み公衆トイレが見つかりませんでした。検索範囲を広げてください。</div>';
       summaryEl.textContent="0件";
       return;
     }
-    summaryEl.textContent=`公衆トイレ候補 ${toilets.length}件（近い順）`;
+    summaryEl.textContent=`公衆トイレ ${toilets.length}件（近い順）`;
 
-    toilets.forEach((el,idx)=>{
+    toilets.forEach(el=>{
       const p=osmPoint(el); if(!p) return;
       const local=getLocalInfo(el);
       const conf=calcConfidence(el,local);
-      const near=nearestParking(el,parkings);
       const card=document.createElement("article");
       card.className="card";
-      const t=el.tags||{};
-      const access=t.access ? ` / access:${escapeHtml(t.access)}` : "";
-      const wheel=t.wheelchair ? ` / 車椅子:${escapeHtml(t.wheelchair)}` : "";
+      const hours=el.toilet_hours ? ` / 利用時間:${escapeHtml(el.toilet_hours)}` : "";
+      const type=el.facility_type ? ` / ${escapeHtml(el.facility_type)}` : "";
+      const addr=el.address ? `<br>${escapeHtml(el.address)}` : "";
+      const official=el.municipal_url ? `<a class="gm" href="${escapeHtml(el.municipal_url)}" target="_blank" rel="noopener">自治体公式情報</a>` : "";
       card.innerHTML=`
         <div class="title-row">
           <div class="name">🚻 ${escapeHtml(toiletName(el))}</div>
@@ -309,13 +308,14 @@ out center tags;`;
         </div>
         <div class="meta">
           <span class="badge stars" title="情報の信頼度">${stars(conf)}</span>
-          <span class="badge">${parkingText(el,near)}</span>
+          <span class="badge">${parkingText(el)}</span>
           ${local?.verified ? '<span class="badge" style="color:var(--ok)">自分で確認済み</span>' : ''}
         </div>
-        <div class="detail">OSM登録${access}${wheel}</div>
+        <div class="detail">${escapeHtml(el.municipality||"")} ${type}${hours}${addr}</div>
         <div class="actions">
           <a class="gm" href="${googleView(p.lat,p.lon)}" target="_blank" rel="noopener">Googleマップで確認</a>
           <a class="nav" href="${googleNav(p.lat,p.lon)}" target="_blank" rel="noopener">ここまでナビ</a>
+          ${official}
           <button class="edit" type="button">確認情報を登録</button>
         </div>`;
       card.querySelector(".edit").addEventListener("click",()=>saveVerification(el));
@@ -325,28 +325,20 @@ out center tags;`;
 
   function drawMap(elements, origin){
     toiletLayer.clearLayers(); supportLayer.clearLayers(); originLayer.clearLayers();
-    const toilets=[], parkings=[];
+    const toilets=[];
     elements.forEach(el=>{
-      const c=classify(el), p=osmPoint(el);
+      const p=osmPoint(el);
       if(!p) return;
-      if(c==="toilet"){
-        el._distance=distMeters(origin.lat,origin.lon,p.lat,p.lon);
-        toilets.push(el);
-        L.marker([p.lat,p.lon],{icon:toiletIcon})
-          .bindPopup(`<b>🚻 ${escapeHtml(toiletName(el))}</b><br>${formatDistance(el._distance)}<br><a href="${googleView(p.lat,p.lon)}" target="_blank" rel="noopener">Googleマップで確認</a>`)
-          .addTo(toiletLayer);
-      } else if(c==="parking"){
-        parkings.push(el);
-      } else if(c==="convenience" || c==="commercial" || c==="tourism"){
-        L.marker([p.lat,p.lon],{icon:supportIcon})
-          .bindPopup(`<b>${escapeHtml(supportName(el))}</b><br>補助候補（公衆トイレではありません）`)
-          .addTo(supportLayer);
-      }
+      el._distance=distMeters(origin.lat,origin.lon,p.lat,p.lon);
+      toilets.push(el);
+      L.marker([p.lat,p.lon],{icon:toiletIcon})
+        .bindPopup(`<b>🚻 ${escapeHtml(toiletName(el))}</b><br>${formatDistance(el._distance)}<br><a href="${googleView(p.lat,p.lon)}" target="_blank" rel="noopener">Googleマップで確認</a>`)
+        .addTo(toiletLayer);
     });
     toilets.sort((a,b)=>a._distance-b._distance);
     originLayer.addLayer(L.marker([origin.lat,origin.lon],{icon:originIcon}).bindPopup("検索基準地点"));
     map.setView([origin.lat,origin.lon], radiusSelect.value==="1000"?15:radiusSelect.value==="3000"?14:13);
-    lastToilets={toilets,parkings,origin};
+    lastToilets={toilets,parkings:[],origin};
     renderResults(lastToilets);
     return toilets.length;
   }
@@ -357,15 +349,12 @@ out center tags;`;
     setStatus(`${label} 周辺を検索中…`);
     summaryEl.textContent="";
     resultsEl.innerHTML='<div class="empty">検索しています…</div>';
-    try{
-      const items=await fetchNearby(origin.lat,origin.lon,radius);
-      const count=drawMap(items,origin);
-      setStatus(`${label} / 半径${radius/1000}km / 公衆トイレ候補 ${count}件`);
-    }catch(e){
-      console.error(e);
-      setStatus(e.message || "検索に失敗しました");
-      resultsEl.innerHTML='<div class="empty">データ取得に失敗しました。少し時間をおいて再度お試しください。</div>';
-    }
+    const items=PUBLIC_TOILETS
+      .map(el=>({...el,_distance:distMeters(origin.lat,origin.lon,el.latitude,el.longitude)}))
+      .filter(el=>el._distance<=radius)
+      .sort((a,b)=>a._distance-b._distance);
+    const count=drawMap(items,origin);
+    setStatus(`${label} / 半径${radius/1000}km / 公衆トイレ ${count}件`);
   }
 
   document.getElementById("locateBtn").addEventListener("click",()=>{
