@@ -95,7 +95,7 @@
   </details>
 </main>
 
-<footer>Ver.0.1.1 / 更新 2026-10-02 21:27 JST / 個人利用テスト版</footer>
+<footer>Ver.0.1.2 / 更新 2026-10-02 21:40 JST / 個人利用テスト版</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -370,14 +370,29 @@ out center tags;`;
 
   document.getElementById("locateBtn").addEventListener("click",()=>{
     if(!navigator.geolocation){
-      setStatus("このブラウザでは現在地を取得できません。");
+      setStatus("このブラウザでは現在地取得機能を利用できません。");
+      return;
+    }
+    if(!window.isSecureContext){
+      setStatus("現在地取得にはHTTPS接続が必要です。");
       return;
     }
     setStatus("現在地を取得しています…");
     navigator.geolocation.getCurrentPosition(
       pos=>searchAt({lat:pos.coords.latitude,lon:pos.coords.longitude},"現在地"),
-      err=>setStatus("現在地を取得できませんでした。位置情報の許可を確認してください。"),
-      {enableHighAccuracy:true,timeout:12000,maximumAge:60000}
+      err=>{
+        console.error("Geolocation error:", err);
+        if(err.code===1){
+          setStatus("位置情報の利用が許可されていません。ブラウザの位置情報設定を確認してください。");
+        }else if(err.code===2){
+          setStatus("現在地を取得できませんでした。端末の位置情報サービスを確認してください。");
+        }else if(err.code===3){
+          setStatus("現在地の取得がタイムアウトしました。もう一度お試しください。");
+        }else{
+          setStatus("現在地を取得できませんでした。");
+        }
+      },
+      {enableHighAccuracy:false,timeout:20000,maximumAge:300000}
     );
   });
 
