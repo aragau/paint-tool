@@ -2602,7 +2602,9 @@ function initializeCatalogSelector(){
    materialSelect.value = "";
    materialSummary.innerHTML = "";
    materialSummary.classList.remove("empty");
-   materialSummary.appendChild(catalogSummary.cloneNode(true));
+   const selectedSummary = catalogSummary.cloneNode(true);
+   selectedSummary.removeAttribute("id");
+   materialSummary.appendChild(selectedSummary);
   }
  });
 }
