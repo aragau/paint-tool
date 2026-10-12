@@ -2451,6 +2451,7 @@ function catalogSetOptions(select, placeholder, values){
 function catalogRangeMax(text){
  if(text === null || text === undefined) return "";
  const normalized = String(text).replace(/[％%]/g,"").replace(/[〜～]/g,"-").trim();
+ if(!normalized) return "";
  const nums = normalized.split("-").map(v=>Number(v.trim())).filter(Number.isFinite);
  return nums.length ? String(Math.max(...nums)) : "";
 }
@@ -2470,6 +2471,10 @@ function catalogRatioValue(item){
 }
 
 function applyCatalogItem(item){
+ ratio.value = "";
+ customRatioMain.value = "";
+ customRatioHard.value = "";
+ coverage.value = "";
  const ratioValue = catalogRatioValue(item);
  if(ratioValue){
   if(Array.from(ratio.options).some(option => option.value === ratioValue)){
