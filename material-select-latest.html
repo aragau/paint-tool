@@ -700,7 +700,7 @@ button:active{
 
 <div id="calculatorContent">
 
-<div class="box catalog-selector" id="catalogSelectorBox">
+<div class="box catalog-selector" id="catalogSelectorBox" hidden>
  <label>材料選択</label>
  <div class="selector-row">
   <label>メーカー
@@ -876,10 +876,10 @@ button:active{
 
 <script>
 // ===== 開発者設定 =====
-const APP_NAME = "塗料配合計算　Material Select 5";
-const APP_VERSION = "Ver.5.0";
+const APP_NAME = "塗料配合計算　Material Select 6";
+const APP_VERSION = "Ver.6.0";
 const APP_DATE = "2026/10/12";
-const APP_TIME = "21:47";
+const APP_TIME = "22:34";
 const HISTORY_MAX = 50;
 const WEATHER_FORECAST_HOURS = 1;
 const WEATHER_PROBABILITY_THRESHOLD = 80;
@@ -1593,6 +1593,8 @@ function renderMaterialSelect(selectedId = materialSelect.value){
  const materials = getMaterials();
  materialSelect.innerHTML = "";
  add(materialSelect, "材料を選択", "");
+ add(materialSelect, "メーカー製品から選択", "__catalog__");
+ add(materialSelect, "新しい材料を登録", "__register__");
  materials.sort((a, b) => materialDisplayName(a).localeCompare(materialDisplayName(b), "ja"))
   .forEach(item => add(materialSelect, materialDisplayName(item), item.id));
  materialSelect.value = materials.some(item => item.id === selectedId) ? selectedId : "";
@@ -1602,17 +1604,16 @@ function renderMaterialSelect(selectedId = materialSelect.value){
 
 function refreshMaterialEntry(){
  const hasMaterials = getMaterials().length > 0;
- materialEntryButton.textContent = hasMaterials ? "登録済み材料" : "材料を登録";
- if(!hasMaterials) materialChooser.hidden = true;
+ materialEntryButton.textContent = hasMaterials ? "登録済み材料" : "材料を選択";
 }
 
 function handleMaterialEntry(){
- if(getMaterials().length === 0){
-  openMaterialModal();
-  return;
- }
  materialChooser.hidden = !materialChooser.hidden;
- if(!materialChooser.hidden) materialSelect.focus();
+ if(materialChooser.hidden){
+  document.getElementById("catalogSelectorBox").hidden = true;
+ }else{
+  materialSelect.focus();
+ }
 }
 
 function clearMaterialForm(keepSaveNotice = false){
@@ -1893,6 +1894,18 @@ function applyMaterialToForm(item){
 }
 
 materialSelect.addEventListener("change", () => {
+ const catalogBox = document.getElementById("catalogSelectorBox");
+ if(materialSelect.value === "__catalog__"){
+  catalogBox.hidden = false;
+  catalogMaker.focus();
+  return;
+ }
+ catalogBox.hidden = true;
+ if(materialSelect.value === "__register__"){
+  materialSelect.value = "";
+  openMaterialModal();
+  return;
+ }
  const item = getMaterials().find(entry => entry.id === materialSelect.value) || null;
  renderMaterialSummary(item);
  if(item) applyMaterialToForm(item);
@@ -2583,7 +2596,16 @@ function initializeCatalogSelector(){
   const item = items.find(entry => entry["メーカー名"] === catalogMaker.value && entry["部位分類"] === catalogPart.value && entry["製品名"] === catalogProduct.value) || null;
   renderCatalogSummary(item);
   materialSelect5Special(item);
-  if(item) applyCatalogItem(item);
+  if(item){
+   applyCatalogItem(item);
+   document.getElementById("catalogSelectorBox").hidden = true;
+   materialSelect.value = "";
+   materialSummary.innerHTML = "";
+   materialSummary.classList.remove("empty");
+   const selectedSummary = catalogSummary.cloneNode(true);
+   selectedSummary.removeAttribute("id");
+   materialSummary.appendChild(selectedSummary);
+  }
  });
 }
 
