@@ -2577,8 +2577,9 @@ function materialSelect5Special(item){
 }
 
 function initializeCatalogSelector(){
- const items = MATERIAL_CATALOG_DATA["製品"] || [];
- const makers = catalogUnique(items.map(item => item["メーカー名"]));
+ const selectedNippon = new Set(["屋根|ファインパーフェクトルーフ", "屋根|ファインパーフェクトベスト", "屋根|ファインルーフSi", "屋根|水性シリコンベストⅡ", "外壁|パーフェクトトップ®Ｓｉ（遮熱オプション含む）", "外壁|ファインパーフェクトトップ®Ｓｉ", "外壁|水性シリコンセラUV", "付帯部|ファインパーフェクトトップ®Ｓｉ", "付帯部|ファインウレタンU100", "付帯部|1液ファインウレタンU100", "軒天|ノキテンエース", "軒天|ケンエースG-Ⅱ", "軒天|水性ケンエース"]);
+ const items = (MATERIAL_CATALOG_DATA["製品"] || []).filter(item => item["メーカー名"] !== "日本ペイント" || selectedNippon.has(item["部位分類"] + "|" + item["製品名"]));
+ const makers = catalogUnique(items.map(item => item["メーカー名"])).sort((a, b) => ["日本ペイント", "エスケー化研", "関西ペイント"].indexOf(a) - ["日本ペイント", "エスケー化研", "関西ペイント"].indexOf(b));
  catalogSetOptions(catalogMaker, "メーカーを選択", makers);
  catalogMaker.addEventListener("change", () => {
   const filtered = items.filter(item => item["メーカー名"] === catalogMaker.value);
