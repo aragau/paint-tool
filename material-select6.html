@@ -2576,9 +2576,21 @@ function materialSelect5Special(item){
  };
 }
 
+function normalizeCatalogProductName(name){
+ return String(name || "").normalize("NFKC").replace(/®/g, "").replace(/（旧：[^）]*）/g, "").replace(/（遮熱オプション含む）/g, "").replace(/\\s/g, "").toLowerCase();
+}
+
 function initializeCatalogSelector(){
- const selectedNippon = new Set(["屋根|ファインパーフェクトルーフ", "屋根|ファインパーフェクトベスト", "屋根|ファインルーフSi", "屋根|水性シリコンベストⅡ", "外壁|パーフェクトトップ®Ｓｉ（遮熱オプション含む）", "外壁|ファインパーフェクトトップ®Ｓｉ", "外壁|水性シリコンセラUV", "付帯部|ファインパーフェクトトップ®Ｓｉ", "付帯部|ファインウレタンU100", "付帯部|1液ファインウレタンU100", "軒天|ノキテンエース", "軒天|ケンエースG-Ⅱ", "軒天|水性ケンエース"]);
- const items = (MATERIAL_CATALOG_DATA["製品"] || []).filter(item => item["メーカー名"] !== "日本ペイント" || selectedNippon.has(item["部位分類"] + "|" + item["製品名"]));
+ const selectedNippon = new Set(["屋根|ファインパーフェクトベスト", "外壁|パーフェクトトップ®Ｓｉ（遮熱オプション含む）", "外壁|ファインパーフェクトトップ®Ｓｉ", "付帯部|ファインパーフェクトトップ®Ｓｉ", "付帯部|ファインウレタンU100", "軒天|水性ケンエース", "屋根|ファインパーフェクトルーフ", "屋根|ファインルーフSi", "屋根|水性シリコンベストⅡ", "外壁|水性シリコンセラUV", "付帯部|1液ファインウレタンU100", "軒天|ケンエースG-Ⅱ", "軒天|ノキテンエース", "外壁|グランセラ®トップ 1液水性", "外壁|グランセラ®トップ ２液ファイン", "付帯部|グランセラ®トップ ２液ファイン", "屋根|グランセラ®ベスト ２液ファイン", "軒天|ノキテンエースセラ", "外壁|ピュアライドUVプロテクトSiクリヤー"].map(value => { const [part, name] = value.split("|"); return part + "|" + normalizeCatalogProductName(name); }));
+ const nipponByPartProduct = new Map();
+ for(const item of MATERIAL_CATALOG_DATA["製品"] || []){
+  if(item["メーカー名"] !== "日本ペイント") continue;
+  const key = item["部位分類"] + "|" + normalizeCatalogProductName(item["製品名"]);
+  if(!selectedNippon.has(key)) continue;
+  const prev = nipponByPartProduct.get(key);
+  if(!prev || (!prev["可使時間"] && item["可使時間"]) || (!prev["塗り重ね乾燥時間"] && item["塗り重ね乾燥時間"])) nipponByPartProduct.set(key, item);
+ }
+ const items = (MATERIAL_CATALOG_DATA["製品"] || []).filter(item => item["メーカー名"] !== "日本ペイント").concat([...nipponByPartProduct.values()]);
  const makers = catalogUnique(items.map(item => item["メーカー名"])).sort((a, b) => ["日本ペイント", "エスケー化研", "関西ペイント"].indexOf(a) - ["日本ペイント", "エスケー化研", "関西ペイント"].indexOf(b));
  catalogSetOptions(catalogMaker, "メーカーを選択", makers);
  catalogMaker.addEventListener("change", () => {
