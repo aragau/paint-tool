@@ -2590,7 +2590,13 @@ function initializeCatalogSelector(){
   const prev = nipponByPartProduct.get(key);
   if(!prev || (!prev["可使時間"] && item["可使時間"]) || (!prev["塗り重ね乾燥時間"] && item["塗り重ね乾燥時間"])) nipponByPartProduct.set(key, item);
  }
- const items = (MATERIAL_CATALOG_DATA["製品"] || []).filter(item => item["メーカー名"] !== "日本ペイント").concat([...nipponByPartProduct.values()]);
+ // 同じ製品が別部位にもある場合、部位ごとの塗装条件は維持し、欠けている時間情報だけ補完する。
+ const nipponSelected = [...nipponByPartProduct.values()].map(item => {
+  if(item["可使時間"] && item["塗り重ね乾燥時間"]) return item;
+  const donor = (MATERIAL_CATALOG_DATA["製品"] || []).find(other => other["メーカー名"] === "日本ペイント" && normalizeCatalogProductName(other["製品名"]) === normalizeCatalogProductName(item["製品名"]) && other["可使時間"] && other["塗り重ね乾燥時間"]);
+  return donor ? { ...item, "可使時間": item["可使時間"] || donor["可使時間"], "可使時間温度条件": item["可使時間温度条件"] || donor["可使時間温度条件"], "塗り重ね乾燥時間": item["塗り重ね乾燥時間"] || donor["塗り重ね乾燥時間"], "塗り重ね乾燥時間温度条件": item["塗り重ね乾燥時間温度条件"] || donor["塗り重ね乾燥時間温度条件"] } : item;
+ });
+ const items = (MATERIAL_CATALOG_DATA["製品"] || []).filter(item => item["メーカー名"] !== "日本ペイント").concat(nipponSelected);
  const makers = catalogUnique(items.map(item => item["メーカー名"])).sort((a, b) => ["日本ペイント", "エスケー化研", "関西ペイント"].indexOf(a) - ["日本ペイント", "エスケー化研", "関西ペイント"].indexOf(b));
  catalogSetOptions(catalogMaker, "メーカーを選択", makers);
  catalogMaker.addEventListener("change", () => {
