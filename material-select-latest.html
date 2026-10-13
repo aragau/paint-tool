@@ -1612,6 +1612,7 @@ function handleMaterialEntry(){
  if(materialChooser.hidden){
   document.getElementById("catalogSelectorBox").hidden = true;
  }else{
+  if(materialSelect.value === "__catalog__" || materialSelect.value === "__register__") materialSelect.value = "";
   materialSelect.focus();
  }
 }
