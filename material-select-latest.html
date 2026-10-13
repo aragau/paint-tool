@@ -2577,7 +2577,7 @@ function materialSelect5Special(item){
 }
 
 function normalizeCatalogProductName(name){
- return String(name || "").normalize("NFKC").replace(/®/g, "").replace(/（旧：[^）]*）/g, "").replace(/（遮熱オプション含む）/g, "").replace(/\\s/g, "").toLowerCase();
+ return String(name || "").replace(/（旧：[^）]*）/g, "").replace(/（遮熱オプション含む）/g, "").normalize("NFKC").replace(/®/g, "").replace(/\s/g, "").toLowerCase();
 }
 
 function initializeCatalogSelector(){
