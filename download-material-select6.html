@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Material Select Ver.6 ダウンロード</title></head>
+<body style="font:16px system-ui,sans-serif;margin:2em"><p id="status">Material Select Ver.6 をダウンロードしています…</p>
+<p><a id="manual" href="./material-select6.html" download="Material-Select-Ver6.html">ダウンロードが始まらない場合はこちらをクリック</a></p>
+<script>
+(async function(){
+ try{
+  const response=await fetch("./material-select6.html",{cache:"no-store"});
+  if(!response.ok) throw Error("HTTP "+response.status);
+  const text=await response.text();
+  if(!text.includes("initializeCatalogSelector")||!text.includes("Material")) throw Error("取得したHTMLを確認できません");
+  const blob=new Blob([text],{type:"text/html;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const anchor=document.createElement("a");
+  anchor.href=url;anchor.download="Material-Select-Ver6.html";document.body.append(anchor);anchor.click();
+  document.getElementById("status").textContent="ダウンロードを開始しました。保存された Material-Select-Ver6.html を開いてください。";
+  setTimeout(()=>{URL.revokeObjectURL(url);anchor.remove()},60000);
+ }catch(err){document.getElementById("status").textContent="自動ダウンロードできませんでした。下のリンクをクリックしてください。";}
+})();
+</script></body></html>
