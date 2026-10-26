@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; style-src 'unsafe-inline'; img-src blob: data:; connect-src https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; worker-src blob: https://cdn.jsdelivr.net; base-uri 'none'; form-action 'none'">
+<title>塗料ラベルラボ | Ver.0.1</title>
+<style>
+:root{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#18332f;background:#f3f5f0;line-height:1.65;font-size:16px}*{box-sizing:border-box}body{margin:0}header{border-bottom:1px solid #d6dfd4;background:#fff}header>div,main,footer{max-width:1080px;margin:auto;padding:24px}header>div{display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font-weight:800;letter-spacing:.04em}.brand small{display:block;font-size:11px;letter-spacing:.16em;color:#546c65}.badge{border:1px solid #d0dccd;border-radius:30px;padding:4px 12px;font-size:12px;white-space:nowrap}main{padding-top:40px}h1{font-size:clamp(26px,4vw,39px);line-height:1.4;margin:8px 0 14px;letter-spacing:-.03em}h2{font-size:19px;margin:0 0 18px;display:flex;align-items:center;gap:10px}h2 span{font-size:12px;background:#e8f1df;padding:4px 9px;border-radius:8px;color:#355c29}.eyebrow{color:#5d7159;letter-spacing:.18em;font-size:11px;font-weight:800}.intro{color:#597067;max-width:700px;margin:0 0 24px}.privacy{background:#e5efdf;border:1px solid #ccdbc3;border-radius:12px;padding:15px 18px;font-size:13px;margin-bottom:28px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}.card{background:white;border:1px solid #d9e1d5;border-radius:18px;padding:24px;box-shadow:0 5px 18px #19332604}.stack{display:grid;gap:22px}button,.filebtn{font:inherit;font-weight:650;border-radius:10px;border:1px solid #c9d6c6;padding:12px 16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:white;color:#234c3e;min-height:48px;text-align:center;text-decoration:none}button:hover,.filebtn:hover{background:#f0f5ec}button.primary{background:#244f3e;color:white;border-color:#244f3e}button.primary:hover{background:#163c2d}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #ad7a2a;outline-offset:3px}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.upload{border:1px dashed #a8bba0;background:#f8faf5;border-radius:12px;padding:24px 18px;text-align:center}.upload p{margin:6px 0 18px}.symbol{font-size:35px;color:#467054}.small{font-size:12px;color:#627268}.hint{font-size:13px;color:#627268;margin:12px 0}.preview{margin-top:18px;max-height:360px;overflow:auto;background:#edf0e9;border-radius:10px;text-align:center}.preview canvas{max-width:100%;height:auto;vertical-align:middle}.tools{margin:12px 0}.status{font-size:13px;margin:12px 0;min-height:23px;overflow-wrap:anywhere}progress{width:100%;height:9px;accent-color:#3b6d4d}label.field{display:block;font-size:13px;font-weight:700;margin-bottom:7px}textarea,input[type=text]{width:100%;font:inherit;border:1px solid #bccdb7;border-radius:10px;padding:12px;background:#fff;color:#18332f}textarea{resize:vertical;min-height:145px;font-size:14px}input[type=file]{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.filebtn:focus-within{outline:3px solid #ad7a2a;outline-offset:3px}#candidates{display:grid;gap:10px;margin:16px 0}.candidate{display:block;width:100%;text-align:left;font-size:14px;overflow-wrap:anywhere}.candidate small{display:block;font-size:11px;font-weight:400;color:#5b6e58}.candidate[aria-pressed=true]{background:#e7f0df;border-color:#557a41;box-shadow:inset 3px 0 #557a41}.empty{border:1px dashed #d0dacb;border-radius:10px;padding:18px;color:#6b7965;font-size:13px}.confirmed{background:#edf4e7;border:1px solid #b2c69e;padding:14px;border-radius:10px;overflow-wrap:anywhere}details{margin-top:26px;border-top:1px solid #d6dfd1;padding-top:20px;font-size:13px}summary{cursor:pointer;font-weight:700}li{margin:6px 0}footer{font-size:12px;color:#667861;border-top:1px solid #d7e0d3;margin-top:28px}.error{color:#a33e25}#manual{margin:12px 0}#confirmed:empty{display:none}[hidden]{display:none!important}@media(max-width:760px){.grid{grid-template-columns:1fr}header>div,main,footer{padding:20px}main{padding-top:28px}.card{padding:20px}.row{gap:8px}h1{font-size:28px}.badge{font-size:11px}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">塗料ラベルラボ<small>PAINT LABEL LAB</small></div><span class="badge">実験版 Ver.0.1</span></div></header>
+<main>
+<div class="eyebrow">PHOTO → TEXT → PRODUCT</div>
+<h1>ラベルを撮って、<br>製品名を見つける。</h1>
+<p class="intro">塗料缶のラベルを日本語・英語で読み取り、登録した3製品と照合します。候補を選んで、最後にご自身で確認してください。</p>
+<div class="privacy"><strong>写真はブラウザー内で解析します。</strong> 写真・認識文字列をサーバーへ送信しません。生成AI APIは使用しません。OCRライブラリ・辞書の取得にはインターネット接続が必要です。</div>
+<div class="grid">
+<section class="card"><h2><span>01</span>ラベルの写真</h2>
+<div class="upload"><div class="symbol" aria-hidden="true">▣</div><p>製品名を大きく、明るく、正面から。</p><div class="row"><label class="filebtn">カメラで撮影<input id="camera" type="file" accept="image/*" capture="environment"></label><label class="filebtn">写真を選択<input id="file" type="file" accept="image/*"></label></div><p class="small">iPhone / Android / Windows の画像選択に対応<br>Windowsでは保存済み写真の選択になる場合があります。</p></div>
+<div class="preview" hidden id="preview"><canvas id="canvas" aria-label="選択した写真のプレビュー"></canvas></div>
+<div class="row tools"><button id="rotate" disabled>写真を90°回転</button><button id="clear" disabled>写真を削除</button></div>
+<p class="hint">JPEG・PNG・WebP推奨。HEICなどが開けない場合はJPEGに変換してください。反射や缶の曲面、細かい文字は認識精度が下がります。</p>
+<div class="row"><button class="primary" id="ocr" disabled>文字を読み取る</button><button id="cancel" hidden>中止</button></div>
+<p class="status" id="status" role="status" aria-live="polite">写真を選択してください。手動入力だけでも利用できます。</p><progress id="progress" max="1" value="0" hidden aria-label="OCR進捗"></progress>
+</section>
+<div class="stack">
+<section class="card"><h2><span>02</span>読み取った文字を確認</h2><label class="field" for="text">認識結果 / 手動入力</label><textarea id="text" placeholder="ここにOCR結果が表示されます。文字を修正したり、製品名を直接入力したりできます。" spellcheck="false"></textarea><p class="hint">誤字を直して「製品候補を探す」を押してください。</p><button id="match" class="primary">製品候補を探す</button></section>
+<section class="card"><h2><span>03</span>候補を選んで確認</h2><p class="hint">照合は文字の近さによる参考情報です。製品を保証するものではありません。</p><div id="candidates" aria-live="polite"><div class="empty">読み取り後、または手動入力後に候補が表示されます。</div></div><label class="field" for="manual">確認する製品名（自由に修正できます）</label><input id="manual" type="text" placeholder="候補を選択、または製品名を入力" autocomplete="off"><label class="hint" style="display:block"><input type="checkbox" id="check"> 写真のラベルと製品名を照らし合わせました</label><button id="confirm" class="primary" disabled>この製品名で確認完了</button><div id="confirmed" role="status" aria-live="polite" style="margin-top:14px"></div></section>
+</div></div>
+<div class="row" style="margin-top:24px;max-width:480px"><button id="saveHTML">HTMLをPCに保存</button><button id="saveZIP">ZIPをPCに保存</button></div><p class="small">保存するのはアプリ本体のみです。選択した写真・入力文字・確認結果は含めません。</p>
+<details><summary>登録製品・使い方・取り扱いについて</summary><p>Ver.0.1のテスト用登録データ（Material Selectの検証済みデータとは連携していません）：</p><ul id="products"></ul><p>撮影 → 読み取り → 文字の修正 → 候補選択 → ラベルとの照合 → 確認完了、の順で操作します。読み取れなくても手動で入力できます。Ⅱ / II / 2、全角・半角、空白・ハイフンの表記差を吸収します。</p><p>処理中は画面を開いたままお待ちください。初回は辞書の読み込みに時間がかかります。処理が止まる場合は中止し、写真を小さくして再試行してください。長辺は最大2,200pxに縮小して解析します。</p><p>対応対象：iPhoneのSafari、AndroidのChrome、WindowsのEdge / Chromeの現行版。端末のファイル表示アプリのプレビューではJavaScriptが動かないことがあります。ブラウザーで開いてください。端末・設定によってローカルHTMLのOCRが制限される場合は、PCのローカルHTTPサーバーで開いてください。公開サーバーは不要です。</p><p>写真・文字列・確認結果をアプリから保存・送信しません。ページを閉じると消えます。Tesseract.js v5.1.1、tesseract.js-core v5.1.1、をjsDelivrから、言語辞書をtessdata.projectnaptha.com/4.0.0から取得します。配信元には通常のダウンロード通信情報が届きます。完全オフライン対応ではありません。</p></details>
+</main><footer>Paint Label Lab · Ver.0.1　独立した実験用ツール / Material Selectへの接続なし</footer>
+<script>
+'use strict';
+// 入力前の文書だけを保存。写真や認識結果を含めない。
+const CLEAN_HTML='<!doctype html>\n'+document.documentElement.outerHTML;
+// テスト用データ。将来の検証済みデータとの連携は、この配列を差し替える形で拡張できます。
+const PRODUCTS = [
+ {id:'p01', name:'ハイポンファインプライマーⅡ', aliases:['ハイポンファインプライマーII','ハイポンファインプライマー2']},
+ {id:'p02', name:'ケンエースG-Ⅱ', aliases:['ケンエースG-II','ケンエースG2']},
+ {id:'p03', name:'ニッペ ファインパーフェクトトップSi', aliases:['ファインパーフェクトトップSi','ニッペファインパーフェクトトップSI']}
+];
+const $ = id => document.getElementById(id);
+const canvas=$('canvas'),ctx=canvas.getContext('2d');
+let hasImage=false,busy=false,worker=null,run=0,loadRun=0,loading=false;
+const CDN='https://cdn.jsdelivr.net/npm/';
+function normalize(s){return s.normalize('NFKC').toUpperCase().replace(/Ⅱ/g,'II').replace(/II/g,'2').replace(/[\s\-‐‑–—ーｰ−・･.,，。:：\/\\_()（）「」『』]/g,'');}
+function distance(a,b){let prev=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const row=[i];for(let j=1;j<=b.length;j++)row[j]=Math.min(row[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=row;}return prev[b.length];}
+// ラベル全体に対して製品名の長さに近い部分文字列を探索。無関係な説明文の影響を抑える。
+function similarity(text,name){if(text.includes(name))return 1;let best=0;for(let size=Math.max(3,name.length-2);size<=name.length+2;size++){for(let i=0;i<=text.length-Math.min(size,text.length);i++){const part=text.slice(i,i+size);best=Math.max(best,1-distance(part,name)/Math.max(name.length,part.length));}}return best;}
+function rankProducts(text){const t=normalize(text).slice(0,6000);if(!t)return [];return PRODUCTS.map(p=>({...p,score:Math.max(...[p.name,...p.aliases].map(a=>similarity(t,normalize(a))))})).filter(p=>p.score>=.62).sort((a,b)=>b.score-a.score);}
+function invalidate(){ $('confirmed').replaceChildren();$('check').checked=false;updateConfirm(); }
+function updateConfirm(){ $('confirm').disabled=busy||!$('manual').value.trim()||!$('check').checked; }
+function match(){invalidate();$('manual').value='';$('candidates').replaceChildren();const value=$('text').value.trim();const results=rankProducts(value);if(!results.length){const d=document.createElement('div');d.className='empty';d.textContent=value?'一致する候補が見つかりません。文字を修正するか、下欄へ製品名を手動入力してください。':'文字を入力してから候補を探してください。';$('candidates').append(d);return;}for(const p of results){const button=document.createElement('button');button.className='candidate';button.type='button';button.setAttribute('aria-pressed','false');button.append(document.createTextNode(p.name));const note=document.createElement('small');note.textContent=p.score===1?'登録表記と一致（ラベルを確認してください）':`部分文字列の類似度 ${Math.round(p.score*100)}% · OCRの確信度ではありません`;button.append(note);button.onclick=()=>{document.querySelectorAll('.candidate').forEach(b=>b.setAttribute('aria-pressed','false'));button.setAttribute('aria-pressed','true');$('manual').value=p.name;invalidate();};$('candidates').append(button);}}
+function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
+function setBusy(value){busy=value;for(const id of ['ocr','rotate','clear'])$(id).disabled=value||loading||!hasImage;for(const id of ['camera','file','text','match','manual'])$(id).disabled=value;$('cancel').hidden=!value;$('progress').hidden=!value;updateConfirm();}
+function resetResult(){ $('text').value='';$('manual').value='';$('candidates').innerHTML='<div class="empty">読み取り後、または手動入力後に候補が表示されます。</div>';invalidate(); }
+async function openImage(file){if(!file)return;const ticket=++loadRun;loading=true;setBusy(false);resetResult();hasImage=false;canvas.width=canvas.height=1;$('preview').hidden=true;status('写真を開いています…');if(file.size>40*1024*1024){loading=false;setBusy(false);status('写真は40MB以下にしてください。',true);return;}const url=URL.createObjectURL(file);try{const img=new Image();img.src=url;await img.decode();if(ticket!==loadRun)return;const ratio=Math.min(1,2200/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);hasImage=true;$('preview').hidden=false;status('写真を準備しました。「文字を読み取る」を押してください。');}catch(e){if(ticket===loadRun)status('画像を開けません。JPEG・PNG形式の写真で再試行するか、手動入力してください。',true);}finally{URL.revokeObjectURL(url);if(ticket===loadRun){loading=false;setBusy(false);}}}
+$('camera').onchange=e=>{openImage(e.target.files[0]);e.target.value='';};$('file').onchange=e=>{openImage(e.target.files[0]);e.target.value='';};
+$('rotate').onclick=()=>{const temp=document.createElement('canvas');temp.width=canvas.width;temp.height=canvas.height;temp.getContext('2d').drawImage(canvas,0,0);canvas.width=temp.height;canvas.height=temp.width;ctx.translate(canvas.width,0);ctx.rotate(Math.PI/2);ctx.drawImage(temp,0,0);ctx.setTransform(1,0,0,1,0,0);resetResult();status('写真を回転しました。再度読み取ってください。');};
+$('clear').onclick=()=>{++loadRun;canvas.width=canvas.height=1;hasImage=false;$('preview').hidden=true;resetResult();setBusy(false);status('写真を削除しました。手動入力も利用できます。');};
+function loadOCR(){if(window.Tesseract)return Promise.resolve();return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=CDN+'tesseract.js@5.1.1/dist/tesseract.min.js';const timeout=setTimeout(()=>{script.remove();reject(new Error('download timeout'));},45000);script.onload=()=>{clearTimeout(timeout);window.Tesseract?resolve():reject(new Error('library unavailable'));};script.onerror=()=>{clearTimeout(timeout);script.remove();reject(new Error('download error'));};document.head.append(script);});}
+async function stop(message){++run;const current=worker;worker=null;setBusy(false);status(message);if(current)try{await current.terminate();}catch(e){}}
+$('cancel').onclick=()=>stop('読み取りを中止しました。再試行または手動入力できます。');
+$('ocr').onclick=async()=>{if(!hasImage||busy)return;const ticket=++run;resetResult();setBusy(true);$('progress').value=0;status('OCRライブラリ・日本語/英語辞書を読み込みます…');const watchdog=setTimeout(()=>{if(ticket===run)stop('時間がかかったため読み取りを中止しました。通信を確認し、再試行または手動入力してください。');},180000);let localWorker;try{await loadOCR();if(ticket!==run)return;localWorker=await Tesseract.createWorker('jpn+eng',1,{workerPath:CDN+'tesseract.js@5.1.1/dist/worker.min.js',corePath:CDN+'tesseract.js-core@5.1.1',langPath:'https://tessdata.projectnaptha.com/4.0.0',logger:m=>{if(ticket!==run)return;if(m.status==='recognizing text'){const progress=Number.isFinite(m.progress)?m.progress:0;$('progress').value=progress;status(`文字を読み取り中… ${Math.round(progress*100)}%`);}else status('OCRの準備中… ライブラリと辞書を読み込んでいます。');}});
+// 言語辞書はTesseract.js標準の4.0.0配布先から取得。
+if(ticket!==run){await localWorker.terminate();return;}worker=localWorker;await worker.setParameters({tessedit_pageseg_mode:'11'});const result=await worker.recognize(canvas);if(ticket!==run)return;$('text').value=result.data.text.trim();match();status($('text').value?'読み取りが完了しました。文字と候補をラベルで確認してください。':'文字を読み取れませんでした。撮影し直すか、手動入力してください。',!$('text').value);
+}catch(e){if(ticket===run)status('OCRを開始または完了できませんでした。通信・ブラウザー設定を確認して再試行するか、手動入力してください。',true);}finally{clearTimeout(watchdog);if(localWorker)try{await localWorker.terminate();}catch(e){}if(ticket===run){worker=null;setBusy(false);}}};
+$('match').onclick=match;$('text').oninput=()=>{$('candidates').innerHTML='<div class="empty">文字が変更されました。「製品候補を探す」で再照合してください。</div>';$('manual').value='';invalidate();};$('manual').oninput=()=>{document.querySelectorAll('.candidate').forEach(b=>b.setAttribute('aria-pressed','false'));invalidate();};$('check').onchange=updateConfirm;
+$('confirm').onclick=()=>{if($('confirm').disabled)return;const d=document.createElement('div');d.className='confirmed';d.textContent='確認完了：'+$('manual').value.trim();$('confirmed').replaceChildren(d);};
+PRODUCTS.forEach(p=>{const li=document.createElement('li');li.textContent=p.name;$('products').append(li);});
+// 依存ライブラリなしのZIP（無圧縮・1ファイル）。写真や認識文字列は含めない。
+function makeZip(source){
+ const enc=new TextEncoder(), name=enc.encode('paint-label-lab.html'), data=enc.encode(source);
+ let crc=0xffffffff;for(const b of data){crc^=b;for(let j=0;j<8;j++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}crc=(crc^0xffffffff)>>>0;
+ const local=new Uint8Array(30+name.length), l=new DataView(local.buffer);
+ l.setUint32(0,0x04034b50,true);l.setUint16(4,20,true);l.setUint16(6,0x800,true);l.setUint16(12,33,true);l.setUint32(14,crc,true);l.setUint32(18,data.length,true);l.setUint32(22,data.length,true);l.setUint16(26,name.length,true);local.set(name,30);
+ const central=new Uint8Array(46+name.length), c=new DataView(central.buffer);
+ c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x800,true);c.setUint16(14,33,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,name.length,true);central.set(name,46);
+ const end=new Uint8Array(22), e=new DataView(end.buffer);e.setUint32(0,0x06054b50,true);e.setUint16(8,1,true);e.setUint16(10,1,true);e.setUint32(12,central.length,true);e.setUint32(16,local.length+data.length,true);
+ return new Blob([local,data,central,end],{type:'application/zip'});
+}
+function saveFile(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+$('saveHTML').onclick=()=>saveFile(new Blob([CLEAN_HTML],{type:'text/html;charset=utf-8'}),'paint-label-lab.html');
+$('saveZIP').onclick=()=>saveFile(makeZip(CLEAN_HTML),'paint-label-lab-v0.1.zip');
+
+</script>
+</body></html>
